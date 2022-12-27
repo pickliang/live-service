@@ -366,13 +366,13 @@
 			card_num = #{cardNum}
 		<choose>
 			<when test="type == 2">
-				AND p.product_category = '权益类'
+				AND product_category = '权益类'
 			</when>
 			<when test="type == 3">
-				AND p.product_category = '净值型'
+				AND product_category = '净值型'
 			</when>
 			<otherwise>
-				AND p.product_category = '类固收'
+				AND product_category = '类固收'
 			</otherwise>
 		</choose>
 	</select>
