@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.live_mall.modules.sys.dao.SysUserDao">
+
+	<select id="selectPageVo" resultType="io.live_mall.modules.sys.entity.SysUserEntity" parameterType="java.util.HashMap" >
+		SELECT
+			u.*,
+			p.organization_name  orgName
+		FROM sys_user u
+		LEFT JOIN sys_user_role r ON u.user_id = r.user_id
+		LEFT  JOIN  sys_org_user g on  g.user_id=u.user_id
+		LEFT  JOIN  sys_org_group p on  p.id=g.org_id
+		<where>
+			<trim>
+				<if test="params.username !=null and  params.username !='' ">
+					and (u.username like CONCAT('%',#{params.username},'%') or  u.realname like CONCAT('%',#{params.username},'%'))
+				</if>
+				<if test="params.createUserId !=null and  params.createUserId !=''">
+					and  u.create_user_id = #{params.createUserId}
+				</if>
+				<if test="params.roleId !=null and  params.roleId !=''">
+					and  r.role_id = #{params.roleId}
+				</if>
+				
+				<if test="params.roleId !=null and  params.roleId !=''">
+					and  r.role_id = #{params.roleId}
+				</if>
+				
+				<if test="params.orgId !=null and  params.orgId !=''">
+					and  g.org_id in ( ${params.orgId})
+				</if>
+				
+				<if test="params.orgIdNot !=null and  params.orgIdNot !=''">
+					and  p.id is null
+				</if>
+				
+			</trim>
+		</where>
+		GROUP BY u.user_id  order by create_time desc
+	</select>
+
+	<!-- 查询用户的所有权限 -->
+	<select id="queryAllPerms" resultType="string">
+		select m.perms from sys_user_role ur 
+			LEFT JOIN sys_role_menu rm on ur.role_id = rm.role_id 
+			LEFT JOIN sys_menu m on rm.menu_id = m.menu_id 
+		where ur.user_id = #{userId}
+	</select>
+	
+	<!-- 查询用户的所有菜单ID --> 
+	<select id="queryAllMenuId" resultType="long">
+		select distinct rm.menu_id from sys_user_role ur 
+			LEFT JOIN sys_role_menu rm on ur.role_id = rm.role_id 
+		where ur.user_id = #{userId}
+	</select>
+	
+	<select id="queryByUserName" resultType="io.live_mall.modules.sys.entity.SysUserEntity">
+		select * from sys_user where username = #{username}
+	</select>
+	
+	<select id="getUserlistByRoleId" resultType="io.live_mall.modules.sys.entity.SysUserEntity">
+		SELECT u.realname,u.user_id FROM sys_user  u INNER JOIN sys_user_role r ON  r.user_id=u.user_id
+			WHERE  r.role_id=#{roleId}
+	</select>
+	
+	
+	<select id="getUserListByOrgId" resultType="io.live_mall.modules.sys.entity.SysUserEntity">
+			SELECT u.* FROM sys_org_user g INNER JOIN  sys_user  u on u.user_id=g.user_id
+			where  g.org_id=#{orgId}
+	</select>
+	
+	<select id="selectUserOgr" resultType="io.live_mall.modules.sys.entity.SysUserEntity"  parameterType="java.lang.Integer">
+			SELECT user_id userId,realname,o.`gwdj` ,o.grade FROM sys_user u INNER JOIN sys_org_group o ON o.person_charge=u.user_id
+			where gwdj=#{level}  AND o.`gwdj` is not null  and  o.grade is not null  and o.`gwdj` > 0
+	</select>
+	
+	<select id="orgRegionUser" resultType="io.live_mall.modules.server.model.SysUserModel">
+		SELECT
+			user_id,
+			realname,
+			person_photos,
+			mobile
+		FROM
+			sys_user
+		WHERE
+			user_id IN ( SELECT user_id FROM sys_org_user WHERE org_id IN
+				<foreach collection="orgGroupIds" item="orgGroupId" index="index" open="(" close=")" separator=",">
+					#{orgGroupId}
+				</foreach>
+			)
+	</select>
+
+	<select id="sysUserByCardNum" resultType="io.live_mall.modules.server.model.SysUserModel">
+		SELECT
+			u.user_id,
+			u.realname,
+			u.person_photos,
+			u.mobile
+		FROM
+			sys_user AS u
+			INNER JOIN p_order AS o ON u.user_id = o.sale_id
+		WHERE
+			o.card_num = #{cardNum}
+			LIMIT 1
+	</select>
+
+</mapper>

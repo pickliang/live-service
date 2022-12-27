@@ -1,0 +1,778 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.live_mall.modules.server.dao.OrderDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.live_mall.modules.server.entity.OrderEntity" id="orderMap">
+        <result property="id" column="id"/>
+        <result property="productId" column="product_id"/>
+        <result property="productUnitId" column="product_unit_id"/>
+        <result property="raiseId" column="raise_id"/>
+        <result property="orgId" column="org_id"/>
+        <result property="saleId" column="sale_id"/>
+        <result property="customerName" column="customer_name"/>
+        <result property="appointMoney" column="appoint_money"/>
+        <result property="appointTime" column="appoint_time"/>
+        <result property="cardType" column="card_type"/>
+        <result property="cardNum" column="card_num"/>
+        <result property="cardPhotoR" column="card_photo_r"/>
+        <result property="cardPhotoL" column="card_photo_l"/>
+        <result property="cardTime" column="card_time"/>
+        <result property="phone" column="phone"/>
+        <result property="email" column="email"/>
+        <result property="agreementNo" column="agreement_no"/>
+        <result property="signDate" column="sign_date"/>
+        <result property="bankNo" column="bank_no"/>
+        <result property="openBank" column="open_bank"/>
+        <result property="branch" column="branch"/>
+        <result property="bankCardFront" column="bank_card_front"/>
+        <result property="bankCardBack" column="bank_card_back"/>
+        <result property="openAccount" column="open_account"/>
+        <result property="subAgree" column="sub_agree"/>
+        <result property="paymentSlip" column="payment_slip"/>
+        <result property="assetsPro" column="assets_pro"/>
+        <result property="otherFile" column="other_file"/>
+        <result property="remark" column="remark"/>
+        <result property="aduitTime" column="aduit_time"/>
+        <result property="aduitId" column="aduit_id"/>
+        <result property="aduitResult" column="aduit_result"/>
+        <result property="status" column="status"/>
+        <result property="reasourse" column="reasourse"/>
+        <result property="orderNo" column="order_no"/>
+        <result property="isCard" column="is_card"/>
+        <result property="applicationForm" column="application_form"/>
+        <result property="buyDetail" column="buy_detail"/>
+        <result property="paymentDetail" column="payment_detail"/>
+        <result property="assetsDetail" column="assets_detail"/>
+        <result property="otherDetail" column="other_detail"/>
+        <result property="orderDate" column="order_date"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createDate" column="create_date"/>
+        <result property="uptBy" column="upt_by"/>
+        <result property="uptDate" column="upt_date"/>
+        <result property="delBy" column="del_by"/>
+        <result property="delDate" column="del_date"/>
+        <result property="delFlag" column="del_flag"/>
+    </resultMap>
+    
+       <select id="getOneOrderModel" resultType="io.live_mall.modules.server.model.OrderModel">
+				 SELECT
+					of.*,
+					pfd.classify_name classifyName,
+					pfd.product_name productName,
+					pu.unit_name unitName,
+					r.raise_name raiseName,
+					pu.income_data incomeData,
+					orgf.organization_name orgName,
+					ui.`realname` saleName,
+					(
+						SELECT
+							user_info.`realname` aduitName
+						FROM
+							sys_user user_info
+						WHERE
+							user_info.user_id = of.aduit_id
+					) aduitName,
+					r.performance_coefficient perCoefficient
+				FROM
+					`p_order` of
+				LEFT JOIN (
+					SELECT
+						pf.id id,
+						pc.`name` classify_name,
+						pf.product_name product_name
+					FROM
+						p_product pf
+					LEFT JOIN p_product_class pc ON pf.product_class = pc.id
+				) pfd ON of.product_id = pfd.id
+				LEFT JOIN p_product_unit pu ON of.product_unit_id = pu.id
+				LEFT JOIN p_raise r ON of.raise_id = r.id
+				LEFT JOIN sys_org_group orgf ON orgf.id = of.org_id
+				LEFT JOIN sys_user ui ON of.sale_id = ui.user_id
+				 WHERE
+					of.id = #{orderId}
+    </select>
+    
+    
+    <select   id="getOrderSuccess"   resultType="com.alibaba.fastjson.JSONObject" parameterType="java.util.HashMap"  >
+    	<!-- SELECT
+				of.id id,
+				pfd.product_class classifyName,
+				pfd.product_name productName,
+				pu.unit_name unitName,
+				r.raise_name raiseName,
+				r.establish_time establishTime,
+				of.customer_name customerName,
+				of.appoint_money appointMoney,
+				pu.income_data incomeData,
+				orgf.organization_name orgName,
+				ui.realname saleName,
+				of.appoint_time appointTime,
+				of.aduit_time aduitTime,
+				(
+					SELECT
+						sys_user.realname aduitName
+					FROM
+						sys_user
+					WHERE
+						sys_user.user_id = of.aduit_id
+				) aduitName,
+				r.performance_coefficient perCoefficient,
+				of.reasourse reasourse,
+				of.order_no orderNo
+			FROM
+				`p_order` of
+			LEFT JOIN  p_product pfd ON of.product_id = pfd.id
+			LEFT JOIN p_product_unit pu ON of.product_unit_id = pu.id
+			LEFT JOIN p_raise r ON of.raise_id = r.id
+			LEFT JOIN sys_org_group orgf ON orgf.id = of.org_id
+			LEFT JOIN sys_user ui ON of.sale_id = ui.user_id -->
+
+			SELECT
+					of.id id,
+					pfd.product_class classifyName,
+					pfd.product_name productName,
+					pu.unit_name unitName,
+					r.raise_name raiseName,
+					r.establish_time establishTime,
+					of.customer_name customerName,
+					of.appoint_money appointMoney,
+					pu.income_data incomeData,
+					orgf.organization_name orgName,
+					of.card_type cardType,
+					of.card_num cardNum,
+					of.bank_no bankNo,
+				  of.open_bank openBank,
+				  of.branch branch,
+				  of.appoint_time appointTime,
+					ui.realname saleName,
+					of.aduit_time aduitTime,
+					(
+						SELECT
+							sys_user.realname aduitName
+						FROM
+							sys_user
+						WHERE
+							sys_user.user_id = of.aduit_id
+					) aduitName,
+					r.performance_coefficient perCoefficient,
+					of.reasourse reasourse,
+					of.order_no orderNo
+				FROM
+					`p_order` of
+				LEFT JOIN p_product pfd ON of.product_id = pfd.id
+				LEFT JOIN p_product_unit pu ON of.product_unit_id = pu.id
+				LEFT JOIN p_raise r ON of.raise_id = r.id
+				LEFT JOIN sys_org_group orgf ON orgf.id = of.org_id
+				LEFT JOIN sys_user ui ON of.sale_id = ui.user_id
+
+			<where>
+            	of.raise_id = #{params.raiseId}      and of.`status`=4
+            <if test="params.productUnitName!=null and params.productUnitName!=''">and    pu.unit_name like concat('%',#{params.productUnitName},'%') </if>
+            <if test="params.orgName!=null and params.orgName!=''">and   orgf.organization_name like concat('%',#{params.orgName},'%')  </if>
+            <if test="params.saleName!=null and params.saleName!=''">and  ui.realname   like concat('%',#{params.saleName},'%')  </if>
+            <if test="params.costomerName!=null and params.costomerName!=''">and of.customer_name like concat('%',#{params.costomerName},'%')</if>
+            <if test="params.cardId!=null and params.cardId!=''">   and  of.card_num like concat('%',#{params.cardId},'%')</if>
+               <if test="params.bankNo!=null and params.bankNo!=''"> and of.bank_no like concat('%',#{params.bankNo},'%') </if>
+       		 </where>
+    </select>
+
+<!--	20220516 add by lyg for sum appoint-money and count customer-->
+	<select id="selectSumOrder"  resultType="com.alibaba.fastjson.JSONObject" parameterType="java.util.HashMap"  >
+		select sum(o.appoint_money) as sumMoney , count(DISTINCT o.customer_name) as countCust
+		from  p_order o
+		<where>
+			<if test="params.costomerName !=null and  params.costomerName !=''">
+				and	o.customer_name like concat('%',#{params.costomerName},'%')
+			</if>
+			<if test="params.status !=null and  params.status !=''">
+				and	o.status in (${params.status})
+			</if>
+
+			<if test="params.beginMoney !=null and  params.beginMoney !=''">
+				and	o.appoint_money &gt;= #{params.beginMoney}
+			</if>
+
+			<if test="params.endMoney !=null and  params.endMoney !=''">
+				and	o.appoint_money &lt;= #{params.endMoney}
+			</if>
+
+			<if test="params.custId !=null and  params.custId !=''">
+				and	o.cust_id = #{params.custId}
+			</if>
+
+			<if test="params.beginDate !=null and  params.beginDate !=''">
+				and	o.appoint_time &gt;= #{params.beginDate}
+			</if>
+
+			<if test="params.endDate !=null and  params.endDate !=''">
+				and	o.appoint_time &lt;= #{params.endDate}
+			</if>
+
+			<if test="params.saleId !=null and  params.saleId !=''">
+				and	o.sale_id = #{params.saleId}
+			</if>
+
+			<if test="params.orgName !=null and  params.orgName !=''">
+				and	o.cust_id = #{params.custId}
+			</if>
+
+			<if test="params.productName !=null and  params.productName !=''">
+				and	p.product_name  like concat('%',#{params.productName},'%')
+			</if>
+
+			<if test="params.raiseName !=null and  params.raiseName !=''">
+				and	r.raise_name = #{params.raiseName}
+			</if>
+
+			<if test="params.raiseId !=null and  params.raiseId !=''">
+				and	r.id = #{params.raiseId}
+			</if>
+
+			<if test="params.productUnitName !=null and  params.productUnitName !=''">
+				and	pu.unit_name = #{params.productUnitName}
+			</if>
+
+			<if test="params.orgName !=null and  params.orgName !=''">
+				and	g.organization_name = #{params.orgName}
+			</if>
+			<if test="params.saleName !=null and  params.saleName !=''">
+				and	u.realname = #{params.saleName}
+			</if>
+		</where>
+
+	</select>
+
+	<select id="customerDuifuPage" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT
+			p.product_name,
+			CASE
+			p.product_class
+			WHEN '类固收' THEN
+			'固收'
+			WHEN '权益类' THEN
+			'股权'
+			WHEN '净值型' THEN
+			'二级市场'
+			END AS product_class,
+			o.id AS order_id,
+			o.appoint_money * 10000 AS appoint_money,
+			DATE_FORMAT( o.appoint_time, '%Y-%m-%d' ) appoint_time,
+			r.establish_time,
+			CONCAT( o.date_num, o.date_uint ) AS term
+		FROM
+			p_order AS o
+			INNER JOIN `p_product` AS p ON o.product_id = p.id
+			INNER JOIN p_raise AS r ON o.raise_id = r.id
+		WHERE
+			o.id IN (
+				SELECT
+					DISTINCT o.id
+				FROM
+					p_order AS o
+					INNER JOIN p_order_pay AS p ON o.id = p.order_id
+				WHERE
+					o.card_num = #{cardNum}
+					<choose>
+						<when test="isHistory == 1">
+							AND p.pay_date <![CDATA[ >= ]]> CURRENT_DATE ( )
+						</when>
+						<otherwise>
+							AND p.pay_date <![CDATA[ < ]]> CURRENT_DATE ( )
+						</otherwise>
+					</choose>
+			)
+		<choose>
+			<when test="type == 2">
+				AND p.product_class = '权益类'
+			</when>
+			<when test="type == 3">
+				AND p.product_class = '净值型'
+			</when>
+			<otherwise>
+				AND p.product_class = '类固收'
+			</otherwise>
+		</choose>
+		UNION ALL
+		SELECT
+			product_name,
+			product_category AS product_class,
+			id,
+		    appoint_money,
+			value_date AS appoint_time,
+			due_date AS establish_time,
+			term
+		FROM
+			history_duifu
+		WHERE
+		id IN (SELECT
+				DISTINCT h.id
+			FROM
+				history_duifu AS h
+				INNER JOIN history_duifu_pay AS dp ON h.id = dp.history_duifu_id
+			WHERE
+				h.card_num =  #{cardNum}
+		<choose>
+			<when test="isHistory == 1">
+				AND dp.pay_date <![CDATA[ >= ]]> CURRENT_DATE ( )
+			</when>
+			<otherwise>
+				AND dp.pay_date <![CDATA[ < ]]> CURRENT_DATE ( )
+			</otherwise>
+		</choose>
+		)
+		<choose>
+			<when test="type == 2">
+				AND product_category = '权益类'
+			</when>
+			<when test="type == 3">
+				AND product_category = '净值型'
+			</when>
+			<otherwise>
+				AND product_category = '类固收'
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="fixedIncome" resultType="double">
+		SELECT
+			IFNULL(SUM(o.appoint_money * 10000),0) AS appoint_money
+		FROM
+			p_order AS o
+				INNER JOIN `p_product` AS p ON o.product_id = p.id
+				INNER JOIN p_raise AS r ON o.raise_id = r.id
+		WHERE
+			o.card_num = #{cardNum}
+		<choose>
+			<when test="type == 2">
+				AND p.product_class = '权益类'
+			</when>
+			<when test="type == 3">
+				AND p.product_class = '净值型'
+			</when>
+			<otherwise>
+				AND p.product_class = '类固收'
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="historyFixedIncome" resultType="double">
+		SELECT
+			IFNULL( SUM( appoint_money ), 0 ) appoint_money
+		FROM
+			`history_duifu`
+		WHERE
+			card_num = #{cardNum}
+		<choose>
+			<when test="type == 2">
+				AND p.product_category = '权益类'
+			</when>
+			<when test="type == 3">
+				AND p.product_category = '净值型'
+			</when>
+			<otherwise>
+				AND p.product_category = '类固收'
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="customerDuifuLimit" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT
+			p.product_name,
+			CASE
+				p.product_class
+				WHEN '类固收' THEN '固收'
+				WHEN '权益类' THEN '股权'
+				WHEN '净值型' THEN '二级市场'
+				END AS product_class,
+			o.id AS order_id,
+			o.appoint_money * 10000 AS appoint_money,
+			DATE_FORMAT( o.appoint_time, '%Y-%m-%d' ) appoint_time,
+			o.date_num,
+			CONCAT(o.date_num,o.date_uint) AS term,
+			r.establish_time
+		FROM
+			p_order AS o
+			INNER JOIN `p_product` AS p ON o.product_id = p.id
+			INNER JOIN p_raise AS r ON o.raise_id = r.id
+			WHERE o.card_num = #{cardNum}
+		UNION ALL
+		SELECT
+			product_name,
+			product_category AS product_class,
+			id,
+			appoint_money,
+			value_date AS appoint_time,
+			0 AS date_num,
+			term,
+			end_date
+		FROM
+			history_duifu
+		WHERE
+			card_num = #{cardNum}
+		LIMIT 2
+	</select>
+
+	<select id="nextOrder" resultType="io.live_mall.modules.server.entity.OrderPayEntity">
+		SELECT pay_date, pay_money FROM p_order_pay WHERE order_id = #{orderId} AND pay_date > CURRENT_DATE ORDER BY pay_date LIMIT 1
+	</select>
+
+	<select id="customerTotalAssets" resultType="double">
+		SELECT
+			IFNULL( SUM( appoint_money * 10000 ), 0 ) AS appoint_money
+		FROM
+			p_order
+		WHERE
+			card_num = #{cardNum}
+	</select>
+
+	<select id="annualIncome" resultType="double">
+		SELECT
+			IFNULL( SUM( pay_money ), 0 ) pay_money
+		FROM
+			p_order_pay
+		WHERE
+			order_id IN ( SELECT id FROM p_order WHERE card_num = #{cardNum} )
+		  AND pay_date BETWEEN DATE_FORMAT( NOW( ), '%Y-01-01' )
+			AND CURRENT_DATE()
+	</select>
+
+
+	<select id="expectedIncome" resultType="double">
+		SELECT
+			IFNULL( SUM( pay_money ), 0 ) pay_money
+		FROM
+			p_order_pay
+		WHERE
+			order_id IN ( SELECT id FROM p_order WHERE card_num = #{cardNum} )
+		  AND pay_date > CURRENT_DATE ( )
+	</select>
+
+	<select id="cutsomerOrderIds" resultType="string">
+		SELECT
+			DISTINCT o.id
+		FROM
+			p_order AS o
+				INNER JOIN p_order_pay AS p ON o.id = p.order_id
+		WHERE
+			o.card_num = #{cardNum}
+		  AND p.pay_date > CURRENT_DATE ( )
+	</select>
+
+	<select id="customerHistoryDuifuIds" resultType="string">
+		SELECT
+			DISTINCT h.id
+		FROM
+			history_duifu AS h
+				INNER JOIN history_duifu_pay AS p ON h.id = p.history_duifu_id
+		WHERE
+			h.card_num = #{cardNum}
+		  AND p.pay_date > CURRENT_DATE ( )
+	</select>
+
+	<!--	20220516 add end-->
+    <select id="selectPageVo"  resultType="io.live_mall.modules.server.entity.OrderEntity" parameterType="java.util.HashMap" >
+    		select o.* from  p_order o  
+    		LEFT  JOIN p_product_unit pu ON o.product_unit_id = pu.id
+			left JOIN p_product p ON p.id = o.product_id
+			left JOIN sys_org_group g ON g.id = o.org_id
+			left JOIN sys_user u ON u.user_id = o.sale_id
+			left JOIN p_raise r ON r.id = o.raise_id
+    		<where>
+    		<if test="params.costomerName !=null and  params.costomerName !=''">
+    				and	o.customer_name like concat('%',#{params.costomerName},'%') 
+    			</if>
+    			<if test="params.status !=null and  params.status !=''">
+    				and	o.status in (${params.status})
+    			</if>
+    			
+    			<if test="params.beginMoney !=null and  params.beginMoney !=''">
+    				and	o.appoint_money &gt;= #{params.beginMoney}
+    			</if>
+    			
+    			<if test="params.endMoney !=null and  params.endMoney !=''">
+    				and	o.appoint_money &lt;= #{params.endMoney}
+    			</if>
+    			
+    			<if test="params.custId !=null and  params.custId !=''">
+    				and	o.cust_id = #{params.custId}
+    			</if>
+    			
+    			<if test="params.beginDate !=null and  params.beginDate !=''">
+    				and	o.appoint_time &gt;= #{params.beginDate}
+    			</if>
+    			
+    			<if test="params.endDate !=null and  params.endDate !=''">
+    				and	o.appoint_time &lt;= #{params.endDate}
+    			</if>
+    			
+    			<if test="params.saleId !=null and  params.saleId !=''">
+    				and	o.sale_id = #{params.saleId}
+    			</if>
+    			
+    			<if test="params.orgName !=null and  params.orgName !=''">
+    				and	o.cust_id = #{params.custId}
+    			</if>
+    			
+    			<if test="params.productName !=null and  params.productName !=''">
+    				and	p.product_name  like concat('%',#{params.productName},'%') 
+    			</if>
+    			
+    			<if test="params.raiseName !=null and  params.raiseName !=''">
+    				and	r.raise_name = #{params.raiseName}
+    			</if>
+    			
+    			<if test="params.raiseId !=null and  params.raiseId !=''">
+    				and	r.id = #{params.raiseId}
+    			</if>
+    			
+    			 <if test="params.productUnitName !=null and  params.productUnitName !=''">
+    				and	pu.unit_name = #{params.productUnitName}
+    			</if>
+    			
+    			<if test="params.orgName !=null and  params.orgName !=''">
+    				and	g.organization_name = #{params.orgName}
+    			</if>
+    			<if test="params.saleName !=null and  params.saleName !=''">
+    				and	u.realname = #{params.saleName}
+    			</if>
+    		</where>
+    		order by o.appoint_time desc
+    		
+    </select>
+    
+    	<select id="selectDuifuPage"
+		resultType="com.alibaba.fastjson.JSONObject"
+		parameterType="java.util.HashMap">
+		select t.* from tuifu_view t 
+		<where>
+			<if test="params.productName !=null and  params.productName !=''">
+				and t.product_name like concat('%',#{params.productName},'%')
+			</if>
+
+			<if test="params.raiseName !=null and  params.raiseName !=''">
+				and t.raise_name  like concat('%',#{params.raiseName},'%') 
+			</if>
+			
+			<if  test="params.establishTime !=null and  params.establishTime !='' " >
+				and  t.establish_time=#{params.establishTime}
+			</if>
+			
+			<if  test="params.endDate !=null and  params.endDate !='' " >
+			
+				
+				and  t.order_id in (SELECT p.order_id FROM p_order_pay p WHERE p.pay_date=#{params.endDate})
+			</if>
+		</where>
+		ORDER BY  t.`establish_time` DESC,t.raise_id desc 
+	</select>
+	
+	<select id="selectYjPage"
+		resultType="com.alibaba.fastjson.JSONObject"
+		parameterType="java.util.HashMap">
+		select t.* from yj_view t
+		<where>
+			<if test="params.org !=null and  params.org !=''">
+				and (t.org1 like concat('%',#{params.org},'%') or t.org2 like concat('%',#{params.org},'%') or t.org3 like concat('%',#{params.org},'%') )
+			</if>
+			
+			<if test="params.orgName2 !=null and  params.orgName2 !=''">
+				and t.orgName2 like concat('%',#{params.orgName2},'%')
+			</if>
+			
+			<if test="params.orgName3 !=null and  params.orgName3 !=''">
+				and t.orgName3 like concat('%',#{params.orgName3},'%')
+			</if>
+			
+			<if test="params.realname !=null and  params.realname !=''">
+				and t.realname like concat('%',#{params.realname},'%')
+			</if>
+			
+			<if test="params.customer_name !=null and  params.customer_name !=''">
+				and t.customer_name like concat('%',#{params.customer_name},'%')
+			</if>
+			
+			<if test="params.productName !=null and  params.productName !=''">
+				and t.product_name like concat('%',#{params.productName},'%')
+			</if>
+			
+			<if test="params.product_class !=null and  params.product_class !=''">
+				and t.product_class like concat('%',#{params.product_class},'%')
+			</if>
+			
+			<if test="params.payDateStart !=null and  params.payDateStart !=''">
+				and t.pay_date &gt;=#{params.payDateStart} and t.pay_date &lt;=#{params.payDateEnd}
+			</if>
+			
+			<if test="params.raiseName !=null and  params.raiseName !=''">
+				and t.raise_name = #{params.raiseName}
+			</if>
+		</where>
+		GROUP BY t.order_id  order by pay_date desc
+	</select>
+	
+	
+	<select id="selectYjSum"
+		resultType="com.alibaba.fastjson.JSONObject"
+		parameterType="java.util.HashMap">
+		select SUM(appoint_money) appoint_money,
+			SUM(zbyj)zbyj,
+			SUM(zhyj)zhyj,
+			SUM(nhyj) nhyj,
+			SUM(nhyjcw) nhyjcw
+		from yj_view t
+		<where>
+			<if test="params.org !=null and  params.org !=''">
+				and (t.org1 like concat('%',#{params.org},'%') or t.org2 like concat('%',#{params.org},'%') or t.org3 like concat('%',#{params.org},'%') )
+			</if>
+			
+			<if test="params.orgName2 !=null and  params.orgName2 !=''">
+				and t.orgName2 like concat('%',#{params.orgName2},'%')
+			</if>
+			
+			<if test="params.orgName3 !=null and  params.orgName3 !=''">
+				and t.orgName3 like concat('%',#{params.orgName3},'%')
+			</if>
+			
+			<if test="params.realname !=null and  params.realname !=''">
+				and t.realname like concat('%',#{params.realname},'%')
+			</if>
+			
+			<if test="params.customer_name !=null and  params.customer_name !=''">
+				and t.customer_name like concat('%',#{params.customer_name},'%')
+			</if>
+			
+			<if test="params.productName !=null and  params.productName !=''">
+				and t.product_name like concat('%',#{params.productName},'%')
+			</if>
+			
+			<if test="params.product_class !=null and  params.product_class !=''">
+				and t.product_class like concat('%',#{params.product_class},'%')
+			</if>
+			
+			<if test="params.payDateStart !=null and  params.payDateStart !=''">
+				and t.pay_date &gt;=#{params.payDateStart} and t.pay_date &lt;=#{params.payDateEnd}
+			</if>
+			
+			<if test="params.raiseName !=null and  params.raiseName !=''">
+				and t.raise_name = #{params.raiseName}
+			</if>
+		</where>
+	</select>
+	
+	
+	
+	
+	<select id="selectYongjin"
+		resultType="com.alibaba.fastjson.JSONObject"
+		parameterType="java.util.HashMap">
+		select t.* from yongjin_view t
+		<where>
+			<if test="params.org !=null and  params.org !=''">
+				and (t.org1 like concat('%',#{params.org},'%') or t.org2 like concat('%',#{params.org},'%') or t.org3 like concat('%',#{params.org},'%') )
+			</if>
+			
+			<if test="params.orgName2 !=null and  params.orgName2 !=''">
+				and t.orgName2 like concat('%',#{params.orgName2},'%')
+			</if>
+			
+			<if test="params.orgName3 !=null and  params.orgName3 !=''">
+				and t.orgName3 like concat('%',#{params.orgName3},'%')
+			</if>
+			
+			<if test="params.realname !=null and  params.realname !=''">
+				and t.realname like concat('%',#{params.realname},'%')
+			</if>
+			
+			<if test="params.customer_name !=null and  params.customer_name !=''">
+				and t.customer_name like concat('%',#{params.customer_name},'%')
+			</if>
+			
+			<if test="params.productName !=null and  params.productName !=''">
+				and t.product_name like concat('%',#{params.productName},'%')
+			</if>
+			
+			<if test="params.product_class !=null and  params.product_class !=''">
+				and t.product_class like concat('%',#{params.product_class},'%')
+			</if>
+			
+			<if test="params.payDateStart !=null and  params.payDateStart !=''">
+				and t.pay_date &gt;=#{params.payDateStart} and t.pay_date &lt;=#{params.payDateEnd}
+			</if>
+			
+			<if test="params.raiseName !=null and  params.raiseName !=''">
+				and t.raise_name = #{params.raiseName}
+			</if>
+		</where>
+		GROUP BY t.order_id  order by pay_date desc
+	</select>
+	
+	
+	<select id="selectYongjinSum"
+		resultType="com.alibaba.fastjson.JSONObject"
+		parameterType="java.util.HashMap">
+		select SUM(appoint_money) appoint_money,
+			SUM(zbyj)zbyj,
+			SUM(zhyj)zhyj,
+			SUM(nhyj) nhyj,
+			SUM(nhyjcw) nhyjcw,
+			 SUM(yongjin) yongjin
+		from yongjin_view t
+		<where>
+			<if test="params.org !=null and  params.org !=''">
+				and (t.org1 like concat('%',#{params.org},'%') or t.org2 like concat('%',#{params.org},'%') or t.org3 like concat('%',#{params.org},'%') )
+			</if>
+			
+			<if test="params.orgName2 !=null and  params.orgName2 !=''">
+				and t.orgName2 like concat('%',#{params.orgName2},'%')
+			</if>
+			
+			<if test="params.orgName3 !=null and  params.orgName3 !=''">
+				and t.orgName3 like concat('%',#{params.orgName3},'%')
+			</if>
+			
+			<if test="params.realname !=null and  params.realname !=''">
+				and t.realname like concat('%',#{params.realname},'%')
+			</if>
+			
+			<if test="params.customer_name !=null and  params.customer_name !=''">
+				and t.customer_name like concat('%',#{params.customer_name},'%')
+			</if>
+			
+			<if test="params.productName !=null and  params.productName !=''">
+				and t.product_name like concat('%',#{params.productName},'%')
+			</if>
+			
+			<if test="params.product_class !=null and  params.product_class !=''">
+				and t.product_class like concat('%',#{params.product_class},'%')
+			</if>
+			
+			<if test="params.payDateStart !=null and  params.payDateStart !=''">
+				and t.pay_date &gt;=#{params.payDateStart} and t.pay_date &lt;=#{params.payDateEnd}
+			</if>
+			
+			<if test="params.raiseName !=null and  params.raiseName !=''">
+				and t.raise_name = #{params.raiseName}
+			</if>
+		</where>
+	</select>
+	
+	<select id="selectAllOrderByUserAndRaise" resultType="com.alibaba.fastjson.JSONObject"   >
+			SELECT SUM(p.appoint_money)  appoint_money ,sale_id userId FROM p_order  p WHERE `status` in (2,4) AND raise_id=#{raiseId} group by p.sale_id
+	</select>
+	
+	
+	
+	
+	<select id="getSumMoneyByProductId"  resultType="java.math.BigDecimal" >
+			SELECT
+					SUM(p.appoint_money) appoint_money
+				FROM
+					p_order p
+				WHERE
+					`status` IN (2, 4)
+				AND product_id =#{productId}
+	</select>
+    
+</mapper>

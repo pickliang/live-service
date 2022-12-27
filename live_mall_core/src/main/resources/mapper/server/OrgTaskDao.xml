@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.live_mall.modules.server.dao.OrgTaskDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.live_mall.modules.server.entity.OrgTaskEntity" id="orgTaskMap">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="date" column="date"/>
+        <result property="org1" column="org1"/>
+        <result property="org2" column="org2"/>
+        <result property="org3" column="org3"/>
+        <result property="org4" column="org4"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createDate" column="create_date"/>
+        <result property="uptBy" column="upt_by"/>
+        <result property="uptDate" column="upt_date"/>
+        <result property="delBy" column="del_by"/>
+        <result property="delDate" column="del_date"/>
+        <result property="delFlag" column="del_flag"/>
+    </resultMap>
+	
+
+
+</mapper>

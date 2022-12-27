@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.live_mall.modules.server.dao.ProductCashDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.live_mall.modules.server.entity.ProductCashEntity" id="productCashMap">
+        <result property="id" column="id"/>
+        <result property="orderNo" column="order_no"/>
+        <result property="productName" column="product_name"/>
+        <result property="raiseName" column="raise_name"/>
+        <result property="customerName" column="customer_name"/>
+        <result property="org" column="org"/>
+        <result property="realname" column="realname"/>
+        <result property="cardNum" column="card_num"/>
+        <result property="appointMoney" column="appoint_money"/>
+        <result property="bankNo" column="bank_no"/>
+        <result property="openBank" column="open_bank"/>
+        <result property="branch" column="branch"/>
+        <result property="startDate" column="start_date"/>
+        <result property="endDate" column="end_date"/>
+        <result property="qsNum" column="qs_num"/>
+        <result property="syRate" column="sy_rate"/>
+        <result property="endBackMoeny" column="end_back_moeny"/>
+        <result property="totalMoney" column="total_money"/>
+        <result property="btMoney" column="bt_money"/>
+        <result property="data" column="data"/>
+    </resultMap>
+    
+    
+    <select id="getProductCashList"  resultMap="productCashMap" >
+    	SELECT o.id order_no,p.product_name,o.customer_name,r.raise_name,v.org2 org,
+		u.realname,card_num,appoint_money,bank_no,open_bank,branch FROM p_order o 
+		 INNER JOIN p_raise r  ON o.raise_id=r.id
+		 INNER JOIN sys_user u ON u.user_id=o.sale_id
+		 INNER JOIN p_product p ON p.id=o.product_id
+		 LEFT JOIN  org_group_view v ON v.org_id=o.org_id
+		WHERE o.`status`=4  
+		<if test="productId !=null ">
+			o.product_id=#{productId}
+		</if>
+    </select>
+
+
+</mapper>

@@ -27,6 +27,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.util.*;
 
 @RestController
@@ -288,6 +291,9 @@ public class ExcelController {
 			HistoryDuiFuEntity entity = new HistoryDuiFuEntity();
 			BeanUtils.copyProperties(record, entity);
 			entity.setId(String.valueOf(IdWorker.getId()));
+			entity.setAppointMoney(stringToBigDecimal(record.getSubscriptionAmount()));
+			entity.setPrincipalInterest(stringToBigDecimal(record.getPrincipalAndInterest()));
+			entity.setTotalPrincipalInterest(stringToBigDecimal(record.getTotalPrincipalAndInterest()));
 			entity.setValueDate(assembleDate(record.getValueDate()));
 			entity.setDueDate(assembleDate(record.getDueDate()));
 			entity.setEndDate(assembleDate(record.getEndDate()));
@@ -309,7 +315,7 @@ public class ExcelController {
 			HistoryDuifuPayEntity payEntity = new HistoryDuifuPayEntity();
 			payEntity.setHistoryDuifuId(historyDuifuId);
 			payEntity.setPayDate(assembleDate(record.getFirstPayMoneyDate()));
-			payEntity.setPayMoney(record.getFirstPayMoney());
+			payEntity.setPayMoney(stringToBigDecimal(record.getFirstPayMoney()));
 			payEntity.setNum(1);
 			payEntity.setName("第一次");
 			payEntity.setRate(record.getYield());
@@ -319,7 +325,7 @@ public class ExcelController {
 			HistoryDuifuPayEntity payEntity = new HistoryDuifuPayEntity();
 			payEntity.setHistoryDuifuId(historyDuifuId);
 			payEntity.setPayDate(assembleDate(record.getSecondPayMoneyDate()));
-			payEntity.setPayMoney(record.getSecondPayMoney());
+			payEntity.setPayMoney(stringToBigDecimal(record.getSecondPayMoney()));
 			payEntity.setNum(2);
 			payEntity.setName("第二次");
 			payEntity.setRate(record.getYield());
@@ -329,7 +335,7 @@ public class ExcelController {
 			HistoryDuifuPayEntity payEntity = new HistoryDuifuPayEntity();
 			payEntity.setHistoryDuifuId(historyDuifuId);
 			payEntity.setPayDate(assembleDate(record.getThirdPayMoneyDate()));
-			payEntity.setPayMoney(record.getThirdPayMoney());
+			payEntity.setPayMoney(stringToBigDecimal(record.getThirdPayMoney()));
 			payEntity.setNum(3);
 			payEntity.setName("第三次");
 			payEntity.setRate(record.getYield());
@@ -339,7 +345,7 @@ public class ExcelController {
 			HistoryDuifuPayEntity payEntity = new HistoryDuifuPayEntity();
 			payEntity.setHistoryDuifuId(historyDuifuId);
 			payEntity.setPayDate(assembleDate(record.getFourthPayMoneyDate()));
-			payEntity.setPayMoney(record.getFourthPayMoney());
+			payEntity.setPayMoney(stringToBigDecimal(record.getFourthPayMoney()));
 			payEntity.setNum(3);
 			payEntity.setName("第四次");
 			payEntity.setRate(record.getYield());
@@ -375,5 +381,16 @@ public class ExcelController {
 			return year + "-" + month + "-" + day;
 		}
 		return dates[0];
+	}
+
+	private BigDecimal stringToBigDecimal(String money) {
+		if (StringUtils.isBlank(money)) {
+			return BigDecimal.ZERO;
+		}
+		try {
+			return BigDecimal.valueOf(new DecimalFormat().parse(money).doubleValue());
+		} catch (ParseException e) {
+		}
+		return BigDecimal.ZERO;
 	}
 }

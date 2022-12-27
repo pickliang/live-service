@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.live_mall.modules.server.dao.OrgBountyDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.live_mall.modules.server.entity.OrgBountyEntity" id="orgBountyMap">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="startDate" column="start_date"/>
+        <result property="endDate" column="end_date"/>
+        <result property="org1Suc" column="org1_suc"/>
+        <result property="org1Fail" column="org1_fail"/>
+        <result property="org2Suc" column="org2_suc"/>
+        <result property="org2Fail" column="org2_fail"/>
+        <result property="org3Suc" column="org3_suc"/>
+        <result property="org3Fail" column="org3_fail"/>
+        <result property="org4Suc" column="org4_suc"/>
+        <result property="org4Fail" column="org4_fail"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createDate" column="create_date"/>
+        <result property="uptBy" column="upt_by"/>
+        <result property="uptDate" column="upt_date"/>
+        <result property="delBy" column="del_by"/>
+        <result property="delDate" column="del_date"/>
+        <result property="delFlag" column="del_flag"/>
+    </resultMap>
+
+	<select id="getOne" resultType="com.alibaba.fastjson.JSONObject"  >
+			SELECT  SUM(zbyj) zbyj,SUM(nhyj) nhyj FROM org_group_view v INNER JOIN p_order o ON v.org_id=o.org_id 
+			INNER JOIN p_raise r ON r.id=o.raise_id
+			INNER JOIN yj_view y ON y.order_id=o.id
+			WHERE  (v.orgId2=#{userId} OR v.orgId3=#{userId} or v.orgId4=#{userId} OR o.sale_id=#{userId} ) 
+			AND  o.pay_date  &gt;=#{startDate} and   o.pay_date   &lt;=#{endDate} 
+	</select> 
+</mapper>

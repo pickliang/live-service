@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.live_mall.modules.server.dao.EcharsDao">
+
+		<select id="geTj1"   resultType="com.alibaba.fastjson.JSONObject" >
+			select * from tj_1_view
+		</select>
+		
+		<select id="geTj2"   resultType="com.alibaba.fastjson.JSONObject">
+			select * from tj_2_view
+		</select>
+		
+		
+		<select id="getRaiseDay"   resultType="com.alibaba.fastjson.JSONObject">
+			SELECT MAX(r.begin_date) max_date,MIN(r.end_date) min_date, DATEDIFF(MAX(r.end_date),MIN(r.begin_date)) value,p.product_name name FROM p_product p INNER JOIN p_raise r ON p.id=r.product_id GROUP BY p.id
+ 			HAVING  min_date &gt;=#{startDate} AND  min_date &lt;=#{endDate}  ;
+		</select>
+			
+		<select id="getDuifu"   resultType="com.alibaba.fastjson.JSONObject">
+				SELECT SUM(p.pay_money/10000) value,raise_name name FROM p_order o 
+					INNER JOIN p_raise r ON r.id=o.raise_id
+					INNER JOIN p_order_pay p on o.id=p.order_id 
+					WHERE p.pay_date &gt;=#{startDate} AND  p.pay_date  &lt;=#{endDate}  
+					GROUP BY o.raise_id;
+		</select>
+		
+		<select id="getRaiseDayMoeny"   resultType="com.alibaba.fastjson.JSONObject">
+				SELECT  (SELECT SUM(o.appoint_money)  FROM p_order o WHERE o.raise_id=r.id) value,r.raise_name name  FROM p_raise r 
+				WHERE r.establish_time &gt;=#{startDate}  AND  r.establish_time   &lt;=#{endDate}  ;
+		</select>
+		
+		<select id="getProductMoeny"   resultType="com.alibaba.fastjson.JSONObject">
+				SELECT  MIN(r.begin_date)  min_date,p.product_scale value,p.product_name name, p.product_type FROM p_product p  INNER JOIN p_raise r  ON p.id=r.product_id  WHERE r.`status`=4
+					GROUP BY p.id HAVING  min_date &gt;=#{startDate} AND  min_date &lt;=#{endDate}  ;
+		</select>
+		
+		<select id="geTj4"   resultType="com.alibaba.fastjson.JSONObject">
+			SELECT COUNT(*) orderNum ,SUM(o.appoint_money)  FROM p_order o  WHERE `status` in(2,4)  and  pay_date &gt;= #{startDate} and  pay_date  &lt;= #{endDate};
+		</select>
+		
+</mapper>

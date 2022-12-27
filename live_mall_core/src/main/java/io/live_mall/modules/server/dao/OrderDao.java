@@ -57,6 +57,14 @@ public interface OrderDao extends BaseMapper<OrderEntity> {
 	Double fixedIncome(@Param("cardNum") String cardNum, @Param("type") Integer type);
 
 	/**
+	 * 历史固收总资产
+	 * @param cardNum 身份证号
+	 * @param type  1-类固收(固收) 2-权益类(股权) 3-净值型(二级市场)
+	 * @return Double
+	 */
+	Double historyFixedIncome(@Param("cardNum") String cardNum, @Param("type") Integer type);
+
+	/**
 	 * 查询2条固收数据
 	 * @param cardNum 身份证号
 	 * @return

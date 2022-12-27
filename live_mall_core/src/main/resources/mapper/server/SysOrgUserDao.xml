@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.live_mall.modules.server.dao.SysOrgUserDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.live_mall.modules.server.entity.SysOrgUserEntity" id="sysOrgUserMap">
+        <result property="orgId" column="org_id"/>
+        <result property="userId" column="user_id"/>
+    </resultMap>
+	
+	<select id="getType"  resultType="com.alibaba.fastjson.JSONObject" >
+		SELECT v.`level` ,v.grade  FROM org_group_view v  INNER JOIN sys_org_user u ON  v.org_id = u.org_id  WHERE u.user_id= #{userId}
+	</select>
+
+</mapper>

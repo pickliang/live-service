@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.live_mall.modules.server.dao.ManagerUserDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.live_mall.modules.server.entity.ManagerUserEntity" id="managerUserMap">
+        <result property="id" column="id"/>
+        <result property="custodianName" column="custodian_name"/>
+        <result property="registerNo" column="register_no"/>
+        <result property="custodianType" column="custodian_type"/>
+        <result property="productsNum" column="products_num"/>
+        <result property="managerIntroduction" column="manager_introduction"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createDate" column="create_date"/>
+        <result property="uptBy" column="upt_by"/>
+        <result property="uptDate" column="upt_date"/>
+        <result property="delBy" column="del_by"/>
+        <result property="delDate" column="del_date"/>
+        <result property="delFlag" column="del_flag"/>
+    </resultMap>
+	
+	 <select id="getOneAndTj" resultType="io.live_mall.modules.server.entity.ManagerUserEntity"   >
+        SELECT 
+         m.*,
+		(SELECT SUM(raise_money)  FROM p_raise r , p_product p    WHERE r.product_id=p.id and  p.currency_type =  '¥' and  LOCATE(m.id,p.manager_people) )  planRaiseMoenyRmb,
+		(SELECT SUM(raise_money)  FROM p_raise r  , p_product p  WHERE r.product_id=p.id and  p.currency_type =  '$'  and   LOCATE(m.id,p.manager_people)  )  planRaiseMoenyUsdt,
+	   (select sum(appoint_money)  from  p_order o  , p_product p  where o.product_id=p.id and  p.currency_type =  '¥' and  o.`status` in (2,4,5)  and  LOCATE(m.id,p.manager_people) )  raiseMoneyTotalRmb,
+	   (select sum(appoint_money)  from  p_order o  , p_product p  where o.product_id=p.id and  p.currency_type =  '$' and  o.`status` in (2,4,5)   and  LOCATE(m.id,p.manager_people)  )  raiseMoneyTotalUsdt
+	    FROM p_manager_user  
+	   m where m.id=#{id}
+    </select>
+    
+   
+
+  
+	
+</mapper>

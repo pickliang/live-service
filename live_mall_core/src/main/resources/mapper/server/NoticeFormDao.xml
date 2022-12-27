@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.live_mall.modules.server.dao.NoticeFormDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.live_mall.modules.server.entity.NoticeFormEntity" id="noticeFormMap">
+        <result property="id" column="id"/>
+        <result property="noticeTitle" column="notice_title"/>
+        <result property="noticeType" column="notice_type"/>
+        <result property="abstractDetail" column="abstract_detail"/>
+        <result property="noticeContent" column="notice_content"/>
+        <result property="status" column="status"/>
+        <result property="productId" column="product_id"/>
+        <result property="relationProduct" column="relation_product"/>
+        <result property="productDetail" column="product_detail"/>
+        <result property="userId" column="user_id"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createDate" column="create_date"/>
+        <result property="uptBy" column="upt_by"/>
+        <result property="uptDate" column="upt_date"/>
+        <result property="delBy" column="del_by"/>
+        <result property="delDate" column="del_date"/>
+        <result property="delFlag" column="del_flag"/>
+    </resultMap>
+
+
+</mapper>

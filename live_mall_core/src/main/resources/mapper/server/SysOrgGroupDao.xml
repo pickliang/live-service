@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.live_mall.modules.server.dao.SysOrgGroupDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.live_mall.modules.server.entity.SysOrgGroupEntity" id="sysOrgGroupMap">
+        <result property="id" column="id"/>
+        <result property="organizationName" column="organization_name"/>
+        <result property="contactPerson" column="contact_person"/>
+        <result property="status" column="status"/>
+        <result property="organizationAbbreviation" column="organization_abbreviation"/>
+        <result property="peopleNum" column="people_num"/>
+        <result property="totalPeople" column="total_people"/>
+        <result property="personCharge" column="person_charge"/>
+        <result property="location" column="location"/>
+        <result property="workLocation" column="work_location"/>
+        <result property="remark" column="remark"/>
+        <result property="parentId" column="parent_id"/>
+        <result property="level" column="level"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createDate" column="create_date"/>
+        <result property="uptBy" column="upt_by"/>
+        <result property="uptDate" column="upt_date"/>
+        <result property="delBy" column="del_by"/>
+        <result property="delDate" column="del_date"/>
+        <result property="delFlag" column="del_flag"/>
+    </resultMap>
+	
+	
+	<select id="getOrgView"  resultType="com.alibaba.fastjson.JSONObject" >
+			select * from org_group_view
+	</select>
+	
+	
+	<select id="getOrgIds"  resultType="java.lang.String" >
+			select org_id from org_group_view  where  orgids  like concat('%',#{params.id},'%')
+				UNION 
+			select org_id from org_group_view  where  org_id=#{params.id}
+			
+	</select>
+  
+  
+  	<select id="getListByParentIdIsNull"  resultMap="sysOrgGroupMap" >
+				select 
+			`id`, `organization_name`, `contact_person`, `status`, `organization_abbreviation`, `people_num`, 
+			(select count(*) from sys_org_user u where  FIND_IN_SET(o.id,u.orgids)   ) `total_people`,
+			 `person_charge`, `location`, `location_code`, `work_location`, `remark`, `parent_id`, `level`, `create_by`, `create_date`, `upt_by`, `upt_date`, `del_by`, `del_date`, `del_flag`, `gwdj`, `grade`
+			 from sys_org_group o where ( parent_id is null or parent_id = '')
+	</select>
+
+		
+	<select id="getListByName"  resultMap="sysOrgGroupMap" >
+				select 
+			`id`, `organization_name`, `contact_person`, `status`, `organization_abbreviation`, `people_num`, 
+			(select count(*) from sys_org_user u where  FIND_IN_SET(o.id,u.orgids)   ) `total_people`,
+			 `person_charge`, `location`, `location_code`, `work_location`, `remark`, `parent_id`, `level`, `create_by`, `create_date`, `upt_by`, `upt_date`, `del_by`, `del_date`, `del_flag`, `gwdj`, `grade`
+			 from sys_org_group o where  organization_name  like concat('%',#{params.id},'%')
+	</select>
+	
+	<select id="getListByParentId"  resultMap="sysOrgGroupMap" >
+			select 
+			`id`, `organization_name`, `contact_person`, `status`, `organization_abbreviation`, `people_num`, 
+			(select count(*) from sys_org_user u where  FIND_IN_SET(o.id,u.orgids)   ) `total_people`,
+			 `person_charge`, `location`, `location_code`, `work_location`, `remark`, `parent_id`, `level`, `create_by`, `create_date`, `upt_by`, `upt_date`, `del_by`, `del_date`, `del_flag`, `gwdj`, `grade`
+			 from sys_org_group o where  parent_id = #{orgId}
+	</select>
+	
+	
+	<select id="getOrgOneView"  resultType="com.alibaba.fastjson.JSONObject" >
+			SELECT *,concat(org2,org3) allName FROM org_group_view where org_id=#{id}
+	</select>
+	
+	<delete id="removeChild"  parameterType="java.lang.String" >
+		DELETE FROM sys_org_group WHERE id in (SELECT org_id FROM  org_group_view WHERE orgids LIKE concat('%',#{ids},'%'))
+	</delete>
+
+	<select id="orgGroupIds" resultType="string">
+		SELECT id FROM sys_org_group WHERE locate(#{name}, organization_name) > 0
+	</select>
+</mapper>

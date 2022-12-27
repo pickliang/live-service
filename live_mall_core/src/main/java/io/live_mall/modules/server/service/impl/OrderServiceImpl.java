@@ -379,22 +379,30 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 		Map<String, Object> result = Maps.newHashMap();
 		// 类固收(固收)
 		Double fixedIncome = this.baseMapper.fixedIncome(cardNum, 1);
+		Double historyFixedIncome = this.baseMapper.historyFixedIncome(cardNum, 1);
+
 		// 权益类(股权)
 		Double stock = this.baseMapper.fixedIncome(cardNum, 2);
+		Double historyStock = this.baseMapper.historyFixedIncome(cardNum, 2);
 		// 净值型(二级市场)
 		Double netWorth = this.baseMapper.fixedIncome(cardNum, 3);
+		Double historyNetWorth = this.baseMapper.historyFixedIncome(cardNum, 3);
 
-		result.put("totalAssets", fixedIncome + stock + netWorth);
-		result.put("fixedIncome", fixedIncome);
-		result.put("stock", stock);
-		result.put("netWorth", netWorth);
+		result.put("totalAssets", fixedIncome + stock + netWorth + historyFixedIncome + historyStock + historyNetWorth);
+		result.put("fixedIncome", fixedIncome + historyFixedIncome);
+		result.put("stock", stock + historyStock);
+		result.put("netWorth", netWorth + historyNetWorth);
 		List<JSONObject> fixedIncomeList = this.baseMapper.customerDuifuLimit(cardNum);
 		fixedIncomeList.forEach(order -> {
-			Date establishTime = order.getDate("establish_time");
 			Integer dateNum = order.getInteger("date_num");
 			String end_date = "";
-			if (Objects.nonNull(establishTime) && Objects.nonNull(dateNum)) {
-				end_date = DateUtil.formatDate(DateUtil.offsetMonth(establishTime, dateNum));
+			if (dateNum == 0) {
+				end_date = order.getString("end_date");
+			}else {
+				Date establishTime = order.getDate("establish_time");
+				if (Objects.nonNull(establishTime) && Objects.nonNull(dateNum)) {
+					end_date = DateUtil.formatDate(DateUtil.offsetMonth(establishTime, dateNum));
+				}
 			}
 			order.put("end_date", end_date);
 			OrderPayEntity orderPayEntity = this.baseMapper.nextOrder(order.getString("orderId"));

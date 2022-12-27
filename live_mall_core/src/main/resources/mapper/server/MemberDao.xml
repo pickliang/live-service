@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.live_mall.modules.server.dao.MemberDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.live_mall.modules.server.entity.MemberEntity" id="memberMap">
+        <result property="memberNo" column="member_no"/>
+        <result property="custName" column="cust_name"/>
+        <result property="sex" column="sex"/>
+        <result property="cardNo" column="card_no"/>
+        <result property="cardType" column="card_type"/>
+    </resultMap>
+		
+		
+		<select id="getTj"  resultType="com.alibaba.fastjson.JSONObject"   >
+				SELECT  
+				  (SELECT SUM(appoint_money) FROM p_order WHERE cust_id = #{custId}  and sale_id=#{salesId} AND   `status` in (2,4)) lj,
+					(SELECT SUM(appoint_money) FROM p_order o INNER JOIN  p_product p on  p.id=o.product_id  WHERE o.cust_id = #{custId}  and o.sale_id=#{salesId} AND onetype='私募基金' AND  o.`status` in (2,4)) smjj,
+				   	(SELECT SUM(appoint_money) FROM p_order o INNER JOIN  p_product p on  p.id=o.product_id  WHERE o.cust_id =  #{custId}  and o.sale_id=#{salesId} AND onetype='私募债' AND  o.`status` in (2,4)) smz,
+					(SELECT SUM(appoint_money) FROM p_order o INNER JOIN  p_product p on  p.id=o.product_id  WHERE o.cust_id =  #{custId}  and o.sale_id=#{salesId}  AND onetype='资管计划' AND  o.`status` in (2,4)) zgjh,
+					(SELECT SUM(appoint_money) FROM p_order o INNER JOIN  p_product p on  p.id=o.product_id  WHERE o.cust_id =  #{custId}  and o.sale_id=#{salesId} AND onetype='信托' AND  o.`status` in (2,4)) xt
+			</select>
+
+</mapper>

@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.live_mall.modules.server.dao.RaiseDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.live_mall.modules.server.entity.RaiseEntity" id="raiseMap">
+        <result property="id" column="id"/>
+        <result property="isShow" column="is_show"/>
+        <result property="raiseName" column="raise_name"/>
+        <result property="raiseMoney" column="raise_money"/>
+        <result property="establishScale" column="establish_scale"/>
+        <result property="investorNum" column="investor_num"/>
+        <result property="beginDate" column="begin_date"/>
+        <result property="endDate" column="end_date"/>
+        <result property="deadlineTime" column="deadline_time"/>
+        <result property="deadlineTimeType" column="deadline_time_type"/>
+        <result property="orderStandard" column="order_standard"/>
+        <result property="smallOrderNum" column="small_order_num"/>
+        <result property="bigOrderMoney" column="big_order_money"/>
+        <result property="productUnitId" column="product_unit_id"/>
+        <result property="productId" column="product_id"/>
+        <result property="commissionCalculationMethod" column="commission_calculation_method"/>
+        <result property="isMyselfPeople" column="is_myself_people"/>
+        <result property="commission" column="commission"/>
+        <result property="performanceCoefficient" column="performance_coefficient"/>
+        <result property="rateDesc" column="rate_desc"/>
+        <result property="status" column="status"/>
+        <result property="establishTime" column="establish_time"/>
+        <result property="tranType" column="tran_type"/>
+        <result property="updateImage" column="update_image"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createDate" column="create_date"/>
+        <result property="uptBy" column="upt_by"/>
+        <result property="uptDate" column="upt_date"/>
+        <result property="delBy" column="del_by"/>
+        <result property="delDate" column="del_date"/>
+        <result property="delFlag" column="del_flag"/>
+    </resultMap>
+
+
+    <select id="getRaiseSuccessPage"   resultType="com.alibaba.fastjson.JSONObject" parameterType="java.util.HashMap"   >
+    	SELECT
+				r.id id,
+				pf.id pfd,
+				r.df_type dfType,
+				pf.product_date productDate,
+				pf.product_name productName,
+				pf.record_no recordNo,
+				r.raise_name raiseName,
+				r.product_id productId,
+				r.method method,
+				r.product_end_date productEndDate,
+        r.day_num as dayNum,
+        r.day_year_num as dayYearNum,
+				(
+					case  r.`status` WHEN 4  THEN (SELECT
+						COUNT(id)
+					FROM
+						p_order o
+					WHERE
+						o.raise_id = r.id
+					AND o.`status`in ( 4 )) ELSE (SELECT
+						COUNT(id)
+					FROM
+						p_order o
+					WHERE
+						o.raise_id = r.id
+					AND o.`status`in ( -1,0,1,2 )) end
+
+				) orderNum,
+        		(
+					case r.`status` WHEN 4  THEN (SELECT
+						sum(appoint_money)
+					FROM
+						p_order o
+					WHERE
+						o.raise_id = r.id
+					AND o.`status` in ( 4 ))  ELSE (SELECT
+						sum(appoint_money)
+					FROM
+						p_order o
+					WHERE
+						o.raise_id = r.id
+					AND o.`status` in ( -1,0,1,2 ))  end
+				) appointMoney,
+				r.establish_time establishTime,
+				(
+					SELECT
+						count(DISTINCT of.org_id)
+					FROM
+						p_order of
+					WHERE
+						of.raise_id = r.id  and  of.`status`in (-1,0,1,2,4)
+				) orgNum
+			FROM
+				p_raise r
+			LEFT JOIN p_product pf ON r.product_id = pf.id
+        <where>
+            r.status =4
+            <if test="params.raiseName !=null and params.raiseName!=''">and r.raise_name like concat('%',#{params.raiseName},'%')</if>
+            <if test="params.productName !=null and params.productName !=''">and pf.product_name   like  '%${params.productName}%' </if>
+
+            <if test="params.method == 1">
+				and r.df_type is null
+			</if>
+
+			<if test="params.method ==2">
+				and r.df_type is not null
+			</if>
+			<if  test="params.establishTime !=null and  params.establishTime !='' " >
+				and  r.establish_time=#{params.establishTime}
+			</if>
+        </where>
+        ORDER BY  establish_time desc
+    </select>
+
+
+    <select id="getNewRaiseRun"  resultType="io.live_mall.modules.server.entity.RaiseEntity" >
+    		SELECT
+				r.*, ( case  r.`status` WHEN 4  THEN (SELECT
+						COUNT(id)
+					FROM
+						p_order o
+					WHERE
+						o.raise_id = r.id
+					AND o.`status`in ( 4 )) ELSE (SELECT
+						COUNT(id)
+					FROM
+						p_order o
+					WHERE
+						o.raise_id = r.id
+					AND o.`status`in ( -1,0,1,2 )) end )
+				 orderNum,
+				(case r.`status` WHEN 4  THEN (SELECT
+						sum(appoint_money)
+					FROM
+						p_order o
+					WHERE
+						o.raise_id = r.id
+					AND o.`status` in ( 4 ))  ELSE (SELECT
+						sum(appoint_money)
+					FROM
+						p_order o
+					WHERE
+						o.raise_id = r.id
+					AND o.`status` in ( -1,0,1,2 ))  end ) wcje
+			FROM
+				p_raise r     WHERE  r.`status`='1' and r.product_id=#{productId} LIMIT 1
+    </select>
+
+
+	<select id="getNewRaiseLast"  resultType="io.live_mall.modules.server.entity.RaiseEntity" >
+    		SELECT
+				r.*, ( case  r.`status` WHEN 4  THEN (SELECT
+						COUNT(id)
+					FROM
+						p_order o
+					WHERE
+						o.raise_id = r.id
+					AND o.`status`in ( 4 )) ELSE (SELECT
+						COUNT(id)
+					FROM
+						p_order o
+					WHERE
+						o.raise_id = r.id
+					AND o.`status`in ( -1,0,1,2 )) end )
+				 orderNum,
+				(case r.`status` WHEN 4  THEN (SELECT
+						sum(appoint_money)
+					FROM
+						p_order o
+					WHERE
+						o.raise_id = r.id
+					AND o.`status` in ( 4 ))  ELSE (SELECT
+						sum(appoint_money)
+					FROM
+						p_order o
+					WHERE
+						o.raise_id = r.id
+					AND o.`status` in ( -1,0,1,2 ))  end ) wcje
+			FROM
+				p_raise r    WHERE  r.`status` >='0' and r.product_id=#{productId}   ORDER BY  create_date DESC LIMIT 1
+    </select>
+
+
+
+    <select id="getMaxEndDate" >
+    		SELECT MAX(end_date) FROM p_raise WHERE  product_id=#{productId}
+    </select>
+
+
+
+
+
+</mapper>

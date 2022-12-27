@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * 结算信息
@@ -31,7 +32,7 @@ public class HistoryDuifuPayEntity implements Serializable {
 	/**
 	 * 支付金额
 	 */
-	private String payMoney;
+	private BigDecimal payMoney;
 	/**
 	 * 支付时间
 	 */

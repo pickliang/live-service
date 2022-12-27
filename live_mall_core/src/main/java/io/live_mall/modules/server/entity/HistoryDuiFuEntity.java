@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -61,7 +62,7 @@ public class HistoryDuiFuEntity {
     /**
      * 认购金额/元
      */
-    private String subscriptionAmount;
+    private BigDecimal appointMoney;
     /**
      * 银行账号
      */
@@ -113,11 +114,11 @@ public class HistoryDuiFuEntity {
     /**
      * 到期还款本息
      */
-    private String principalAndInterest;
+    private BigDecimal principalInterest;
     /**
      * 本息合计
      */
-    private String totalPrincipalAndInterest;
+    private BigDecimal totalPrincipalInterest;
     /**
      * 备注
      */
