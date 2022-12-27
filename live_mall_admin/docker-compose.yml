@@ -1,0 +1,8 @@
+version: '2'
+services:
+  live_mall-admin:
+    image: renren/fast
+    ports:
+      - "8080:8080"
+    environment:
+      - spring.profiles.active=dev
