@@ -128,6 +128,10 @@ public class HistoryDuiFuEntity {
      */
     private String productCategory;
     /**
+     * 产品分类
+     */
+    private String productClass;
+    /**
      * 贴息金额
      */
     private String discountAmount;

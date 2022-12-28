@@ -1,14 +1,11 @@
 package io.live_mall.modules.server.dao;
 
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-
 import io.live_mall.modules.server.entity.ProductEntity;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 产品列表
@@ -30,4 +27,6 @@ public interface ProductDao extends BaseMapper<ProductEntity> {
 	Integer  getXsjgs(String porductId);
 	
 	JSONObject getTj(@Param("params")  JSONObject params);
+
+	String getProductClassByProductName(String productName);
 }

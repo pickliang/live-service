@@ -11,10 +11,7 @@ import io.live_mall.common.utils.ImportExcelHelper;
 import io.live_mall.modules.server.entity.HistoryDuiFuEntity;
 import io.live_mall.modules.server.entity.HistoryDuifuPayEntity;
 import io.live_mall.modules.server.model.DuiFuExcelImporter;
-import io.live_mall.modules.server.service.HistoryDuiFuService;
-import io.live_mall.modules.server.service.HistoryDuifuPayService;
-import io.live_mall.modules.server.service.OrderService;
-import io.live_mall.modules.server.service.YjViewService;
+import io.live_mall.modules.server.service.*;
 import io.live_mall.modules.sys.service.SysUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -53,6 +50,8 @@ public class ExcelController {
 	private HistoryDuiFuService historyDuiFuService;
 	@Autowired
 	private HistoryDuifuPayService historyDuifuPayService;
+	@Autowired
+	private ProductService productService;
 	
 	//业绩名单
 	 @RequestMapping("/user_import")
@@ -290,7 +289,12 @@ public class ExcelController {
 		list.forEach(record -> {
 			HistoryDuiFuEntity entity = new HistoryDuiFuEntity();
 			BeanUtils.copyProperties(record, entity);
+			String productClass = productService.getProductClassByProductName(record.getProductName());
+			if (StringUtils.isBlank(productClass)) {
+				productClass = "类固收";
+			}
 			entity.setId(String.valueOf(IdWorker.getId()));
+			entity.setProductClass(productClass);
 			entity.setAppointMoney(stringToBigDecimal(record.getSubscriptionAmount()));
 			entity.setPrincipalInterest(stringToBigDecimal(record.getPrincipalAndInterest()));
 			entity.setTotalPrincipalInterest(stringToBigDecimal(record.getTotalPrincipalAndInterest()));

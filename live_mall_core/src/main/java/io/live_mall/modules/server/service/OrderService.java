@@ -75,6 +75,7 @@ public interface OrderService extends IService<OrderEntity> {
 	PageUtils customerDuifuPage(Map<String, Object> params, String cardNum);
 
 	Map<String, Object> totalAssets(String cardNum);
+
 	Map<String, Object> customerAssets(String cardNum);
 
 

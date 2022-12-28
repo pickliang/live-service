@@ -1,22 +1,11 @@
 package io.live_mall.modules.server.service.impl;
 
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-
-import cn.hutool.core.date.DateUtil;
 import io.live_mall.common.utils.PageUtils;
 import io.live_mall.common.utils.Query;
 import io.live_mall.modules.server.dao.ProductDao;
@@ -24,11 +13,14 @@ import io.live_mall.modules.server.entity.ManagerUserEntity;
 import io.live_mall.modules.server.entity.ProductEntity;
 import io.live_mall.modules.server.entity.ProductUnitEntity;
 import io.live_mall.modules.server.entity.RaiseEntity;
-import io.live_mall.modules.server.service.ManagerUserService;
-import io.live_mall.modules.server.service.OrderService;
-import io.live_mall.modules.server.service.ProductService;
-import io.live_mall.modules.server.service.ProductUnitService;
-import io.live_mall.modules.server.service.RaiseService;
+import io.live_mall.modules.server.service.*;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.util.List;
 
 
 @Service("productService")
@@ -198,7 +190,8 @@ public class ProductServiceImpl extends ServiceImpl<ProductDao, ProductEntity> i
 		
 	}
 
-
-    
-
+	@Override
+	public String getProductClassByProductName(String productName) {
+		return null;
+	}
 }

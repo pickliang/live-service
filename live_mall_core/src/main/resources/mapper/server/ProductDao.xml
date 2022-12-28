@@ -482,5 +482,7 @@
 			    )   zyyjeUS
 	</select>
 	
-	
+	<select id="getProductClassByProductName" resultType="string">
+		SELECT product_class FROM `p_product` WHERE product_name = #{productName}
+	</select>
 </mapper>

@@ -1,12 +1,11 @@
 package io.live_mall.modules.server.service;
 
-import java.util.List;  
-
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.IService;
-
 import io.live_mall.common.utils.PageUtils;
 import io.live_mall.modules.server.entity.ProductEntity;
+
+import java.util.List;
 
 /**
  * 产品列表
@@ -26,5 +25,7 @@ public interface ProductService extends IService<ProductEntity> {
 	JSONObject getTj(JSONObject params);
 
 	void uptStatus(String productId);
+
+	String getProductClassByProductName(String productName);
 }
 
