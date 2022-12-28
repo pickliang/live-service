@@ -79,3 +79,7 @@ renren:
     header: token
 temp:
    path: E:\\work\\sxhl\\ipo\\five_way_ipo\\doc
+wx:
+  applets:
+    appid: wx3ffa9c552e433eac
+    secret: c3debcee0ed27cc769d5235fe7d39069
