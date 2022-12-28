@@ -64,7 +64,7 @@ public class OrderController {
 
     /**
      * 产品详情
-     * @param id 订单id
+     * @param orderId 订单id
      * @return
      */
     @GetMapping(value = "/product-info")
