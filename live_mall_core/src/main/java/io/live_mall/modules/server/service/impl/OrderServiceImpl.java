@@ -12,8 +12,10 @@ import io.live_mall.common.exception.RRException;
 import io.live_mall.common.utils.DateUtils;
 import io.live_mall.common.utils.PageUtils;
 import io.live_mall.common.utils.Query;
+import io.live_mall.modules.server.dao.HistoryDuiFuDao;
 import io.live_mall.modules.server.dao.HistoryDuifuPayDao;
 import io.live_mall.modules.server.dao.OrderDao;
+import io.live_mall.modules.server.dao.ProductDao;
 import io.live_mall.modules.server.entity.*;
 import io.live_mall.modules.server.model.OrderModel;
 import io.live_mall.modules.server.model.OrderUtils;
@@ -55,7 +57,11 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 	@Autowired
 	OrderPayService orderPaySerivce;
 	@Autowired
+	private HistoryDuiFuDao historyDuiFuDao;
+	@Autowired
 	private HistoryDuifuPayDao historyDuifuPayDao;
+	@Autowired
+	private ProductDao productDao;
 
 	
 	@Override
@@ -462,5 +468,27 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 		result.put("expectedIncome", expectedIncome + historyExpectedIncome);
 		result.put("investing", investing + historyInvesting);
 		return result;
+	}
+
+	@Override
+	public JSONObject productInfo(String orderId) {
+		JSONObject productInfo = new JSONObject();
+		OrderEntity orderEntity = this.baseMapper.selectById(orderId);
+		if (Objects.isNull(orderEntity)) {
+			HistoryDuiFuEntity duiFuEntity = historyDuiFuDao.selectById(orderId);
+			productInfo = productDao.getProductInfo(duiFuEntity.getProductName());
+		}else {
+			ProductEntity productEntity = productDao.selectById(orderEntity.getProductId());
+			productInfo.put("financing_party", productEntity.getFinancingParty());
+			productInfo.put("investment_mode", productEntity.getInvestmentMode());
+			productInfo.put("investment_target", productEntity.getInvestmentTarget());
+			productInfo.put("product_term", productEntity.getProductTerm());
+			productInfo.put("risk_level", productEntity.getRiskLevel());
+			productInfo.put("product_label", productEntity.getProductLabel());
+			productInfo.put("product_highlights", productEntity.getProductHighlights());
+			productInfo.put("other_data", productEntity.getOtherData());
+		}
+
+		return productInfo;
 	}
 }

@@ -29,4 +29,6 @@ public interface ProductDao extends BaseMapper<ProductEntity> {
 	JSONObject getTj(@Param("params")  JSONObject params);
 
 	String getProductClassByProductName(String productName);
+
+	JSONObject getProductInfo(String productName);
 }

@@ -485,4 +485,20 @@
 	<select id="getProductClassByProductName" resultType="string">
 		SELECT product_class FROM `p_product` WHERE product_name = #{productName}
 	</select>
+
+	<select id="getProductInfo" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT
+			financing_party,
+			Investment_mode,
+			Investment_target,
+			product_term,
+			risk_level,
+			product_label,
+			product_highlights,
+			other_data
+		FROM
+			p_product
+		WHERE
+			product_name = #{productName}
+	</select>
 </mapper>

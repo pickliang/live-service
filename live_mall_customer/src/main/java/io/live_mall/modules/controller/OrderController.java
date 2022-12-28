@@ -1,5 +1,6 @@
 package io.live_mall.modules.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import io.live_mall.common.utils.PageUtils;
 import io.live_mall.common.utils.R;
 import io.live_mall.common.utils.ShiroUtils;
@@ -8,10 +9,7 @@ import io.live_mall.modules.server.service.OrderService;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 import java.util.Objects;
@@ -62,5 +60,16 @@ public class OrderController {
         CustomerUserModel userEntity = ShiroUtils.getUserEntity();
         Map<String, Object> result = orderService.customerAssets(userEntity.getCardNum());
         return R.ok().put("data", result);
+    }
+
+    /**
+     * 产品详情
+     * @param id 订单id
+     * @return
+     */
+    @GetMapping(value = "/product-info")
+    public R info(@RequestParam String orderId) {
+        JSONObject productInfo = orderService.productInfo(orderId);
+        return R.ok().put("data", productInfo);
     }
 }
