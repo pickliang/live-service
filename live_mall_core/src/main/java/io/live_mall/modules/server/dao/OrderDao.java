@@ -88,11 +88,24 @@ public interface OrderDao extends BaseMapper<OrderEntity> {
 	Double annualIncome(String cardNum);
 
 	/**
+	 * 历史数据本年度收益
+	 * @param cardNum 证件号
+	 * @return Double
+	 */
+	Double historyAnnualIncome(String cardNum);
+
+	/**
 	 * 未来预期收益
 	 * @param cardNum 证件号
 	 * @return Double
 	 */
 	Double expectedIncome(String cardNum);
+	/**
+	 * 历史数据未来预期收益
+	 * @param cardNum 证件号
+	 * @return Double
+	 */
+	Double historyExpectedIncome(String cardNum);
 
 	/**
 	 * 订单号
@@ -110,5 +123,17 @@ public interface OrderDao extends BaseMapper<OrderEntity> {
 	 */
 	List<String> customerHistoryDuifuIds(@Param("cardNum") String cardNum, @Param("type") Integer type);
 
+	/**
+	 * 在投订单金额
+	 * @param cardNum 身份证号
+	 * @return Double
+	 */
+	Double investingOrderMoney(String cardNum);
+	/**
+	 * 历史在投订单金额
+	 * @param cardNum 身份证号
+	 * @return Double
+	 */
+	Double historyInvestingOrderMoney(String cardNum);
 
 }
