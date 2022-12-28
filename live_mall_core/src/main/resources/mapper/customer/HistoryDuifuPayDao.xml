@@ -2,5 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="io.live_mall.modules.server.dao.HistoryDuifuPayDao">
-
+    <select id="nextHistoryDuifuPay" resultType="io.live_mall.modules.server.entity.HistoryDuifuPayEntity">
+        SELECT pay_date, pay_money FROM history_duifu_pay WHERE history_duifu_id = #{historyDuifuId} AND pay_date > CURRENT_DATE ORDER BY pay_date LIMIT 1
+    </select>
 </mapper>

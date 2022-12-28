@@ -260,6 +260,7 @@
 			o.appoint_money * 10000 AS appoint_money,
 			DATE_FORMAT( o.appoint_time, '%Y-%m-%d' ) appoint_time,
 			r.establish_time,
+		    o.date_num,
 			CONCAT( o.date_num, o.date_uint ) AS term
 		FROM
 			p_order AS o
@@ -283,25 +284,24 @@
 						</otherwise>
 					</choose>
 			)
-		<choose>
-			<when test="type == 2">
-				AND p.product_class = '权益类'
-			</when>
-			<when test="type == 3">
-				AND p.product_class = '净值型'
-			</when>
-			<otherwise>
-				AND p.product_class = '类固收'
-			</otherwise>
-		</choose>
+		<if test="type == 1">
+			AND p.product_class = '类固收'
+		</if>
+		<if test="type == 2">
+			AND p.product_class = '权益类'
+		</if>
+		<if test="type == 3">
+			AND p.product_class = '净值型'
+		</if>
 		UNION ALL
 		SELECT
 			product_name,
-			product_category AS product_class,
-			id,
+		    product_class,
+			id AS order_id,
 		    appoint_money,
 			value_date AS appoint_time,
-			due_date AS establish_time,
+		    end_date AS establish_time,
+			0 AS date_num,
 			term
 		FROM
 			history_duifu
@@ -322,17 +322,15 @@
 			</otherwise>
 		</choose>
 		)
-		<choose>
-			<when test="type == 2">
-				AND product_class = '权益类'
-			</when>
-			<when test="type == 3">
-				AND product_class = '净值型'
-			</when>
-			<otherwise>
-				AND product_class = '类固收'
-			</otherwise>
-		</choose>
+		<if test="type == 1">
+			AND product_class = '类固收'
+		</if>
+		<if test="type == 2">
+			AND product_class = '权益类'
+		</if>
+		<if test="type == 3">
+			AND product_class = '净值型'
+		</if>
 	</select>
 
 	<select id="fixedIncome" resultType="double">
@@ -399,7 +397,7 @@
 		UNION ALL
 		SELECT
 			product_name,
-			product_category AS product_class,
+			product_class,
 			id,
 			appoint_money,
 			value_date AS appoint_time,

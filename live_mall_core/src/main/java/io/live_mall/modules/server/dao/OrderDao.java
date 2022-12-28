@@ -46,6 +46,14 @@ public interface OrderDao extends BaseMapper<OrderEntity> {
 	//	add by lyg for sum appoint-money and count customer at 20220516
     JSONObject selectSumOrder(@Param("params")Map<String, Object> params);
 
+	/**
+	 * 订单列表
+	 * @param page 分页
+	 * @param cardNum 证件号
+	 * @param type 0-全部 1-固收 2-股权 3-二级市场
+	 * @param isHistory 1-在投订单 2-历史订单
+	 * @return IPage<JSONObject>
+	 */
 	IPage<JSONObject> customerDuifuPage(IPage<JSONObject> page, @Param("cardNum") String cardNum, @Param("type") Integer type, @Param("isHistory") Integer isHistory);
 
 	/**
@@ -65,7 +73,7 @@ public interface OrderDao extends BaseMapper<OrderEntity> {
 	Double historyFixedIncome(@Param("cardNum") String cardNum, @Param("type") Integer type);
 
 	/**
-	 * 查询2条固收数据
+	 * 查询2条固收数据 废弃
 	 * @param cardNum 身份证号
 	 * @return
 	 */

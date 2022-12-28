@@ -12,6 +12,7 @@ import io.live_mall.common.exception.RRException;
 import io.live_mall.common.utils.DateUtils;
 import io.live_mall.common.utils.PageUtils;
 import io.live_mall.common.utils.Query;
+import io.live_mall.modules.server.dao.HistoryDuifuPayDao;
 import io.live_mall.modules.server.dao.OrderDao;
 import io.live_mall.modules.server.entity.*;
 import io.live_mall.modules.server.model.OrderModel;
@@ -49,14 +50,12 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
 	@Autowired
 	SmsService smsService;
-
-
-
 	@Autowired
 	private MemberService memberService;
-	
 	@Autowired
 	OrderPayService orderPaySerivce;
+	@Autowired
+	private HistoryDuifuPayDao historyDuifuPayDao;
 
 	
 	@Override
@@ -392,12 +391,24 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 		result.put("fixedIncome", fixedIncome + historyFixedIncome);
 		result.put("stock", stock + historyStock);
 		result.put("netWorth", netWorth + historyNetWorth);
-		List<JSONObject> fixedIncomeList = this.baseMapper.customerDuifuLimit(cardNum);
-		fixedIncomeList.forEach(order -> {
+		// 订单列表
+		Map<String, Object> params = Maps.newHashMap();
+		params.put("page", 1);
+		params.put("limit", 2);
+		IPage<JSONObject> pages = this.baseMapper.customerDuifuPage(new Query<JSONObject>().getPage(params), cardNum, 0, 1);
+		List<JSONObject> fixedIncomeList = assembleOrderItem(pages.getRecords());
+		List<JSONObject> historyFixedIncomeList = assembleOrderItem(pages.getRecords());
+		result.put("fixedIncomeList", fixedIncomeList);
+		result.put("historyFixedIncomeList", historyFixedIncomeList);
+		return result;
+	}
+
+	private List<JSONObject> assembleOrderItem(List<JSONObject> records) {
+		records.forEach(order -> {
 			Integer dateNum = order.getInteger("date_num");
 			String end_date = "";
 			if (dateNum == 0) {
-				end_date = order.getString("end_date");
+				end_date = order.getString("establish_time");
 			}else {
 				Date establishTime = order.getDate("establish_time");
 				if (Objects.nonNull(establishTime) && Objects.nonNull(dateNum)) {
@@ -405,18 +416,23 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 				}
 			}
 			order.put("end_date", end_date);
-			OrderPayEntity orderPayEntity = this.baseMapper.nextOrder(order.getString("orderId"));
+			OrderPayEntity orderPayEntity = this.baseMapper.nextOrder(order.getString("order_id"));
 			String pay_date = "";
 			String pay_money = "";
 			if (Objects.nonNull(orderPayEntity)) {
 				pay_date = orderPayEntity.getPayDate();
 				pay_money = String.valueOf(orderPayEntity.getPayMoney());
+			}else {
+				HistoryDuifuPayEntity duifuPayEntity = historyDuifuPayDao.nextHistoryDuifuPay(order.getString("order_id"));
+				if (Objects.nonNull(duifuPayEntity)) {
+					pay_date = duifuPayEntity.getPayDate();
+					pay_money = String.valueOf(duifuPayEntity.getPayMoney());
+				}
 			}
 			order.put("pay_date", pay_date);
 			order.put("pay_money", pay_money);
 		});
-		result.put("fixedIncomeList", fixedIncomeList);
-		return result;
+		return records;
 	}
 
 	@Override

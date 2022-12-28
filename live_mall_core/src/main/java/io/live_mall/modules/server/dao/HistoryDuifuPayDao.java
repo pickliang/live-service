@@ -6,4 +6,10 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface HistoryDuifuPayDao extends BaseMapper<HistoryDuifuPayEntity> {
+    /**
+     * 下一个对付日期
+     * @param historyDuifuId id
+     * @return
+     */
+    HistoryDuifuPayEntity nextHistoryDuifuPay(String historyDuifuId);
 }
