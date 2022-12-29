@@ -425,18 +425,45 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 			OrderPayEntity orderPayEntity = this.baseMapper.nextOrder(order.getString("order_id"));
 			String pay_date = "";
 			String pay_money = "";
+			List<Map<String, Object>> maps = new ArrayList<>();
+			String now = DateUtils.format(new Date(), DateUtils.DATE_PATTERN);
 			if (Objects.nonNull(orderPayEntity)) {
 				pay_date = orderPayEntity.getPayDate();
 				pay_money = String.valueOf(orderPayEntity.getPayMoney());
+				List<OrderPayEntity> orderPayList = orderPaySerivce.list(Wrappers.lambdaQuery(OrderPayEntity.class)
+						.eq(OrderPayEntity::getOrderId, order.getString("order_id")).orderByAsc(OrderPayEntity::getPayDate));
+				if (!orderPayList.isEmpty()) {
+					orderPayList.forEach(pay -> {
+						Map<String, Object> map = Maps.newHashMap();
+						String payType = pay.getPayDate().compareTo(now) < 0 ? "已付" : "";
+						map.put("payDate", pay.getPayDate());
+						map.put("payMoney", pay.getPayMoney() + "元");
+						map.put("payType", payType);
+						maps.add(map);
+					});
+				}
 			}else {
 				HistoryDuifuPayEntity duifuPayEntity = historyDuifuPayDao.nextHistoryDuifuPay(order.getString("order_id"));
 				if (Objects.nonNull(duifuPayEntity)) {
 					pay_date = duifuPayEntity.getPayDate();
 					pay_money = String.valueOf(duifuPayEntity.getPayMoney());
 				}
+				List<HistoryDuifuPayEntity> payEntityList = historyDuifuPayDao.selectList(Wrappers.lambdaQuery(HistoryDuifuPayEntity.class)
+						.eq(HistoryDuifuPayEntity::getHistoryDuifuId, order.getString("order_id")).orderByAsc(HistoryDuifuPayEntity::getPayDate));
+				payEntityList.forEach(pay -> {
+					Map<String, Object> map = Maps.newHashMap();
+					String payType = pay.getPayDate().compareTo(now) < 0 ? "已付" : "";
+					map.put("payDate", pay.getPayDate());
+					map.put("payMoney", pay.getPayMoney() + "元");
+					map.put("payType", payType);
+					maps.add(map);
+				});
+
 			}
 			order.put("pay_date", pay_date);
 			order.put("pay_money", pay_money);
+			order.put("orderPayList",maps);
+
 		});
 		return records;
 	}
