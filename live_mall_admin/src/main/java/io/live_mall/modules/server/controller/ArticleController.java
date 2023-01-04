@@ -1,0 +1,275 @@
+package io.live_mall.modules.server.controller;
+
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import io.live_mall.common.utils.PageUtils;
+import io.live_mall.common.utils.R;
+import io.live_mall.common.utils.ShiroUtils;
+import io.live_mall.modules.server.dto.ActivityDto;
+import io.live_mall.modules.server.dto.InformationDto;
+import io.live_mall.modules.server.entity.ActivityEntity;
+import io.live_mall.modules.server.entity.FinanceEntity;
+import io.live_mall.modules.server.entity.InformationEntity;
+import io.live_mall.modules.server.entity.InformationLabelEntity;
+import io.live_mall.modules.server.service.ActivityService;
+import io.live_mall.modules.server.service.FinanceService;
+import io.live_mall.modules.server.service.InformationLabelService;
+import io.live_mall.modules.server.service.InformationService;
+import lombok.AllArgsConstructor;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.beans.BeanUtils;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * @author yewl
+ * @date 2023/1/3 14:52
+ * @description
+ */
+@RestController
+@RequestMapping("article")
+@AllArgsConstructor
+public class ArticleController {
+
+    private final FinanceService financeService;
+    private final InformationService informationService;
+    private final InformationLabelService informationLabelService;
+    private final ActivityService activityService;
+
+    @GetMapping(value = "/finance/list")
+    @RequiresPermissions("server:finance:list")
+    public R finances(@RequestBody Map<String, Object> params) {
+        PageUtils pages = financeService.financePages(params);
+        return R.ok().put("data", pages);
+    }
+
+    /**
+     * 保存财经
+     * @param finance
+     * @return
+     */
+    @PostMapping(value = "/finance/save")
+    @RequiresPermissions("server:finance:save")
+    public R financeSave(@RequestBody FinanceEntity finance) {
+        finance.setStatus(0);
+        finance.setDelFlag(0);
+        finance.setCreateTime(new Date());
+        finance.setCreateUser(ShiroUtils.getUserId());
+        boolean save = financeService.save(finance);
+        return save ? R.ok() : R.error();
+    }
+
+    /**
+     * 更新财经
+     * @param finance
+     * @return
+     */
+    @PutMapping(value = "/finance/modify")
+    @RequiresPermissions("server:finance:update")
+    public R financeUpdate(@RequestBody FinanceEntity finance) {
+        finance.setUpdateTime(new Date());
+        finance.setUpdateUser(ShiroUtils.getUserId());
+        boolean update = financeService.updateById(finance);
+        return update ? R.ok() : R.error();
+    }
+
+    /**
+     * 下架财经
+     * @param id 主键id
+     * @return
+     */
+    @PutMapping(value = "/finance-status/{id}")
+    @RequiresPermissions("server:finance:update")
+    public R financeUpdateStatus(@PathVariable("id") Long id) {
+        FinanceEntity finance = new FinanceEntity();
+        finance.setId(id);
+        finance.setStatus(1);
+        finance.setUpdateTime(new Date());
+        finance.setUpdateUser(ShiroUtils.getUserId());
+        boolean update = financeService.updateById(finance);
+        return update ? R.ok() : R.error();
+    }
+
+    /**
+     * 财经详情
+     * @param id 主键id
+     * @return
+     */
+    @GetMapping(value = "/finance-info/{id}")
+    @RequiresPermissions("server:finance:info")
+    public R financeInfo(@PathVariable("id") Long id) {
+        return R.ok().put("data", financeService.financeInfo(id));
+    }
+
+    /**
+     * 资讯标签列表
+     * @return
+     */
+    @GetMapping(value = "/information-labels")
+    @RequiresPermissions("server:information:list")
+    public R informationLabels() {
+        List<InformationLabelEntity> list = informationLabelService.list(Wrappers.lambdaQuery(InformationLabelEntity.class).eq(InformationLabelEntity::getDelFlag, 0));
+        return R.ok().put("data", list);
+    }
+
+    /**
+     * 资讯标签保存
+     * @param entity
+     * @return
+     */
+    @PostMapping(value = "/information-label-save")
+    @RequiresPermissions("server:information:save")
+    public R informationLabelSave(@RequestBody InformationLabelEntity entity) {
+        int count = informationLabelService.count(Wrappers.lambdaQuery(InformationLabelEntity.class).eq(InformationLabelEntity::getLabel, entity.getLabel().trim()));
+        if (count > 0) {
+            return R.error("标签已存在");
+        }
+        entity.setLabel(entity.getLabel().trim());
+        entity.setCreateTime(new Date());
+        entity.setCreateUser(ShiroUtils.getUserId());
+        entity.setDelFlag(0);
+        boolean save = informationLabelService.save(entity);
+        return save ? R.ok() : R.error();
+    }
+
+    /**
+     * 删除标签
+     * @param id
+     * @return
+     */
+    @PutMapping(value = "/information-label-delete/{id}")
+    @RequiresPermissions("server:information:update")
+    public R informationLabelDelete(@PathVariable("id") Long id) {
+        InformationLabelEntity entity = new InformationLabelEntity();
+        entity.setId(id);
+        entity.setDelFlag(1);
+        entity.setDelTime(new Date());
+        boolean update = informationLabelService.updateById(entity);
+        return update ? R.ok() : R.error();
+    }
+
+    /**
+     * 资讯保存
+     * @param information
+     * @return
+     */
+    @PostMapping(value = "/information-save")
+    @RequiresPermissions("server:information:save")
+    public R informationSave(@RequestBody InformationDto information) {
+        InformationEntity entity = new InformationEntity();
+        BeanUtils.copyProperties(information, entity);
+        entity.setCreateUser(ShiroUtils.getUserId());
+        entity.setCreateTime(new Date());
+        boolean save = informationService.save(entity);
+        return save ? R.ok() : R.error();
+    }
+
+    /**
+     * 资讯更新
+     * @param information
+     * @return
+     */
+    @PutMapping(value = "/information-update")
+    @RequiresPermissions("server:information:update")
+    public R informationUpdate(@RequestBody InformationDto information) {
+        InformationEntity entity = new InformationEntity();
+        BeanUtils.copyProperties(information, entity);
+        entity.setUpdateTime(new Date());
+        entity.setUpdateUser(ShiroUtils.getUserId());
+        boolean update = informationService.updateById(entity);
+        return update ? R.ok() : R.error();
+    }
+
+    /**
+     * 资讯详情
+     * @param id
+     * @return
+     */
+    @GetMapping(value = "/information-info/{id}")
+    @RequiresPermissions("server:information:info")
+    public R informationInfo(@PathVariable("id") Long id) {
+        InformationEntity entity = informationService.getById(id);
+        InformationDto dto = new InformationDto();
+        BeanUtils.copyProperties(entity, dto);
+        return R.ok().put("data", dto);
+    }
+
+    /**
+     * 资讯删除
+     * @param id
+     * @return
+     */
+    @PutMapping(value = "/information-delete/{id}")
+    @RequiresPermissions("server:information:update")
+    public R informationDelete(@PathVariable("id") Long id) {
+        boolean update = informationService.update(Wrappers.lambdaUpdate(InformationEntity.class)
+                .set(InformationEntity::getDelFlag, 1)
+                .set(InformationEntity::getDelTime, new Date())
+                .eq(InformationEntity::getId, id));
+        return update ? R.ok() : R.error();
+    }
+
+    /**
+     * 活动保存
+     * @param dto
+     * @return
+     */
+    @PostMapping(value = "/activity-save")
+    @RequiresPermissions("server:activity:save")
+    public R activitySave(@RequestBody ActivityDto dto) {
+        ActivityEntity entity = new ActivityEntity();
+        BeanUtils.copyProperties(dto, entity);
+        entity.setCreateTime(new Date());
+        entity.setCreateUser(ShiroUtils.getUserId());
+        boolean save = activityService.save(entity);
+        return save ? R.ok() : R.error();
+    }
+
+    /**
+     * 活动更新
+     * @param dto
+     * @return
+     */
+    @PutMapping(value = "/activity-update")
+    @RequiresPermissions("server:activity:update")
+    public R activityUpdate(@RequestBody ActivityDto dto) {
+        ActivityEntity entity = new ActivityEntity();
+        BeanUtils.copyProperties(dto, entity);
+        entity.setUpdateTime(new Date());
+        entity.setUpdateUser(ShiroUtils.getUserId());
+        boolean save = activityService.updateById(entity);
+        return save ? R.ok() : R.error();
+    }
+
+    /**
+     * 活动详情
+     * @param id
+     * @return
+     */
+    @GetMapping(value = "/activity-info/{id}")
+    @RequiresPermissions("server:activity:info")
+    public R activityInfo(@PathVariable("id") Long id) {
+        ActivityEntity entity = activityService.getById(id);
+        ActivityDto dto = new ActivityDto();
+        BeanUtils.copyProperties(entity, dto);
+        return R.ok().put("data", dto);
+    }
+
+    /**
+     * 活动删除
+     * @param id
+     * @return
+     */
+    @PutMapping(value = "/activity-delete/{id}")
+    @RequiresPermissions("server:activity:update")
+    public R activityDelete(@PathVariable("id") Long id) {
+        boolean update = activityService.update(Wrappers.lambdaUpdate(ActivityEntity.class)
+                .set(ActivityEntity::getDelFlag, 1)
+                .set(ActivityEntity::getDelTime, new Date())
+                .eq(ActivityEntity::getId, id));
+        return update ? R.ok() : R.error();
+    }
+
+}

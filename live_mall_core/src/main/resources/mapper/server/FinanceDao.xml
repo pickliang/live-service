@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.live_mall.modules.server.dao.FinanceDao">
+
+    <select id="financePages" resultType="io.live_mall.modules.server.model.FinanceModel">
+        SELECT
+            f.id,
+            f.create_time,
+            f.title,
+            u.realname
+        FROM
+            finance AS f
+            LEFT JOIN sys_user AS u ON f.create_user = u.user_id
+        WHERE
+            f.del_flag = 0
+            AND f.status = 0
+            <if test="params.title != null and params.title != ''">
+                AND LOCATE(#{params.title}, f.title) > 0
+            </if>
+            <if test="params.realname != null and params.realname != ''">
+                AND LOCATE(#{params.realname}, u.realname) > 0
+            </if>
+    </select>
+</mapper>

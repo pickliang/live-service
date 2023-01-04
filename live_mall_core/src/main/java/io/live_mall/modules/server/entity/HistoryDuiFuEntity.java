@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -15,7 +16,9 @@ import java.util.Date;
  */
 @Data
 @TableName("history_duifu")
-public class HistoryDuiFuEntity {
+public class HistoryDuiFuEntity implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @TableId(type = IdType.INPUT)
     private String id;
