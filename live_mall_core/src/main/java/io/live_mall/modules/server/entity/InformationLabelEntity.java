@@ -18,6 +18,10 @@ public class InformationLabelEntity {
     @TableId(type = IdType.ASSIGN_ID)
     private Long id;
     /**
+     * 分类：1-白话财经 2-固收资讯 3-股权资讯 4-二级市场资讯
+     */
+    private Integer classify;
+    /**
      * 标签名称
      */
     private String label;

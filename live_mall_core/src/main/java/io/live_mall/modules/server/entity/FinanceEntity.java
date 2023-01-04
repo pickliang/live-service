@@ -38,6 +38,10 @@ public class FinanceEntity implements Serializable {
      */
     private String content;
     /**
+     * 分类 1-五道财经 2-高尔夫活动 3-公益活动
+     */
+    private Integer classify;
+    /**
      * 删除状态 0-未删除 1-已删除
      */
     private Integer delFlag;

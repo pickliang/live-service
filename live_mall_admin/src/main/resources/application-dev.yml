@@ -52,4 +52,6 @@ wechat:
     version: formal
 temp:
    path: E:\\work\\sxhl\\ipo\\five_way_ipo\\doc
-
+#二维码图片访问域名
+qrcode:
+  url: http://127.0.0.1:8010/admin/

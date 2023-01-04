@@ -1,5 +1,6 @@
 package io.live_mall.modules.server.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import io.live_mall.common.utils.PageUtils;
 import io.live_mall.common.utils.R;
@@ -14,7 +15,10 @@ import io.live_mall.modules.server.service.ActivityService;
 import io.live_mall.modules.server.service.FinanceService;
 import io.live_mall.modules.server.service.InformationLabelService;
 import io.live_mall.modules.server.service.InformationService;
+import io.live_mall.modules.server.utils.QrCodeUtils;
+import io.live_mall.properties.QrCodeProperties;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
@@ -22,11 +26,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author yewl
  * @date 2023/1/3 14:52
- * @description
+ * @description 文章
  */
 @RestController
 @RequestMapping("article")
@@ -37,6 +42,7 @@ public class ArticleController {
     private final InformationService informationService;
     private final InformationLabelService informationLabelService;
     private final ActivityService activityService;
+    private final QrCodeProperties qrCodeProperties;
 
     @GetMapping(value = "/finance/list")
     @RequiresPermissions("server:finance:list")
@@ -109,8 +115,10 @@ public class ArticleController {
      */
     @GetMapping(value = "/information-labels")
     @RequiresPermissions("server:information:list")
-    public R informationLabels() {
-        List<InformationLabelEntity> list = informationLabelService.list(Wrappers.lambdaQuery(InformationLabelEntity.class).eq(InformationLabelEntity::getDelFlag, 0));
+    public R informationLabels(@RequestParam(defaultValue = "1") Integer classify) {
+        List<InformationLabelEntity> list = informationLabelService.list(Wrappers.lambdaQuery(InformationLabelEntity.class)
+                .eq(InformationLabelEntity::getClassify, classify)
+                .eq(InformationLabelEntity::getDelFlag, 0));
         return R.ok().put("data", list);
     }
 
@@ -122,7 +130,10 @@ public class ArticleController {
     @PostMapping(value = "/information-label-save")
     @RequiresPermissions("server:information:save")
     public R informationLabelSave(@RequestBody InformationLabelEntity entity) {
-        int count = informationLabelService.count(Wrappers.lambdaQuery(InformationLabelEntity.class).eq(InformationLabelEntity::getLabel, entity.getLabel().trim()));
+        int count = informationLabelService.count(Wrappers.lambdaQuery(InformationLabelEntity.class)
+                .eq(InformationLabelEntity::getLabel, entity.getLabel().trim())
+                .eq(InformationLabelEntity::getClassify, entity.getClassify())
+                .eq(InformationLabelEntity::getDelFlag, 0));
         if (count > 0) {
             return R.error("标签已存在");
         }
@@ -148,6 +159,18 @@ public class ArticleController {
         entity.setDelTime(new Date());
         boolean update = informationLabelService.updateById(entity);
         return update ? R.ok() : R.error();
+    }
+
+    /**
+     * 资讯列表
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "/information-list")
+    @RequiresPermissions("server:information:list")
+    public R informationList(@RequestBody Map<String, Object> params) {
+        PageUtils pages = informationService.informationPages(params);
+        return R.ok().put("data", pages);
     }
 
     /**
@@ -211,6 +234,7 @@ public class ArticleController {
         return update ? R.ok() : R.error();
     }
 
+
     /**
      * 活动保存
      * @param dto
@@ -272,4 +296,37 @@ public class ArticleController {
         return update ? R.ok() : R.error();
     }
 
+    /**
+     * 资讯审核
+     * @param params
+     * @return
+     */
+    @PutMapping(value = "/activity-status")
+    @RequiresPermissions("server:activity:update")
+    public R activityStatus(@RequestBody JSONObject params) {
+        Long id = params.getLong("id");
+        Integer status = params.getInteger("status");
+        boolean update = activityService.update(Wrappers.lambdaUpdate(ActivityEntity.class)
+                .set(ActivityEntity::getStatus, status).eq(ActivityEntity::getId, id));
+        return update ? R.ok() : R.error();
+    }
+
+    /**
+     * 生成活动二维码
+     * @param id 主键id
+     * @return
+     */
+    @PutMapping(value = "/activity-qr/{id}")
+    @RequiresPermissions("server:information:update")
+    public R activityQr(@PathVariable("id") Long id) {
+        ActivityEntity entity = activityService.getById(id);
+        if (Objects.nonNull(entity) && StringUtils.isNotBlank(entity.getQrCode())) {
+            return R.error("二维码已存在");
+        }
+        String url = qrCodeProperties.getQrUrl() + id;
+        String qrCode = QrCodeUtils.qrCode(url);
+        boolean update = activityService.update(Wrappers.lambdaUpdate(ActivityEntity.class)
+                .set(ActivityEntity::getQrCode, qrCode).eq(ActivityEntity::getId, id));
+        return update ? R.ok() : R.error();
+    }
 }

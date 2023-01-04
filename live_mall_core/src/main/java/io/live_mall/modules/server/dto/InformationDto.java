@@ -35,4 +35,8 @@ public class InformationDto {
      * 是否需要登录 0-不需要 1-需要
      */
     private Integer auth;
+    /**
+     * 分类：1-白话财经 2-固收资讯 3-股权资讯 4-二级市场资讯
+     */
+    private Integer classify;
 }

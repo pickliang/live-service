@@ -1,10 +1,16 @@
 package io.live_mall.modules.server.service.impl;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import io.live_mall.common.utils.PageUtils;
+import io.live_mall.common.utils.Query;
 import io.live_mall.modules.server.dao.InformationDao;
 import io.live_mall.modules.server.entity.InformationEntity;
+import io.live_mall.modules.server.model.InformationModel;
 import io.live_mall.modules.server.service.InformationService;
 import org.springframework.stereotype.Service;
+
+import java.util.Map;
 
 /**
  * @author yewl
@@ -13,4 +19,9 @@ import org.springframework.stereotype.Service;
  */
 @Service("informationService")
 public class InformationServiceImpl extends ServiceImpl<InformationDao, InformationEntity> implements InformationService {
+    @Override
+    public PageUtils informationPages(Map<String, Object> params) {
+        IPage<InformationModel> pages = this.baseMapper.informationPages(new Query<InformationModel>().getPage(params), params);
+        return new PageUtils(pages);
+    }
 }

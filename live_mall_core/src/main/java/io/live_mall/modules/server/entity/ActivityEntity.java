@@ -44,6 +44,15 @@ public class ActivityEntity implements Serializable {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm")
     private Date dateTime;
     /**
+     * 审核状态 1-审核通过 2-审核拒绝 3-审核中
+     */
+    private Integer status;
+    /**
+     * 二维码
+     */
+    private String qrCode;
+
+    /**
      * 删除状态 0-未删除 1-已删除
      */
     private Integer delFlag;

@@ -49,5 +49,7 @@ wechat:
     secret: 228ef130b2818b239316bd546297aca6
     msgDataFormat: JSON
     version: formal
-
+#二维码图片访问域名
+qrcode:
+  url: 39.105.54.136/admin/
 
