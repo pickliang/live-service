@@ -1,9 +1,9 @@
 package io.live_mall.modules.server.dto;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
 
@@ -36,6 +36,6 @@ public class ActivityDto {
     /**
      * 活动时间 yyyy-MM-dd
      */
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm")
+    @JSONField(format = "yyyy-MM-dd HH:mm")
     private Date dateTime;
 }

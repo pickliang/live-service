@@ -2,5 +2,23 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="io.live_mall.modules.server.dao.ActivityDao">
-
+    <select id="activityPages" resultType="io.live_mall.modules.server.model.ActivityModel">
+        SELECT
+            a.id,
+            a.title,
+            a.date_time,
+            u.realname,
+            ( SELECT COUNT( 0 ) FROM activity_user WHERE activity_id = a.id ) AS nums
+        FROM
+            activity AS a
+                LEFT JOIN sys_user AS u ON a.create_user = u.user_id
+        WHERE a.del_flag = 0
+        <if test="params.title != null and params.title != ''">
+            AND LOCATE(#{params.title}, a.title) > 0
+        </if>
+        <if test="params.realname != null and params.trealname != ''">
+            AND LOCATE(#{params.realname}, u.realname) > 0
+        </if>
+        ORDER BY a.date_time DESC
+    </select>
 </mapper>

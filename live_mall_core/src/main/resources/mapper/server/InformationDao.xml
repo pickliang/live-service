@@ -26,5 +26,6 @@
                 AND i.classify = 1
             </otherwise>
         </choose>
+        ORDER BY i.create_time DESC
     </select>
 </mapper>

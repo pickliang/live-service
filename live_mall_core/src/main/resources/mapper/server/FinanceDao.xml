@@ -21,5 +21,6 @@
             <if test="params.realname != null and params.realname != ''">
                 AND LOCATE(#{params.realname}, u.realname) > 0
             </if>
+            ORDER BY f.create_time DESC
     </select>
 </mapper>

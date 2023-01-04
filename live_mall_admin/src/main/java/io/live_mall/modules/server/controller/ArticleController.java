@@ -234,6 +234,17 @@ public class ArticleController {
         return update ? R.ok() : R.error();
     }
 
+    /**
+     * 活动列表
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "/activity-list")
+    @RequiresPermissions("server:activity:list")
+    public R activityList(@RequestBody Map<String, Object> params) {
+        PageUtils pages = activityService.activityPages(params);
+        return R.ok().put("data", pages);
+    }
 
     /**
      * 活动保存
@@ -297,7 +308,7 @@ public class ArticleController {
     }
 
     /**
-     * 资讯审核
+     * 活动审核
      * @param params
      * @return
      */
