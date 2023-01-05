@@ -2,6 +2,7 @@ package io.live_mall.modules.server.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import io.live_mall.common.utils.PageUtils;
+import io.live_mall.common.utils.R;
 import io.live_mall.modules.server.entity.ActivityEntity;
 
 import java.util.Map;
@@ -16,4 +17,5 @@ public interface ActivityService extends IService<ActivityEntity> {
 
     PageUtils customerActivityPages(Map<String, Object> params);
 
+    R activitySubscribe(String activityId, String userId);
 }
