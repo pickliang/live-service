@@ -11,7 +11,7 @@ import java.util.Date;
  */
 @Data
 public class FinanceModel {
-    private Long id;
+    private String id;
 
     /**
      * 标题
@@ -33,4 +33,12 @@ public class FinanceModel {
      * 提交人
      */
     private String realname;
+    /**
+     * 状态 0-上架 1-下架
+     */
+    private Integer status;
+    /**
+     * 封面图
+     */
+    private String coverImg;
 }

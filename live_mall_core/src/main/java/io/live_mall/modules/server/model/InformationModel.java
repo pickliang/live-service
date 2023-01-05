@@ -11,7 +11,7 @@ import java.util.Date;
  */
 @Data
 public class InformationModel {
-    private Long id;
+    private String id;
 
     /**
      * 标题
@@ -29,4 +29,17 @@ public class InformationModel {
      * 浏览人数
      */
     private Long visitors;
+
+    /**
+     * 简介
+     */
+    private String outline;
+    /**
+     * 内容
+     */
+    private String content;
+    /**
+     * 是否需要登录 0-不需要 1-需要
+     */
+    private Integer auth;
 }

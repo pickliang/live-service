@@ -22,4 +22,9 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityDao, ActivityEntity
     public PageUtils activityPages(Map<String, Object> params) {
         return new PageUtils(this.baseMapper.activityPages(new Query<ActivityModel>().getPage(params), params));
     }
+
+    @Override
+    public PageUtils customerActivityPages(Map<String, Object> params) {
+        return new PageUtils(this.baseMapper.customerActivityPages(new Query<ActivityModel>().getPage(params), params));
+    }
 }

@@ -46,7 +46,7 @@ public class ArticleController {
 
     @GetMapping(value = "/finance/list")
     @RequiresPermissions("server:finance:list")
-    public R finances(@RequestBody Map<String, Object> params) {
+    public R finances(@RequestParam Map<String, Object> params) {
         PageUtils pages = financeService.financePages(params);
         return R.ok().put("data", pages);
     }
@@ -82,16 +82,18 @@ public class ArticleController {
     }
 
     /**
-     * 下架财经
-     * @param id 主键id
+     * 上/下架财经
+     * @param params
      * @return
      */
-    @PutMapping(value = "/finance-status/{id}")
+    @PutMapping(value = "/finance-status")
     @RequiresPermissions("server:finance:update")
-    public R financeUpdateStatus(@PathVariable("id") Long id) {
+    public R financeUpdateStatus(@RequestBody JSONObject params) {
+        String id = params.getString("id");
+        Integer status = params.getInteger("status");
         FinanceEntity finance = new FinanceEntity();
         finance.setId(id);
-        finance.setStatus(1);
+        finance.setStatus(status);
         finance.setUpdateTime(new Date());
         finance.setUpdateUser(ShiroUtils.getUserId());
         boolean update = financeService.updateById(finance);
@@ -105,7 +107,7 @@ public class ArticleController {
      */
     @GetMapping(value = "/finance-info/{id}")
     @RequiresPermissions("server:finance:info")
-    public R financeInfo(@PathVariable("id") Long id) {
+    public R financeInfo(@PathVariable("id") String id) {
         return R.ok().put("data", financeService.financeInfo(id));
     }
 
@@ -152,7 +154,7 @@ public class ArticleController {
      */
     @PutMapping(value = "/information-label-delete/{id}")
     @RequiresPermissions("server:information:update")
-    public R informationLabelDelete(@PathVariable("id") Long id) {
+    public R informationLabelDelete(@PathVariable("id") String id) {
         InformationLabelEntity entity = new InformationLabelEntity();
         entity.setId(id);
         entity.setDelFlag(1);
@@ -168,7 +170,7 @@ public class ArticleController {
      */
     @GetMapping(value = "/information-list")
     @RequiresPermissions("server:information:list")
-    public R informationList(@RequestBody Map<String, Object> params) {
+    public R informationList(@RequestParam Map<String, Object> params) {
         PageUtils pages = informationService.informationPages(params);
         return R.ok().put("data", pages);
     }
@@ -212,7 +214,7 @@ public class ArticleController {
      */
     @GetMapping(value = "/information-info/{id}")
     @RequiresPermissions("server:information:info")
-    public R informationInfo(@PathVariable("id") Long id) {
+    public R informationInfo(@PathVariable("id") String id) {
         InformationEntity entity = informationService.getById(id);
         InformationDto dto = new InformationDto();
         BeanUtils.copyProperties(entity, dto);
@@ -226,7 +228,7 @@ public class ArticleController {
      */
     @PutMapping(value = "/information-delete/{id}")
     @RequiresPermissions("server:information:update")
-    public R informationDelete(@PathVariable("id") Long id) {
+    public R informationDelete(@PathVariable("id") String id) {
         boolean update = informationService.update(Wrappers.lambdaUpdate(InformationEntity.class)
                 .set(InformationEntity::getDelFlag, 1)
                 .set(InformationEntity::getDelTime, new Date())
@@ -241,7 +243,7 @@ public class ArticleController {
      */
     @GetMapping(value = "/activity-list")
     @RequiresPermissions("server:activity:list")
-    public R activityList(@RequestBody Map<String, Object> params) {
+    public R activityList(@RequestParam Map<String, Object> params) {
         PageUtils pages = activityService.activityPages(params);
         return R.ok().put("data", pages);
     }
@@ -285,7 +287,7 @@ public class ArticleController {
      */
     @GetMapping(value = "/activity-info/{id}")
     @RequiresPermissions("server:activity:info")
-    public R activityInfo(@PathVariable("id") Long id) {
+    public R activityInfo(@PathVariable("id") String id) {
         ActivityEntity entity = activityService.getById(id);
         ActivityDto dto = new ActivityDto();
         BeanUtils.copyProperties(entity, dto);
@@ -299,7 +301,7 @@ public class ArticleController {
      */
     @PutMapping(value = "/activity-delete/{id}")
     @RequiresPermissions("server:activity:update")
-    public R activityDelete(@PathVariable("id") Long id) {
+    public R activityDelete(@PathVariable("id") String id) {
         boolean update = activityService.update(Wrappers.lambdaUpdate(ActivityEntity.class)
                 .set(ActivityEntity::getDelFlag, 1)
                 .set(ActivityEntity::getDelTime, new Date())
@@ -315,7 +317,7 @@ public class ArticleController {
     @PutMapping(value = "/activity-status")
     @RequiresPermissions("server:activity:update")
     public R activityStatus(@RequestBody JSONObject params) {
-        Long id = params.getLong("id");
+        String id = params.getString("id");
         Integer status = params.getInteger("status");
         boolean update = activityService.update(Wrappers.lambdaUpdate(ActivityEntity.class)
                 .set(ActivityEntity::getStatus, status).eq(ActivityEntity::getId, id));
@@ -329,7 +331,7 @@ public class ArticleController {
      */
     @PutMapping(value = "/activity-qr/{id}")
     @RequiresPermissions("server:information:update")
-    public R activityQr(@PathVariable("id") Long id) {
+    public R activityQr(@PathVariable("id") String id) {
         ActivityEntity entity = activityService.getById(id);
         if (Objects.nonNull(entity) && StringUtils.isNotBlank(entity.getQrCode())) {
             return R.error("二维码已存在");

@@ -5,6 +5,7 @@ import io.live_mall.common.utils.PageUtils;
 import io.live_mall.modules.server.entity.FinanceEntity;
 import io.live_mall.modules.server.model.FinanceModel;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -15,5 +16,9 @@ import java.util.Map;
 public interface FinanceService extends IService<FinanceEntity> {
     PageUtils financePages(Map<String, Object> params);
 
-    FinanceModel financeInfo(Long id);
+    FinanceModel financeInfo(String id);
+
+    List<FinanceEntity> companyDynamics(Integer classify);
+
+    PageUtils financeList(Map<String, Object> params);
 }

@@ -7,6 +7,7 @@ import io.live_mall.modules.server.model.InformationModel;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -17,4 +18,8 @@ import java.util.Map;
 @Mapper
 public interface InformationDao extends BaseMapper<InformationEntity> {
     IPage<InformationModel> informationPages(@Param("pages") IPage<InformationModel> pages, @Param("params") Map<String, Object> params);
+
+    List<InformationModel> customerInformation(@Param("classify") Integer classify);
+
+    IPage<InformationModel> customerInformationPages(@Param("pages") IPage<InformationModel> pages, @Param("params") Map<String, Object> params);
 }

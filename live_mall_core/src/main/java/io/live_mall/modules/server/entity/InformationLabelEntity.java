@@ -16,7 +16,7 @@ import java.util.Date;
 @TableName("information_label")
 public class InformationLabelEntity {
     @TableId(type = IdType.ASSIGN_ID)
-    private Long id;
+    private String id;
     /**
      * 分类：1-白话财经 2-固收资讯 3-股权资讯 4-二级市场资讯
      */

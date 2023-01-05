@@ -10,6 +10,7 @@ import io.live_mall.modules.server.model.InformationModel;
 import io.live_mall.modules.server.service.InformationService;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,5 +24,15 @@ public class InformationServiceImpl extends ServiceImpl<InformationDao, Informat
     public PageUtils informationPages(Map<String, Object> params) {
         IPage<InformationModel> pages = this.baseMapper.informationPages(new Query<InformationModel>().getPage(params), params);
         return new PageUtils(pages);
+    }
+
+    @Override
+    public List<InformationModel> customerInformation(Integer classify) {
+        return this.baseMapper.customerInformation(classify);
+    }
+
+    @Override
+    public PageUtils customerInformationPages(Map<String, Object> params) {
+        return new PageUtils(this.baseMapper.customerInformationPages(new Query<InformationModel>().getPage(params), params));
     }
 }

@@ -1,5 +1,6 @@
 package io.live_mall.modules.server.service.impl;
 
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.live_mall.common.utils.PageUtils;
 import io.live_mall.common.utils.Query;
@@ -10,6 +11,7 @@ import io.live_mall.modules.server.service.FinanceService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -26,10 +28,22 @@ public class FinanceServiceImpl extends ServiceImpl<FinanceDao, FinanceEntity> i
     }
 
     @Override
-    public FinanceModel financeInfo(Long id) {
+    public FinanceModel financeInfo(String id) {
         FinanceEntity finance = this.baseMapper.selectById(id);
         FinanceModel model = new FinanceModel();
         BeanUtils.copyProperties(finance, model);
         return model;
+    }
+
+    @Override
+    public List<FinanceEntity> companyDynamics(Integer classify) {
+        return this.baseMapper.selectList(Wrappers.lambdaQuery(FinanceEntity.class).eq(FinanceEntity::getClassify, classify)
+                .eq(FinanceEntity::getStatus, 0).eq(FinanceEntity::getDelFlag, 0).orderByDesc(FinanceEntity::getCreateTime)
+                .select(FinanceEntity::getId, FinanceEntity::getTitle).last("LIMIT 3"));
+    }
+
+    @Override
+    public PageUtils financeList(Map<String, Object> params) {
+        return new PageUtils(this.baseMapper.financeList(new Query<FinanceEntity>().getPage(params), params));
     }
 }

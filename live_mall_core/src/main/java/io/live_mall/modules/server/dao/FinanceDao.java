@@ -17,4 +17,5 @@ import java.util.Map;
 @Mapper
 public interface FinanceDao extends BaseMapper<FinanceEntity> {
     IPage<FinanceModel> financePages(@Param("pages") IPage<FinanceModel> pages, @Param("params") Map<String, Object> params);
+    IPage<FinanceEntity> financeList(@Param("pages") IPage<FinanceEntity> pages, @Param("params") Map<String, Object> params);
 }

@@ -11,7 +11,7 @@ import javax.validation.constraints.NotBlank;
  */
 @Data
 public class InformationDto {
-    private Long id;
+    private String id;
     /**
      * 标题
      */
@@ -29,8 +29,7 @@ public class InformationDto {
     /**
      * 标签id
      */
-    @NotBlank(message = "标签不可为空")
-    private Long labelId;
+    private String labelId;
     /**
      * 是否需要登录 0-不需要 1-需要
      */

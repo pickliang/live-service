@@ -16,7 +16,7 @@ import java.util.Date;
 @TableName("information")
 public class InformationEntity {
     @TableId(type = IdType.ASSIGN_ID)
-    private Long id;
+    private String id;
 
     /**
      * 标题
@@ -33,7 +33,7 @@ public class InformationEntity {
     /**
      * 标签id
      */
-    private Long labelId;
+    private String labelId;
     /**
      * 是否需要登录 0-不需要 1-需要
      */

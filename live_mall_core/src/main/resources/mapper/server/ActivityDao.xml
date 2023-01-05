@@ -21,4 +21,16 @@
         </if>
         ORDER BY a.date_time DESC
     </select>
+
+    <select id="customerActivityPages" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            id,
+            title,
+            DATE_FORMAT( date_time, '%Y年%m月%d日 %H:%m' ) AS dateTime
+        FROM
+            activity
+        WHERE
+            `status` = 1
+          AND del_flag = 0
+    </select>
 </mapper>

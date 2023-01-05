@@ -13,4 +13,7 @@ import java.util.Map;
  */
 public interface ActivityService extends IService<ActivityEntity> {
     PageUtils activityPages(Map<String, Object> params);
+
+    PageUtils customerActivityPages(Map<String, Object> params);
+
 }
