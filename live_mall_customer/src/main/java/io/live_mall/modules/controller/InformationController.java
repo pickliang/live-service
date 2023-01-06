@@ -7,7 +7,6 @@ import io.live_mall.common.utils.R;
 import io.live_mall.common.utils.ShiroUtils;
 import io.live_mall.modules.server.entity.ActivityEntity;
 import io.live_mall.modules.server.entity.FinanceEntity;
-import io.live_mall.modules.server.entity.InformationEntity;
 import io.live_mall.modules.server.model.FinanceModel;
 import io.live_mall.modules.server.model.InformationModel;
 import io.live_mall.modules.server.service.ActivityService;
@@ -33,7 +32,6 @@ public class InformationController {
     private final FinanceService financeService;
     private final InformationService informationService;
     private final ActivityService activityService;
-
 
     /**
      * 公司动态文章
@@ -116,22 +114,6 @@ public class InformationController {
     }
 
     /**
-     * 资讯详情
-     * @param id 主键id
-     * @return
-     */
-    @GetMapping(value = "/information-info/{id}")
-    public R customerInformationInfo(@PathVariable("id") String id) {
-        InformationEntity information = informationService.getById(id);
-        if (Objects.nonNull(information) && 1 == information.getDelFlag()) {
-            return R.error("资讯已删除");
-        }
-        InformationModel model = new InformationModel();
-        BeanUtils.copyProperties(information, model);
-        return R.ok().put("data", model);
-    }
-
-    /**
      * 活动列表
      * @param params
      * @return
@@ -167,4 +149,6 @@ public class InformationController {
     public R activitySubscribe(@PathVariable("activityId") String activityId) {
         return activityService.activitySubscribe(activityId, ShiroUtils.getUserId());
     }
+
+
 }

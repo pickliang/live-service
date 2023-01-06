@@ -54,17 +54,14 @@ public class ShiroConfig {
         filterMap.put("/websocketapi/**", "anon");
         filterMap.put("/druid/**", "anon");
         filterMap.put("/app/**", "anon");
-        filterMap.put("/login", "anon");
         filterMap.put("/swagger/**", "anon");
         filterMap.put("/v2/api-docs", "anon");
         filterMap.put("/swagger-ui.html", "anon");
         filterMap.put("/swagger-resources/**", "anon");
         filterMap.put("/captcha.jpg", "anon");
         filterMap.put("/excel/**", "anon");
-        filterMap.put("/aaa.txt", "anon");
-        filterMap.put("/server/cert/getQrcode", "anon");
         filterMap.put("/applets/get-phone", "anon");
-        filterMap.put("/information/information-info/**", "anon");
+        filterMap.put("/anon/**", "anon");
         filterMap.put("/**", "oauth2");
         shiroFilter.setFilterChainDefinitionMap(filterMap);
         return shiroFilter;

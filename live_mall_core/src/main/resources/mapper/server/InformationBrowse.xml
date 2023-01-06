@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.live_mall.modules.server.dao.InformationBrowseDao">
+
+    <select id="informationBrowserList" resultType="io.live_mall.modules.server.model.InformationBrowserModel">
+        SELECT
+            u.`name`,
+            ROUND(b.duration / 60) as duration,
+            b.progress,
+            COUNT( 0 ) AS frequency
+        FROM
+            `information_browse` AS b
+                LEFT JOIN customer_user AS u ON b.user_id = u.id
+        WHERE
+            b.information_id = #{params.id}
+        GROUP BY
+            b.user_id
+    </select>
+
+    <select id="countPeopleNumber" resultType="long">
+        SELECT IFNULL(COUNT(DISTINCT user_id),0) as nums FROM information_browse WHERE information_id = #{informationId}
+    </select>
+</mapper>

@@ -7,7 +7,8 @@
             i.id,
             i.title,
             i.create_time,
-            u.realname
+            u.realname,
+           (SELECT IFNULL(COUNT(DISTINCT user_id),0) as nums FROM information_browse WHERE information_id = i.id) as visitors
         FROM
             information AS i
                 LEFT JOIN sys_user AS u ON i.create_user = u.user_id

@@ -2,6 +2,7 @@ package io.live_mall.modules.server.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.google.common.collect.Maps;
 import io.live_mall.common.utils.PageUtils;
 import io.live_mall.common.utils.R;
 import io.live_mall.common.utils.ShiroUtils;
@@ -11,10 +12,7 @@ import io.live_mall.modules.server.entity.ActivityEntity;
 import io.live_mall.modules.server.entity.FinanceEntity;
 import io.live_mall.modules.server.entity.InformationEntity;
 import io.live_mall.modules.server.entity.InformationLabelEntity;
-import io.live_mall.modules.server.service.ActivityService;
-import io.live_mall.modules.server.service.FinanceService;
-import io.live_mall.modules.server.service.InformationLabelService;
-import io.live_mall.modules.server.service.InformationService;
+import io.live_mall.modules.server.service.*;
 import io.live_mall.modules.server.utils.QrCodeUtils;
 import io.live_mall.properties.QrCodeProperties;
 import lombok.AllArgsConstructor;
@@ -43,6 +41,7 @@ public class ArticleController {
     private final InformationLabelService informationLabelService;
     private final ActivityService activityService;
     private final QrCodeProperties qrCodeProperties;
+    private final InformationBrowseService informationBrowseService;
 
     @GetMapping(value = "/finance/list")
     @RequiresPermissions("server:finance:list")
@@ -341,5 +340,24 @@ public class ArticleController {
         boolean update = activityService.update(Wrappers.lambdaUpdate(ActivityEntity.class)
                 .set(ActivityEntity::getQrCode, qrCode).eq(ActivityEntity::getId, id));
         return update ? R.ok() : R.error();
+    }
+
+    /**
+     * 资讯浏览记录
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "/information-browser-pages")
+    public R informationBrowserPages(@RequestParam Map<String, Object> params) {
+        Map<String, Object> result = Maps.newHashMap();
+        String id = String.valueOf(params.get("id"));
+        InformationEntity information = informationService.getById(id);
+        String title = information.getTitle();
+        result.put("title", title);
+        Long peopleNumber = informationBrowseService.countPeopleNumber(id);
+        result.put("visitors", peopleNumber);
+        PageUtils pages = informationBrowseService.informationBrowserList(params);
+        result.put("list", pages);
+        return R.ok().put("data", result);
     }
 }
