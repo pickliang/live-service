@@ -1,5 +1,6 @@
 package io.live_mall.modules.server.dao;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.live_mall.modules.server.entity.HistoryDuiFuEntity;
 import org.apache.ibatis.annotations.Mapper;
@@ -11,4 +12,6 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface HistoryDuiFuDao extends BaseMapper<HistoryDuiFuEntity> {
+
+    JSONObject HistoryDuiFuInfo(String id);
 }

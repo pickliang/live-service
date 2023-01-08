@@ -1,6 +1,5 @@
 package io.live_mall.modules.controller;
 
-import com.alibaba.fastjson.JSONObject;
 import io.live_mall.common.utils.PageUtils;
 import io.live_mall.common.utils.R;
 import io.live_mall.common.utils.ShiroUtils;
@@ -63,13 +62,24 @@ public class OrderController {
     }
 
     /**
+     * 订单和产品详情
+     * @param id
+     * @return
+     */
+    @GetMapping(value = "/info/{id}")
+    public R info(@PathVariable("id") String id) {
+        Map<String, Object> result = orderService.customerOrderInfo(id);
+        return R.ok().put("data", result);
+    }
+
+    /**
      * 产品详情
      * @param orderId 订单id
      * @return
      */
-    @GetMapping(value = "/product-info")
-    public R info(@RequestParam String orderId) {
-        JSONObject productInfo = orderService.productInfo(orderId);
-        return R.ok().put("data", productInfo);
-    }
+    // @GetMapping(value = "/product-info")
+    // public R info(@RequestParam String orderId) {
+    //     JSONObject productInfo = orderService.productInfo(orderId);
+    //     return R.ok().put("data", productInfo);
+    // }
 }

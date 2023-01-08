@@ -78,7 +78,9 @@ public interface OrderService extends IService<OrderEntity> {
 
 	Map<String, Object> customerAssets(String cardNum);
 
-	JSONObject productInfo(String orderId);
+	// JSONObject productInfo(String orderId);
+
+	Map<String, Object> customerOrderInfo(String id);
 
 }
 

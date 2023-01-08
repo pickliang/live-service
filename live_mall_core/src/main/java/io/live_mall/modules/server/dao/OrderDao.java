@@ -144,4 +144,6 @@ public interface OrderDao extends BaseMapper<OrderEntity> {
 	 */
 	Double historyInvestingOrderMoney(String cardNum);
 
+	JSONObject customerOrderInfo(String id);
+
 }

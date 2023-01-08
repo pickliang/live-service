@@ -507,6 +507,24 @@
 
 	</select>
 
+	<select id="customerOrderInfo" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT
+			p.product_name,
+			o.appoint_money * 10000 AS appoint_money,
+			DATE_FORMAT( o.appoint_time, '%Y-%m-%d' ) appoint_time,
+			r.establish_time as establish_time,
+			o.date_num,
+			CONCAT( o.date_num, o.date_uint ) AS term,
+			(SELECT IFNULL(pay_money,0) + o.appoint_money * 10000 FROM p_order_pay WHERE order_id = o.id ORDER BY pay_date DESC LIMIT 1) as end_sum_money,
+	        (SELECT IFNULL(SUM(pay_money),0) + o.appoint_money * 10000 FROM p_order_pay WHERE order_id = o.id)	as sum_money
+		FROM
+			p_order AS o
+			INNER JOIN `p_product` AS p ON o.product_id = p.id
+			INNER JOIN p_raise AS r ON o.raise_id = r.id
+		WHERE
+			o.id = #{id}
+	</select>
+
 	<!--	20220516 add end-->
     <select id="selectPageVo"  resultType="io.live_mall.modules.server.entity.OrderEntity" parameterType="java.util.HashMap" >
     		select o.* from  p_order o  

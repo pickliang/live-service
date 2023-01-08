@@ -357,58 +357,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 		IPage<JSONObject> pages = this.baseMapper.customerDuifuPage(new Query<JSONObject>().getPage(params), cardNum, type, isHistory);
 		pages.setRecords(assembleOrderItem(pages.getRecords()));
 
-		// pages.getRecords().forEach(order -> {
-		// 	List<OrderPayEntity> orderPayList = orderPaySerivce.list(Wrappers.lambdaQuery(OrderPayEntity.class).eq(OrderPayEntity::getOrderId, order.getString("order_id")).orderByAsc(OrderPayEntity::getPayDate));
-		// 	List<Map<String, Object>> maps = new ArrayList<>();
-		// 	// 是否灰色展示 0-否 1-是
-		// 	Integer isAsh = 0;
-		// 	if (!orderPayList.isEmpty()) {
-		// 		String now = DateUtils.format(new Date(), DateUtils.DATE_PATTERN);
-		// 		orderPayList.forEach(pay -> {
-		// 			Map<String, Object> map = Maps.newHashMap();
-		// 			String payType = pay.getPayDate().compareTo(now) < 0 ? "已付" : "";
-		// 			map.put("payDate", pay.getPayDate());
-		// 			map.put("payMoney", pay.getPayMoney() + "元");
-		// 			map.put("payType", payType);
-		// 			maps.add(map);
-		// 		});
-		// 		OrderPayEntity orderPayEntity = orderPayList.get(orderPayList.size() - 1);
-		// 		isAsh = orderPayEntity.getPayDate().compareTo(now) < 0 ? 1 : 0;
-		// 	}
-		// 	order.put("orderPayList",maps);
-		// 	order.put("isAsh", isAsh);
-		// });
 		return new PageUtils(pages);
-	}
-
-	@Override
-	public Map<String, Object> totalAssets(String cardNum) {
-		Map<String, Object> result = Maps.newHashMap();
-		// 类固收(固收)
-		Double fixedIncome = this.baseMapper.fixedIncome(cardNum, 1);
-		Double historyFixedIncome = this.baseMapper.historyFixedIncome(cardNum, 1);
-
-		// 权益类(股权)
-		Double stock = this.baseMapper.fixedIncome(cardNum, 2);
-		Double historyStock = this.baseMapper.historyFixedIncome(cardNum, 2);
-		// 净值型(二级市场)
-		Double netWorth = this.baseMapper.fixedIncome(cardNum, 3);
-		Double historyNetWorth = this.baseMapper.historyFixedIncome(cardNum, 3);
-
-		result.put("totalAssets", fixedIncome + stock + netWorth + historyFixedIncome + historyStock + historyNetWorth);
-		result.put("fixedIncome", fixedIncome + historyFixedIncome);
-		result.put("stock", stock + historyStock);
-		result.put("netWorth", netWorth + historyNetWorth);
-		// 订单列表
-		Map<String, Object> params = Maps.newHashMap();
-		params.put("page", 1);
-		params.put("limit", 2);
-		IPage<JSONObject> pages = this.baseMapper.customerDuifuPage(new Query<JSONObject>().getPage(params), cardNum, 0, 1);
-		List<JSONObject> fixedIncomeList = assembleOrderItem(pages.getRecords());
-		List<JSONObject> historyFixedIncomeList = assembleOrderItem(pages.getRecords());
-		result.put("fixedIncomeList", fixedIncomeList);
-		result.put("historyFixedIncomeList", historyFixedIncomeList);
-		return result;
 	}
 
 	private List<JSONObject> assembleOrderItem(List<JSONObject> records) {
@@ -479,6 +428,38 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 	}
 
 	@Override
+	public Map<String, Object> totalAssets(String cardNum) {
+		Map<String, Object> result = Maps.newHashMap();
+		// 类固收(固收)
+		Double fixedIncome = this.baseMapper.fixedIncome(cardNum, 1);
+		Double historyFixedIncome = this.baseMapper.historyFixedIncome(cardNum, 1);
+
+		// 权益类(股权)
+		Double stock = this.baseMapper.fixedIncome(cardNum, 2);
+		Double historyStock = this.baseMapper.historyFixedIncome(cardNum, 2);
+		// 净值型(二级市场)
+		Double netWorth = this.baseMapper.fixedIncome(cardNum, 3);
+		Double historyNetWorth = this.baseMapper.historyFixedIncome(cardNum, 3);
+
+		result.put("totalAssets", fixedIncome + stock + netWorth + historyFixedIncome + historyStock + historyNetWorth);
+		result.put("fixedIncome", fixedIncome + historyFixedIncome);
+		result.put("stock", stock + historyStock);
+		result.put("netWorth", netWorth + historyNetWorth);
+		// 订单列表
+		// Map<String, Object> params = Maps.newHashMap();
+		// params.put("page", 1);
+		// params.put("limit", 2);
+		// IPage<JSONObject> pages = this.baseMapper.customerDuifuPage(new Query<JSONObject>().getPage(params), cardNum, 0, 1);
+		// List<JSONObject> fixedIncomeList = assembleOrderItem(pages.getRecords());
+		// List<JSONObject> historyFixedIncomeList = assembleOrderItem(pages.getRecords());
+		// result.put("fixedIncomeList", fixedIncomeList);
+		// result.put("historyFixedIncomeList", historyFixedIncomeList);
+		return result;
+	}
+
+
+
+	@Override
 	public Map<String, Object> customerAssets(String cardNum) {
 		Map<String, Object> result = Maps.newHashMap();
 		// 总资产
@@ -507,12 +488,59 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 		return result;
 	}
 
+	// @Override
+	// public JSONObject productInfo(String orderId) {
+	// 	JSONObject productInfo = new JSONObject();
+	// 	OrderEntity orderEntity = this.baseMapper.selectById(orderId);
+	// 	if (Objects.isNull(orderEntity)) {
+	// 		HistoryDuiFuEntity duiFuEntity = historyDuiFuDao.selectById(orderId);
+	// 		productInfo = productDao.getProductInfo(duiFuEntity.getProductName());
+	// 	}else {
+	// 		ProductEntity productEntity = productDao.selectById(orderEntity.getProductId());
+	// 		productInfo.put("financing_party", productEntity.getFinancingParty());
+	// 		productInfo.put("investment_mode", productEntity.getInvestmentMode());
+	// 		productInfo.put("investment_target", productEntity.getInvestmentTarget());
+	// 		productInfo.put("product_term", productEntity.getProductTerm());
+	// 		productInfo.put("risk_level", productEntity.getRiskLevel());
+	// 		productInfo.put("product_label", productEntity.getProductLabel());
+	// 		productInfo.put("product_highlights", productEntity.getProductHighlights());
+	// 		productInfo.put("other_data", productEntity.getOtherData());
+	// 	}
+	//
+	// 	return productInfo;
+	// }
+
 	@Override
-	public JSONObject productInfo(String orderId) {
+	public Map<String, Object> customerOrderInfo(String id) {
+		Map<String, Object> result = Maps.newHashMap();
+		JSONObject orderInfo = this.baseMapper.customerOrderInfo(id);
+		if (Objects.nonNull(orderInfo)) {
+			String end_date = "";
+			Integer dateNum = orderInfo.getInteger("date_num");
+			Date establishTime = orderInfo.getDate("establish_time");
+			if (Objects.nonNull(establishTime) && Objects.nonNull(dateNum)) {
+				end_date = DateUtil.formatDate(DateUtil.offsetMonth(establishTime, dateNum));
+			}
+			orderInfo.put("end_date", end_date);
+		}else {
+			orderInfo = historyDuiFuDao.HistoryDuiFuInfo(id);
+		}
+		// Integer dateNum = orderInfo.getInteger("date_num");
+		// String end_date = "";
+		// if (dateNum == 0) {
+		// 	end_date = orderInfo.getString("establish_time");
+		// }else {
+		// 	Date establishTime = orderInfo.getDate("establish_time");
+		// 	if (Objects.nonNull(establishTime) && Objects.nonNull(dateNum)) {
+		// 		end_date = DateUtil.formatDate(DateUtil.offsetMonth(establishTime, dateNum));
+		// 	}
+		// }
+
+		//产品详情
 		JSONObject productInfo = new JSONObject();
-		OrderEntity orderEntity = this.baseMapper.selectById(orderId);
+		OrderEntity orderEntity = this.baseMapper.selectById(id);
 		if (Objects.isNull(orderEntity)) {
-			HistoryDuiFuEntity duiFuEntity = historyDuiFuDao.selectById(orderId);
+			HistoryDuiFuEntity duiFuEntity = historyDuiFuDao.selectById(id);
 			productInfo = productDao.getProductInfo(duiFuEntity.getProductName());
 		}else {
 			ProductEntity productEntity = productDao.selectById(orderEntity.getProductId());
@@ -525,7 +553,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 			productInfo.put("product_highlights", productEntity.getProductHighlights());
 			productInfo.put("other_data", productEntity.getOtherData());
 		}
-
-		return productInfo;
+		result.put("orderInfo", orderInfo);
+		result.put("productInfo", productInfo);
+		return result;
 	}
 }
