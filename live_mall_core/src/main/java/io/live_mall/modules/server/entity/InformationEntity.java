@@ -39,6 +39,10 @@ public class InformationEntity {
      */
     private Integer auth;
     /**
+     * 分类：1-白话财经 2-固收资讯 3-股权资讯 4-二级市场资讯
+     */
+    private Integer classify;
+    /**
      * 删除状态 0-未删除 1-已删除
      */
     private Integer delFlag;

@@ -348,6 +348,7 @@ public class ArticleController {
      * @return
      */
     @GetMapping(value = "/information-browser-pages")
+    @RequiresPermissions("server:information:list")
     public R informationBrowserPages(@RequestParam Map<String, Object> params) {
         Map<String, Object> result = Maps.newHashMap();
         String id = String.valueOf(params.get("id"));
