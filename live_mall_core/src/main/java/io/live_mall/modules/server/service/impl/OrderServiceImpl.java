@@ -351,31 +351,33 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 	@Override
 	public PageUtils customerDuifuPage(Map<String, Object> params, String cardNum) {
 		Integer type = Integer.valueOf(String.valueOf(params.get("type")));
-		type = Objects.isNull(type) ? 1 : type;
+		type = Objects.isNull(type) ? 0 : type;
 		Integer isHistory = Integer.valueOf(String.valueOf(params.get("isHistory")));
 		isHistory = Objects.isNull(isHistory) ? 1 : isHistory;
 		IPage<JSONObject> pages = this.baseMapper.customerDuifuPage(new Query<JSONObject>().getPage(params), cardNum, type, isHistory);
-		pages.getRecords().forEach(order -> {
-			List<OrderPayEntity> orderPayList = orderPaySerivce.list(Wrappers.lambdaQuery(OrderPayEntity.class).eq(OrderPayEntity::getOrderId, order.getString("order_id")).orderByAsc(OrderPayEntity::getPayDate));
-			List<Map<String, Object>> maps = new ArrayList<>();
-			// 是否灰色展示 0-否 1-是
-			Integer isAsh = 0;
-			if (!orderPayList.isEmpty()) {
-				String now = DateUtils.format(new Date(), DateUtils.DATE_PATTERN);
-				orderPayList.forEach(pay -> {
-					Map<String, Object> map = Maps.newHashMap();
-					String payType = pay.getPayDate().compareTo(now) < 0 ? "已付" : "";
-					map.put("payDate", pay.getPayDate());
-					map.put("payMoney", pay.getPayMoney() + "元");
-					map.put("payType", payType);
-					maps.add(map);
-				});
-				OrderPayEntity orderPayEntity = orderPayList.get(orderPayList.size() - 1);
-				isAsh = orderPayEntity.getPayDate().compareTo(now) < 0 ? 1 : 0;
-			}
-			order.put("orderPayList",maps);
-			order.put("isAsh", isAsh);
-		});
+		pages.setRecords(assembleOrderItem(pages.getRecords()));
+
+		// pages.getRecords().forEach(order -> {
+		// 	List<OrderPayEntity> orderPayList = orderPaySerivce.list(Wrappers.lambdaQuery(OrderPayEntity.class).eq(OrderPayEntity::getOrderId, order.getString("order_id")).orderByAsc(OrderPayEntity::getPayDate));
+		// 	List<Map<String, Object>> maps = new ArrayList<>();
+		// 	// 是否灰色展示 0-否 1-是
+		// 	Integer isAsh = 0;
+		// 	if (!orderPayList.isEmpty()) {
+		// 		String now = DateUtils.format(new Date(), DateUtils.DATE_PATTERN);
+		// 		orderPayList.forEach(pay -> {
+		// 			Map<String, Object> map = Maps.newHashMap();
+		// 			String payType = pay.getPayDate().compareTo(now) < 0 ? "已付" : "";
+		// 			map.put("payDate", pay.getPayDate());
+		// 			map.put("payMoney", pay.getPayMoney() + "元");
+		// 			map.put("payType", payType);
+		// 			maps.add(map);
+		// 		});
+		// 		OrderPayEntity orderPayEntity = orderPayList.get(orderPayList.size() - 1);
+		// 		isAsh = orderPayEntity.getPayDate().compareTo(now) < 0 ? 1 : 0;
+		// 	}
+		// 	order.put("orderPayList",maps);
+		// 	order.put("isAsh", isAsh);
+		// });
 		return new PageUtils(pages);
 	}
 
@@ -411,6 +413,11 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
 	private List<JSONObject> assembleOrderItem(List<JSONObject> records) {
 		records.forEach(order -> {
+			// 是否灰色展示 0-否 1-是
+			Integer isAsh = 0;
+			List<Map<String, Object>> maps = new ArrayList<>();
+			String pay_date = "";
+			String pay_money = "";
 			Integer dateNum = order.getInteger("date_num");
 			String end_date = "";
 			if (dateNum == 0) {
@@ -422,35 +429,11 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 				}
 			}
 			order.put("end_date", end_date);
-			OrderPayEntity orderPayEntity = this.baseMapper.nextOrder(order.getString("order_id"));
-			String pay_date = "";
-			String pay_money = "";
-			List<Map<String, Object>> maps = new ArrayList<>();
 			String now = DateUtils.format(new Date(), DateUtils.DATE_PATTERN);
-			if (Objects.nonNull(orderPayEntity)) {
-				pay_date = orderPayEntity.getPayDate();
-				pay_money = String.valueOf(orderPayEntity.getPayMoney());
-				List<OrderPayEntity> orderPayList = orderPaySerivce.list(Wrappers.lambdaQuery(OrderPayEntity.class)
-						.eq(OrderPayEntity::getOrderId, order.getString("order_id")).orderByAsc(OrderPayEntity::getPayDate));
-				if (!orderPayList.isEmpty()) {
-					orderPayList.forEach(pay -> {
-						Map<String, Object> map = Maps.newHashMap();
-						String payType = pay.getPayDate().compareTo(now) < 0 ? "已付" : "";
-						map.put("payDate", pay.getPayDate());
-						map.put("payMoney", pay.getPayMoney() + "元");
-						map.put("payType", payType);
-						maps.add(map);
-					});
-				}
-			}else {
-				HistoryDuifuPayEntity duifuPayEntity = historyDuifuPayDao.nextHistoryDuifuPay(order.getString("order_id"));
-				if (Objects.nonNull(duifuPayEntity)) {
-					pay_date = duifuPayEntity.getPayDate();
-					pay_money = String.valueOf(duifuPayEntity.getPayMoney());
-				}
-				List<HistoryDuifuPayEntity> payEntityList = historyDuifuPayDao.selectList(Wrappers.lambdaQuery(HistoryDuifuPayEntity.class)
-						.eq(HistoryDuifuPayEntity::getHistoryDuifuId, order.getString("order_id")).orderByAsc(HistoryDuifuPayEntity::getPayDate));
-				payEntityList.forEach(pay -> {
+			List<OrderPayEntity> orderPayList = orderPaySerivce.list(Wrappers.lambdaQuery(OrderPayEntity.class)
+					.eq(OrderPayEntity::getOrderId, order.getString("order_id")).orderByAsc(OrderPayEntity::getPayDate));
+			if (!orderPayList.isEmpty()) {
+				orderPayList.forEach(pay -> {
 					Map<String, Object> map = Maps.newHashMap();
 					String payType = pay.getPayDate().compareTo(now) < 0 ? "已付" : "";
 					map.put("payDate", pay.getPayDate());
@@ -458,12 +441,39 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 					map.put("payType", payType);
 					maps.add(map);
 				});
-
+				OrderPayEntity payEntity = orderPayList.get(orderPayList.size() - 1);
+				isAsh = payEntity.getPayDate().compareTo(now) < 0 ? 1 : 0;
+				OrderPayEntity orderPayEntity = this.baseMapper.nextOrder(order.getString("order_id"));
+				if (Objects.nonNull(orderPayEntity)) {
+					pay_date = orderPayEntity.getPayDate();
+					pay_money = String.valueOf(orderPayEntity.getPayMoney());
+				}
+			}else {
+				HistoryDuifuPayEntity duifuPayEntity = historyDuifuPayDao.nextHistoryDuifuPay(order.getString("order_id"));
+				if (Objects.nonNull(duifuPayEntity)) {
+					pay_date = duifuPayEntity.getPayDate();
+					pay_money = String.valueOf(duifuPayEntity.getPayMoney());
+					isAsh = duifuPayEntity.getPayDate().compareTo(now) < 0 ? 1 : 0;
+				}
+				List<HistoryDuifuPayEntity> payEntityList = historyDuifuPayDao.selectList(Wrappers.lambdaQuery(HistoryDuifuPayEntity.class)
+						.eq(HistoryDuifuPayEntity::getHistoryDuifuId, order.getString("order_id")).orderByAsc(HistoryDuifuPayEntity::getPayDate));
+				if (!payEntityList.isEmpty()) {
+					payEntityList.forEach(pay -> {
+						Map<String, Object> map = Maps.newHashMap();
+						String payType = pay.getPayDate().compareTo(now) < 0 ? "已付" : "";
+						map.put("payDate", pay.getPayDate());
+						map.put("payMoney", pay.getPayMoney() + "元");
+						map.put("payType", payType);
+						maps.add(map);
+					});
+					HistoryDuifuPayEntity historyDuifuPay = payEntityList.get(payEntityList.size() - 1);
+					isAsh = historyDuifuPay.getPayDate().compareTo(now) < 0 ? 1 : 0;
+				}
 			}
 			order.put("pay_date", pay_date);
 			order.put("pay_money", pay_money);
 			order.put("orderPayList",maps);
-
+			order.put("isAsh", isAsh);
 		});
 		return records;
 	}

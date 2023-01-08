@@ -267,7 +267,8 @@
 			INNER JOIN `p_product` AS p ON o.product_id = p.id
 			INNER JOIN p_raise AS r ON o.raise_id = r.id
 		WHERE
-			o.id IN (
+		    o.status = 4
+			AND o.id IN (
 				SELECT
 					DISTINCT o.id
 				FROM
@@ -342,6 +343,7 @@
 				INNER JOIN p_raise AS r ON o.raise_id = r.id
 		WHERE
 			o.card_num = #{cardNum}
+		  AND O.status = 4
 		<choose>
 			<when test="type == 2">
 				AND p.product_class = '权益类'
@@ -422,6 +424,7 @@
 			p_order
 		WHERE
 			card_num = #{cardNum}
+			AND status = 4
 	</select>
 
 	<select id="annualIncome" resultType="double">
@@ -491,7 +494,9 @@
 		SELECT IFNULL(SUM(pay_money),0) pay_money FROM p_order_pay as p
 		INNER JOIN p_order as o on p.order_id = o.id
 		WHERE o.card_num = #{cardNum}
+		  AND o.status = 4
 		  AND p.pay_date > CURRENT_DATE()
+
 	</select>
 
 	<select id="historyInvestingOrderMoney" resultType="double">
