@@ -365,19 +365,19 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 			// 是否灰色展示 0-否 1-是
 			Integer isAsh = 0;
 			List<Map<String, Object>> maps = new ArrayList<>();
-			String pay_date = "";
-			String pay_money = "";
-			Integer dateNum = order.getInteger("date_num");
-			String end_date = "";
-			if (dateNum == 0) {
-				end_date = order.getString("establish_time");
-			}else {
-				Date establishTime = order.getDate("establish_time");
-				if (Objects.nonNull(establishTime) && Objects.nonNull(dateNum)) {
-					end_date = DateUtil.formatDate(DateUtil.offsetMonth(establishTime, dateNum));
-				}
-			}
-			order.put("end_date", end_date);
+			// String pay_date = "";
+			// String pay_money = "";
+			// Integer dateNum = order.getInteger("date_num");
+			// String end_date = "";
+			// if (dateNum == 0) {
+			// 	end_date = order.getString("establish_time");
+			// }else {
+			// 	Date establishTime = order.getDate("establish_time");
+			// 	if (Objects.nonNull(establishTime) && Objects.nonNull(dateNum)) {
+			// 		end_date = DateUtil.formatDate(DateUtil.offsetMonth(establishTime, dateNum));
+			// 	}
+			// }
+			// order.put("end_date", end_date);
 			String now = DateUtils.format(new Date(), DateUtils.DATE_PATTERN);
 			List<OrderPayEntity> orderPayList = orderPaySerivce.list(Wrappers.lambdaQuery(OrderPayEntity.class)
 					.eq(OrderPayEntity::getOrderId, order.getString("order_id")).orderByAsc(OrderPayEntity::getPayDate));
@@ -392,18 +392,17 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 				});
 				OrderPayEntity payEntity = orderPayList.get(orderPayList.size() - 1);
 				isAsh = payEntity.getPayDate().compareTo(now) < 0 ? 1 : 0;
-				OrderPayEntity orderPayEntity = this.baseMapper.nextOrder(order.getString("order_id"));
-				if (Objects.nonNull(orderPayEntity)) {
-					pay_date = orderPayEntity.getPayDate();
-					pay_money = String.valueOf(orderPayEntity.getPayMoney());
-				}
+				// OrderPayEntity orderPayEntity = this.baseMapper.nextOrder(order.getString("order_id"));
+				// if (Objects.nonNull(orderPayEntity)) {
+				// 	pay_date = orderPayEntity.getPayDate();
+				// 	pay_money = String.valueOf(orderPayEntity.getPayMoney());
+				// }
 			}else {
-				HistoryDuifuPayEntity duifuPayEntity = historyDuifuPayDao.nextHistoryDuifuPay(order.getString("order_id"));
-				if (Objects.nonNull(duifuPayEntity)) {
-					pay_date = duifuPayEntity.getPayDate();
-					pay_money = String.valueOf(duifuPayEntity.getPayMoney());
-					isAsh = duifuPayEntity.getPayDate().compareTo(now) < 0 ? 1 : 0;
-				}
+				// HistoryDuifuPayEntity duifuPayEntity = historyDuifuPayDao.nextHistoryDuifuPay(order.getString("order_id"));
+				// if (Objects.nonNull(duifuPayEntity)) {
+				// 	pay_date = duifuPayEntity.getPayDate();
+				// 	pay_money = String.valueOf(duifuPayEntity.getPayMoney());
+				// }
 				List<HistoryDuifuPayEntity> payEntityList = historyDuifuPayDao.selectList(Wrappers.lambdaQuery(HistoryDuifuPayEntity.class)
 						.eq(HistoryDuifuPayEntity::getHistoryDuifuId, order.getString("order_id")).orderByAsc(HistoryDuifuPayEntity::getPayDate));
 				if (!payEntityList.isEmpty()) {
@@ -419,8 +418,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 					isAsh = historyDuifuPay.getPayDate().compareTo(now) < 0 ? 1 : 0;
 				}
 			}
-			order.put("pay_date", pay_date);
-			order.put("pay_money", pay_money);
+			// order.put("pay_date", pay_date);
+			// order.put("pay_money", pay_money);
 			order.put("orderPayList",maps);
 			order.put("isAsh", isAsh);
 		});
