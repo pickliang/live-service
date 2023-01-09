@@ -39,7 +39,8 @@ public class FinanceServiceImpl extends ServiceImpl<FinanceDao, FinanceEntity> i
     public List<FinanceEntity> companyDynamics(Integer classify) {
         return this.baseMapper.selectList(Wrappers.lambdaQuery(FinanceEntity.class).eq(FinanceEntity::getClassify, classify)
                 .eq(FinanceEntity::getStatus, 0).eq(FinanceEntity::getDelFlag, 0).orderByDesc(FinanceEntity::getCreateTime)
-                .select(FinanceEntity::getId, FinanceEntity::getTitle).last("LIMIT 3"));
+                .select(FinanceEntity::getId, FinanceEntity::getTitle, FinanceEntity::getCoverImg, FinanceEntity::getOutline)
+                .last("LIMIT 3"));
     }
 
     @Override
