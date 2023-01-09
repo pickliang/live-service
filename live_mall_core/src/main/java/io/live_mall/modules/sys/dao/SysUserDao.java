@@ -50,7 +50,7 @@ public interface SysUserDao extends BaseMapper<SysUserEntity> {
 
 	List<SysUserEntity> selectUserOgr(Integer level);
 
-	List<SysUserModel> orgRegionUser(@Param("orgGroupIds") List<String> orgGroupIds);
+	List<SysUserModel> orgRegionUser(String orgGroupIds);
 
 	SysUserModel sysUserByCardNum(String cardNum);
 }

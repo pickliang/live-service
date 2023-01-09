@@ -84,7 +84,6 @@ public class SysOrgGroupController {
             return R.error("城市暂无理财师");
         }
         orgRegionEntity.setCreateTime(new Date());
-        orgRegionEntity.setOrgGroupId(orgGroupIds);
         orgRegionService.save(orgRegionEntity);
         return R.ok();
     }

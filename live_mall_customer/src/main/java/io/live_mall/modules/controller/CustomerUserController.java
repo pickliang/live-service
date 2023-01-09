@@ -7,9 +7,11 @@ import io.live_mall.modules.server.dto.CustomerUserDto;
 import io.live_mall.modules.server.entity.CustomerUserEntity;
 import io.live_mall.modules.server.entity.OrgRegionEntity;
 import io.live_mall.modules.server.model.CustomerUserModel;
+import io.live_mall.modules.server.model.OrgRegionModel;
 import io.live_mall.modules.server.model.SysUserModel;
 import io.live_mall.modules.server.service.CustomerUserService;
 import io.live_mall.modules.server.service.OrgRegionService;
+import io.live_mall.modules.server.service.SysOrgGroupService;
 import io.live_mall.modules.sys.entity.SysUserEntity;
 import io.live_mall.modules.sys.service.SysUserService;
 import lombok.AllArgsConstructor;
@@ -17,7 +19,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -32,6 +34,7 @@ public class CustomerUserController {
     private final CustomerUserService customerUserService;
     private final SysUserService sysUserService;
     private final OrgRegionService orgRegionService;
+    private final SysOrgGroupService sysOrgGroupService;
 
     /**
      * 修改用户证件信息
@@ -52,7 +55,15 @@ public class CustomerUserController {
     @GetMapping(value = "/org-regions")
     public R regions() {
         List<OrgRegionEntity> list = orgRegionService.list(Wrappers.lambdaQuery(OrgRegionEntity.class).eq(OrgRegionEntity::getDelFlag, 0));
-        return R.ok().put("data", list);
+        List<OrgRegionModel> models = new ArrayList<>();
+        list.forEach(region -> {
+            OrgRegionModel model = new OrgRegionModel();
+            BeanUtils.copyProperties(region, model);
+            String orgGroupIds = sysOrgGroupService.orgGroupIds(region.getName());
+            model.setOrgGroupId(orgGroupIds);
+            models.add(model);
+        });
+        return R.ok().put("data", models);
     }
 
     /**
@@ -62,7 +73,7 @@ public class CustomerUserController {
      */
     @GetMapping(value = "/org-regions-sales")
     public R regionsSale(@RequestParam String orgGroupId) {
-        List<String> orgGroupIds = Arrays.asList(orgGroupId.split(","));
+        String orgGroupIds = orgGroupId.replace(",", "|");
         List<SysUserModel> users = sysUserService.orgRegionUser(orgGroupIds);
         return R.ok().put("data", users);
     }

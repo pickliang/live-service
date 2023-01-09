@@ -84,11 +84,13 @@
 		FROM
 			sys_user
 		WHERE
-			user_id IN ( SELECT user_id FROM sys_org_user WHERE org_id IN
-				<foreach collection="orgGroupIds" item="orgGroupId" index="index" open="(" close=")" separator=",">
-					#{orgGroupId}
-				</foreach>
-			)
+		    status = 1
+		    and user_id in (SELECT user_id FROM sys_org_user WHERE orgids REGEXP #{orgGroupIds})
+<!--			and user_id IN ( SELECT user_id FROM sys_org_user WHERE org_id IN-->
+<!--				<foreach collection="orgGroupIds" item="orgGroupId" index="index" open="(" close=")" separator=",">-->
+<!--					#{orgGroupId}-->
+<!--				</foreach>-->
+<!--			)-->
 	</select>
 
 	<select id="sysUserByCardNum" resultType="io.live_mall.modules.server.model.SysUserModel">

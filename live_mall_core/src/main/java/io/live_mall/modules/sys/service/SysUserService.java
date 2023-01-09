@@ -76,7 +76,7 @@ public interface SysUserService extends IService<SysUserEntity> {
 
 	String wxPhone(JSONObject userJson, Long userId);
 
-	List<SysUserModel> orgRegionUser(List<String> orgGroupIds);
+	List<SysUserModel> orgRegionUser(String orgGroupIds);
 
 	SysUserModel sysUserByCardNum(String cardNum);
 }

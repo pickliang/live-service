@@ -29,10 +29,7 @@ public class OrgRegionEntity implements Serializable {
      */
     @NotBlank(message = "名称不可为空")
     private String name;
-    /**
-     * sys_org_group主键id
-     */
-    private String orgGroupId;
+
     /**
      * 创建时间
      */

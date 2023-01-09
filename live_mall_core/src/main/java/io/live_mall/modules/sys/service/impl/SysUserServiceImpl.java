@@ -222,7 +222,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUserEntity> i
 	}
 
 	@Override
-	public List<SysUserModel> orgRegionUser(List<String> orgGroupIds) {
+	public List<SysUserModel> orgRegionUser(String orgGroupIds) {
 		return this.baseMapper.orgRegionUser(orgGroupIds);
 	}
 
