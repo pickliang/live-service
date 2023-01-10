@@ -276,15 +276,15 @@
 					INNER JOIN p_order_pay AS p ON o.id = p.order_id
 				WHERE
 					o.card_num = #{cardNum}
-					<choose>
-						<when test="isHistory == 1">
-							AND p.pay_date <![CDATA[ >= ]]> CURRENT_DATE ( )
-						</when>
-						<otherwise>
-							AND p.pay_date <![CDATA[ < ]]> CURRENT_DATE ( )
-						</otherwise>
-					</choose>
 			)
+		<choose>
+			<when test="isHistory == 1">
+				AND DATE_ADD(r.establish_time,INTERVAL o.date_num MONTH) <![CDATA[ > ]]> CURRENT_DATE
+			</when>
+			<otherwise>
+				AND DATE_ADD(r.establish_time,INTERVAL o.date_num MONTH) <![CDATA[ <= ]]> CURRENT_DATE
+			</otherwise>
+		</choose>
 		<if test="type == 1">
 			AND p.product_class = '类固收'
 		</if>
@@ -314,15 +314,16 @@
 				INNER JOIN history_duifu_pay AS dp ON h.id = dp.history_duifu_id
 			WHERE
 				h.card_num =  #{cardNum}
+
+		)
 		<choose>
 			<when test="isHistory == 1">
-				AND dp.pay_date <![CDATA[ >= ]]> CURRENT_DATE ( )
+				AND end_date <![CDATA[ > ]]> CURRENT_DATE ( )
 			</when>
 			<otherwise>
-				AND dp.pay_date <![CDATA[ < ]]> CURRENT_DATE ( )
+				AND end_date <![CDATA[ <= ]]> CURRENT_DATE ( )
 			</otherwise>
 		</choose>
-		)
 		<if test="type == 1">
 			AND product_class = '类固收'
 		</if>
