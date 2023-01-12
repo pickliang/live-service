@@ -96,7 +96,7 @@ public class MemberEntity implements Serializable {
 	 * 销售员
 	 */
 	private String saleId;
-	private String salename;
+//	private String salename;
 
 	private String birthday;
 	

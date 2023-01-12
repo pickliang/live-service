@@ -260,7 +260,7 @@
 			o.appoint_money * 10000 AS appoint_money,
 			DATE_FORMAT( o.appoint_time, '%Y-%m-%d' ) appoint_time,
 			r.establish_time,
-		    o.date_num,
+		    r.end_date,
 			CONCAT( o.date_num, o.date_uint ) AS term
 		FROM
 			p_order AS o
@@ -279,10 +279,10 @@
 			)
 		<choose>
 			<when test="isHistory == 1">
-				AND DATE_ADD(r.establish_time,INTERVAL o.date_num MONTH) <![CDATA[ > ]]> CURRENT_DATE
+				AND r.end_date <![CDATA[ > ]]> CURRENT_DATE
 			</when>
 			<otherwise>
-				AND DATE_ADD(r.establish_time,INTERVAL o.date_num MONTH) <![CDATA[ <= ]]> CURRENT_DATE
+				AND r.end_date <![CDATA[ <= ]]> CURRENT_DATE
 			</otherwise>
 		</choose>
 		<if test="type == 1">
@@ -302,7 +302,7 @@
 		    appoint_money,
 			value_date AS appoint_time,
 		    end_date AS establish_time,
-			0 AS date_num,
+		    end_date,
 			term
 		FROM
 			history_duifu

@@ -55,9 +55,9 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
 		/**
 		 * realname不是p_member中的字段，因此在增加这个条件时会报错
 		 */
-		if (StringUtils.isNotBlank(params.getString("salename"))){
-			queryWrapper.like("salename",params.getString("salename"));
-		}
+//		if (StringUtils.isNotBlank(params.getString("salename"))){
+//			queryWrapper.like("salename",params.getString("salename"));
+//		}
 		/**
 		 * 如果以上两个条件均为空，则可以查出全部记录，并且因为Entity中有关联，所以也能查出realname
 		 */
@@ -105,7 +105,7 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
 			member.setCustName(order.getCustomerName());
 			member.setSaleId(order.getSaleId() + "");
 			System.out.println("lyg==="+order.getSaleUser().getRealname());
-			member.setSalename(order.getSaleUser().getRealname());
+//			member.setSalename(order.getSaleUser().getRealname());
 			member.setBankCardBack(order.getBankCardBack());
 			member.setBankCardFront(order.getBankCardFront());
 			member.setBankNo(order.getBankNo());
