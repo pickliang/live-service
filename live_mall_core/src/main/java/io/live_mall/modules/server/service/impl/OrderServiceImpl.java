@@ -513,27 +513,20 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 	public Map<String, Object> customerOrderInfo(String id) {
 		Map<String, Object> result = Maps.newHashMap();
 		JSONObject orderInfo = this.baseMapper.customerOrderInfo(id);
-		if (Objects.nonNull(orderInfo)) {
-			String end_date = "";
-			Integer dateNum = orderInfo.getInteger("date_num");
-			Date establishTime = orderInfo.getDate("establish_time");
-			if (Objects.nonNull(establishTime) && Objects.nonNull(dateNum)) {
-				end_date = DateUtil.formatDate(DateUtil.offsetMonth(establishTime, dateNum));
-			}
-			orderInfo.put("end_date", end_date);
-		}else {
+		if (Objects.isNull(orderInfo)) {
 			orderInfo = historyDuiFuDao.HistoryDuiFuInfo(id);
 		}
-		// Integer dateNum = orderInfo.getInteger("date_num");
-		// String end_date = "";
-		// if (dateNum == 0) {
-		// 	end_date = orderInfo.getString("establish_time");
-		// }else {
-		// 	Date establishTime = orderInfo.getDate("establish_time");
-		// 	if (Objects.nonNull(establishTime) && Objects.nonNull(dateNum)) {
-		// 		end_date = DateUtil.formatDate(DateUtil.offsetMonth(establishTime, dateNum));
-		// 	}
-		// }
+//		if (Objects.nonNull(orderInfo)) {
+//			String end_date = "";
+//			Integer dateNum = orderInfo.getInteger("date_num");
+//			Date establishTime = orderInfo.getDate("establish_time");
+//			if (Objects.nonNull(establishTime) && Objects.nonNull(dateNum)) {
+//				end_date = DateUtil.formatDate(DateUtil.offsetMonth(establishTime, dateNum));
+//			}
+//			orderInfo.put("end_date", end_date);
+//		}else {
+//			orderInfo = historyDuiFuDao.HistoryDuiFuInfo(id);
+//		}
 
 		//产品详情
 		JSONObject productInfo = new JSONObject();

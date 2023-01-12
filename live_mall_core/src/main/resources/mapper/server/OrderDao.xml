@@ -514,6 +514,7 @@
 			o.appoint_money * 10000 AS appoint_money,
 			DATE_FORMAT( o.appoint_time, '%Y-%m-%d' ) appoint_time,
 			r.establish_time as establish_time,
+		    r.end_date,
 			o.date_num,
 			CONCAT( o.date_num, o.date_uint ) AS term,
 			(SELECT IFNULL(pay_money,0) + o.appoint_money * 10000 FROM p_order_pay WHERE order_id = o.id ORDER BY pay_date DESC LIMIT 1) as end_sum_money,
