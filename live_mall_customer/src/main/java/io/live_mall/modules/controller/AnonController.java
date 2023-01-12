@@ -41,6 +41,9 @@ public class AnonController {
      */
     @GetMapping(value = "/login")
     public R login(String phone) {
+        if (StringUtils.isBlank(phone)) {
+            return R.error("手机号不可为空");
+        }
         // 根据手机号获取用户信息
         CustomerUserModel user = customerUserService.login(phone);
         String token = TokenGenerator.generateValue();
