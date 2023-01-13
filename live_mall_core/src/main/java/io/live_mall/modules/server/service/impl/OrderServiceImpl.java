@@ -377,7 +377,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 			 		end_date = DateUtil.formatDate(DateUtil.offsetMonth(establishTime, dateNum));
 			 	}
 			 }
-			// order.put("end_date", end_date);
+			 order.put("end_date", end_date);
 			String now = DateUtils.format(new Date(), DateUtils.DATE_PATTERN);
 			List<OrderPayEntity> orderPayList = orderPaySerivce.list(Wrappers.lambdaQuery(OrderPayEntity.class)
 					.eq(OrderPayEntity::getOrderId, order.getString("order_id")).orderByAsc(OrderPayEntity::getPayDate));

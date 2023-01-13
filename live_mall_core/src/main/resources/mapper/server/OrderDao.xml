@@ -259,8 +259,8 @@
 			o.id AS order_id,
 			o.appoint_money * 10000 AS appoint_money,
 			DATE_FORMAT( o.appoint_time, '%Y-%m-%d' ) appoint_time,
-		    o.date_num as date_num,
-		    DATE_FORMAT(r.end_date, '%Y-%m-%d') as end_date,
+			r.establish_time,
+			o.date_num,
 			CONCAT( o.date_num, o.date_uint ) AS term
 		FROM
 			p_order AS o
@@ -279,10 +279,10 @@
 			)
 		<choose>
 			<when test="isHistory == 1">
-				AND r.end_date <![CDATA[ > ]]> CURRENT_DATE
+				AND DATE_ADD(r.establish_time,INTERVAL o.date_num MONTH) <![CDATA[ > ]]> CURRENT_DATE
 			</when>
 			<otherwise>
-				AND r.end_date <![CDATA[ <= ]]> CURRENT_DATE
+				AND DATE_ADD(r.establish_time,INTERVAL o.date_num MONTH) <![CDATA[ <= ]]> CURRENT_DATE
 			</otherwise>
 		</choose>
 		<if test="type == 1">
@@ -297,12 +297,12 @@
 		UNION ALL
 		SELECT
 			product_name,
-		    product_class,
+			product_class,
 			id AS order_id,
-		    appoint_money,
+			appoint_money,
 			value_date AS appoint_time,
-		    end_date AS establish_time,
-		    0 as date_num,
+			end_date AS establish_time,
+			0 AS date_num,
 			term
 		FROM
 			history_duifu
@@ -314,7 +314,6 @@
 				INNER JOIN history_duifu_pay AS dp ON h.id = dp.history_duifu_id
 			WHERE
 				h.card_num =  #{cardNum}
-
 		)
 		<choose>
 			<when test="isHistory == 1">
