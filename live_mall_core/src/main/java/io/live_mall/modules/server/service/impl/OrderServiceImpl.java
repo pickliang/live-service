@@ -365,18 +365,18 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 			// 是否灰色展示 0-否 1-是
 			Integer isAsh = 0;
 			List<Map<String, Object>> maps = new ArrayList<>();
-			// String pay_date = "";
-			// String pay_money = "";
-			// Integer dateNum = order.getInteger("date_num");
-			// String end_date = "";
-			// if (dateNum == 0) {
-			// 	end_date = order.getString("establish_time");
-			// }else {
-			// 	Date establishTime = order.getDate("establish_time");
-			// 	if (Objects.nonNull(establishTime) && Objects.nonNull(dateNum)) {
-			// 		end_date = DateUtil.formatDate(DateUtil.offsetMonth(establishTime, dateNum));
-			// 	}
-			// }
+			 String pay_date = "";
+			 String pay_money = "";
+			 Integer dateNum = order.getInteger("date_num");
+			 String end_date = "";
+			 if (dateNum == 0) {
+			 	end_date = order.getString("establish_time");
+			 }else {
+			 	Date establishTime = order.getDate("establish_time");
+			 	if (Objects.nonNull(establishTime) && Objects.nonNull(dateNum)) {
+			 		end_date = DateUtil.formatDate(DateUtil.offsetMonth(establishTime, dateNum));
+			 	}
+			 }
 			// order.put("end_date", end_date);
 			String now = DateUtils.format(new Date(), DateUtils.DATE_PATTERN);
 			List<OrderPayEntity> orderPayList = orderPaySerivce.list(Wrappers.lambdaQuery(OrderPayEntity.class)
@@ -513,20 +513,20 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 	public Map<String, Object> customerOrderInfo(String id) {
 		Map<String, Object> result = Maps.newHashMap();
 		JSONObject orderInfo = this.baseMapper.customerOrderInfo(id);
-		if (Objects.isNull(orderInfo)) {
-			orderInfo = historyDuiFuDao.HistoryDuiFuInfo(id);
-		}
-//		if (Objects.nonNull(orderInfo)) {
-//			String end_date = "";
-//			Integer dateNum = orderInfo.getInteger("date_num");
-//			Date establishTime = orderInfo.getDate("establish_time");
-//			if (Objects.nonNull(establishTime) && Objects.nonNull(dateNum)) {
-//				end_date = DateUtil.formatDate(DateUtil.offsetMonth(establishTime, dateNum));
-//			}
-//			orderInfo.put("end_date", end_date);
-//		}else {
+//		if (Objects.isNull(orderInfo)) {
 //			orderInfo = historyDuiFuDao.HistoryDuiFuInfo(id);
 //		}
+		if (Objects.nonNull(orderInfo)) {
+			String end_date = "";
+			Integer dateNum = orderInfo.getInteger("date_num");
+			Date establishTime = orderInfo.getDate("establish_time");
+			if (Objects.nonNull(establishTime) && Objects.nonNull(dateNum)) {
+				end_date = DateUtil.formatDate(DateUtil.offsetMonth(establishTime, dateNum));
+			}
+			orderInfo.put("end_date", end_date);
+		}else {
+			orderInfo = historyDuiFuDao.HistoryDuiFuInfo(id);
+		}
 
 		//产品详情
 		JSONObject productInfo = new JSONObject();

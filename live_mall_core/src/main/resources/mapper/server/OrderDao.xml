@@ -259,7 +259,7 @@
 			o.id AS order_id,
 			o.appoint_money * 10000 AS appoint_money,
 			DATE_FORMAT( o.appoint_time, '%Y-%m-%d' ) appoint_time,
-			r.establish_time,
+		    o.date_num as date_num,
 		    DATE_FORMAT(r.end_date, '%Y-%m-%d') as end_date,
 			CONCAT( o.date_num, o.date_uint ) AS term
 		FROM
@@ -302,7 +302,7 @@
 		    appoint_money,
 			value_date AS appoint_time,
 		    end_date AS establish_time,
-		    end_date,
+		    0 as date_num,
 			term
 		FROM
 			history_duifu
@@ -514,7 +514,6 @@
 			o.appoint_money * 10000 AS appoint_money,
 			DATE_FORMAT( o.appoint_time, '%Y-%m-%d' ) appoint_time,
 			r.establish_time as establish_time,
-		    DATE_FORMAT(r.end_date, '%Y-%-m-%d') as end_date,
 			o.date_num,
 			CONCAT( o.date_num, o.date_uint ) AS term,
 			(SELECT IFNULL(pay_money,0) + o.appoint_money * 10000 FROM p_order_pay WHERE order_id = o.id ORDER BY pay_date DESC LIMIT 1) as end_sum_money,
