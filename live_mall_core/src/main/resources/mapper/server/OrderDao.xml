@@ -493,9 +493,10 @@
 	<select id="investingOrderMoney" resultType="double">
 		SELECT IFNULL(SUM(pay_money),0) pay_money FROM p_order_pay as p
 		INNER JOIN p_order as o on p.order_id = o.id
+		INNER JOIN p_raise as r on o.raise_id = r.id
 		WHERE o.card_num = #{cardNum}
 		  AND o.status = 4
-		  AND p.pay_date > CURRENT_DATE()
+		  AND DATE_ADD(r.establish_time,INTERVAL o.date_num MONTH) <![CDATA[ > ]]> CURRENT_DATE
 
 	</select>
 
@@ -504,7 +505,6 @@
 		INNER JOIN history_duifu as h on p.history_duifu_id = h.id
 		WHERE h.card_num = #{cardNum}
 		  AND p.pay_date > CURRENT_DATE()
-
 	</select>
 
 	<select id="customerOrderInfo" resultType="com.alibaba.fastjson.JSONObject">
