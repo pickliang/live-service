@@ -429,6 +429,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 	@Override
 	public Map<String, Object> totalAssets(String cardNum) {
 		Map<String, Object> result = Maps.newHashMap();
+		// 累计收益：所有已付利息总和
+		Double totalInterest = this.baseMapper.totalInterest(cardNum);
 		// 类固收(固收)
 		Double fixedIncome = this.baseMapper.fixedIncome(cardNum, 1);
 		Double historyFixedIncome = this.baseMapper.historyFixedIncome(cardNum, 1);
@@ -444,15 +446,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 		result.put("fixedIncome", fixedIncome + historyFixedIncome);
 		result.put("stock", stock + historyStock);
 		result.put("netWorth", netWorth + historyNetWorth);
-		// 订单列表
-		// Map<String, Object> params = Maps.newHashMap();
-		// params.put("page", 1);
-		// params.put("limit", 2);
-		// IPage<JSONObject> pages = this.baseMapper.customerDuifuPage(new Query<JSONObject>().getPage(params), cardNum, 0, 1);
-		// List<JSONObject> fixedIncomeList = assembleOrderItem(pages.getRecords());
-		// List<JSONObject> historyFixedIncomeList = assembleOrderItem(pages.getRecords());
-		// result.put("fixedIncomeList", fixedIncomeList);
-		// result.put("historyFixedIncomeList", historyFixedIncomeList);
+		result.put("totalInterest", totalInterest);
 		return result;
 	}
 

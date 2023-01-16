@@ -357,6 +357,18 @@
 		</choose>
 	</select>
 
+	<select id="totalInterest" resultType="double">
+		SELECT
+			SUM( pay_money ) pay_money
+		FROM
+			p_order_pay AS p
+				INNER JOIN p_order AS o ON p.order_id = o.id
+		WHERE
+			o.card_num = #{cardNum}
+		  AND o.`status` = 4
+		  AND p.pay_date <![CDATA[ < ]]> CURRENT_DATE
+	</select>
+
 	<select id="historyFixedIncome" resultType="double">
 		SELECT
 			IFNULL( SUM( appoint_money ), 0 ) appoint_money

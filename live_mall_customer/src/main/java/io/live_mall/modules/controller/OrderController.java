@@ -40,6 +40,10 @@ public class OrderController {
         return R.ok().put("data", pageUtils);
     }
 
+    /**
+     * 我的资产
+     * @return
+     */
     @GetMapping(value = "/total-assets")
     public R totalAssets() {
         CustomerUserModel userEntity = ShiroUtils.getUserEntity();
