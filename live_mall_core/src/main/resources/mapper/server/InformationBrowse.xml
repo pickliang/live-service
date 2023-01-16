@@ -6,16 +6,16 @@
     <select id="informationBrowserList" resultType="io.live_mall.modules.server.model.InformationBrowserModel">
         SELECT
             u.`name`,
-            ROUND(b.duration / 60) as duration,
-            b.progress,
+            MAX(duration) as duration,
+            MAX(b.progress) as progress,
             COUNT( 0 ) AS frequency
         FROM
             `information_browse` AS b
                 LEFT JOIN customer_user AS u ON b.user_id = u.id
         WHERE
             b.information_id = #{params.id}
-        GROUP BY
-            b.user_id
+        GROUP BY b.user_id
+        ORDER BY b.progress DESC
     </select>
 
     <select id="countPeopleNumber" resultType="long">
