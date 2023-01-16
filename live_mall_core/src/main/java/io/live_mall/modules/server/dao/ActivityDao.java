@@ -19,4 +19,6 @@ import java.util.Map;
 public interface ActivityDao extends BaseMapper<ActivityEntity> {
     IPage<ActivityModel> activityPages(@Param("pages") IPage<ActivityModel> pages, @Param("params") Map<String, Object> params);
     IPage<JSONObject> customerActivityPages(@Param("pages") IPage<ActivityModel> pages, @Param("params") Map<String, Object> params);
+
+    JSONObject mySubscribeActivity(String userId);
 }

@@ -1,5 +1,6 @@
 package io.live_mall.modules.server.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.IService;
 import io.live_mall.common.utils.PageUtils;
 import io.live_mall.common.utils.R;
@@ -18,4 +19,6 @@ public interface ActivityService extends IService<ActivityEntity> {
     PageUtils customerActivityPages(Map<String, Object> params);
 
     R activitySubscribe(String activityId, String userId);
+
+    JSONObject mySubscribeActivity(String userId);
 }

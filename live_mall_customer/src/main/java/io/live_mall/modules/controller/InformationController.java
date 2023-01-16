@@ -1,5 +1,6 @@
 package io.live_mall.modules.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.common.collect.Maps;
 import io.live_mall.common.utils.PageUtils;
@@ -150,5 +151,14 @@ public class InformationController {
         return activityService.activitySubscribe(activityId, ShiroUtils.getUserId());
     }
 
-
+    /**
+     * 我预约的活动
+     * @return
+     */
+    @GetMapping(value = "/my-activity")
+    public R mySubscribeActivity() {
+        String userId = ShiroUtils.getUserId();
+        JSONObject result = activityService.mySubscribeActivity(userId);
+        return R.ok().put("data", result);
+    }
 }

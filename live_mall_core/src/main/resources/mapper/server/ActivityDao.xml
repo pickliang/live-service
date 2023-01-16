@@ -33,4 +33,17 @@
             `status` = 1
           AND del_flag = 0
     </select>
+
+    <select id="mySubscribeActivity" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            a.id,
+            a.title,
+            DATE_FORMAT( a.date_time, '%m月%d日 %h:%m' ) AS date_time
+        FROM
+            `activity_user` AS au
+                INNER JOIN activity AS a ON au.activity_id = a.id
+        WHERE
+            au.user_id = #{userId}
+          AND au.`status` = 1
+    </select>
 </mapper>

@@ -1,5 +1,6 @@
 package io.live_mall.modules.server.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.live_mall.common.utils.PageUtils;
@@ -62,5 +63,10 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityDao, ActivityEntity
         entity.setCreateTime(now);
         int save = activityUserDao.insert(entity);
         return save > 0 ? R.ok() : R.error();
+    }
+
+    @Override
+    public JSONObject mySubscribeActivity(String userId) {
+        return this.baseMapper.mySubscribeActivity(userId);
     }
 }
