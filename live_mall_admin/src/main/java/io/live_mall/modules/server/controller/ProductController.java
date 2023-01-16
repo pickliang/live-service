@@ -1,26 +1,18 @@
 package io.live_mall.modules.server.controller;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-
-import io.live_mall.modules.server.entity.ProductEntity;
-import io.live_mall.modules.server.service.ProductService;
 import io.live_mall.common.utils.PageUtils;
 import io.live_mall.common.utils.R;
 import io.live_mall.common.utils.ShiroUtils;
+import io.live_mall.modules.server.entity.ProductEntity;
+import io.live_mall.modules.server.service.ProductService;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 /**
  * 产品列表
@@ -113,5 +105,13 @@ public class ProductController {
 		productService.removeByIds(Arrays.asList(ids));
 		return R.ok();
 	}
+
+	@GetMapping(value = "/product-name-list")
+	@RequiresPermissions("server:product:list")
+	public R productNameList() {
+		List<JSONObject> list = productService.productNameList();
+		return R.ok().put("data", list);
+	}
+
 
 }

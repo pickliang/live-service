@@ -501,4 +501,8 @@
 		WHERE
 			product_name = #{productName}
 	</select>
+
+	<select id="productNameList" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT id, product_name FROM `p_product` WHERE del_flag = 0
+	</select>
 </mapper>

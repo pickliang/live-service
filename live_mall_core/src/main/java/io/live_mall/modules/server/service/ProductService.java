@@ -27,5 +27,7 @@ public interface ProductService extends IService<ProductEntity> {
 	void uptStatus(String productId);
 
 	String getProductClassByProductName(String productName);
+
+	List<JSONObject> productNameList();
 }
 

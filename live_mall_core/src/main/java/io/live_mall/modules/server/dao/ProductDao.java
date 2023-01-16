@@ -7,6 +7,8 @@ import io.live_mall.modules.server.entity.ProductEntity;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 /**
  * 产品列表
  * 
@@ -31,4 +33,6 @@ public interface ProductDao extends BaseMapper<ProductEntity> {
 	String getProductClassByProductName(String productName);
 
 	JSONObject getProductInfo(String productName);
+
+    List<JSONObject> productNameList();
 }

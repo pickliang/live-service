@@ -192,6 +192,11 @@ public class ProductServiceImpl extends ServiceImpl<ProductDao, ProductEntity> i
 
 	@Override
 	public String getProductClassByProductName(String productName) {
-		return null;
+		return this.baseMapper.getProductClassByProductName(productName);
+	}
+
+	@Override
+	public List<JSONObject> productNameList() {
+		return this.baseMapper.productNameList();
 	}
 }
