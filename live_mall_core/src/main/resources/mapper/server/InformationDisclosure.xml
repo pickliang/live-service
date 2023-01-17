@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.live_mall.modules.server.dao.InformationDisclosureDao">
+
+    <select id="pages" resultType="io.live_mall.modules.server.model.InformationDisclosureModel">
+        SELECT
+            p.product_name,
+            d.id,
+            d.create_time,
+            d.`name`
+        FROM
+            information_disclosure AS d
+            LEFT JOIN p_product AS p ON d.product_id = p.id
+        WHERE
+            d.del_flag = 0
+          <if test="params.name != null and params.name != ''">
+              AND LOCATE( #{params.name}, d.`name` ) > 0
+          </if>
+
+    </select>
+
+    <select id="customerPages" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            id,
+            `name`
+        FROM
+            information_disclosure
+        WHERE
+            del_flag = 0
+    </select>
+
+    <select id="informationDisclosureInfo" resultType="io.live_mall.modules.server.model.InformationDisclosureModel">
+        SELECT
+            d.id,
+            d.`name`,
+            p.product_name
+        FROM
+            information_disclosure AS d
+                LEFT JOIN p_product AS p ON d.product_id = p.id
+        WHERE
+            d.id = #{id}
+    </select>
+</mapper>

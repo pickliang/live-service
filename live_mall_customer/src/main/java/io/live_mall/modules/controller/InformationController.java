@@ -9,9 +9,11 @@ import io.live_mall.common.utils.ShiroUtils;
 import io.live_mall.modules.server.entity.ActivityEntity;
 import io.live_mall.modules.server.entity.FinanceEntity;
 import io.live_mall.modules.server.model.FinanceModel;
+import io.live_mall.modules.server.model.InformationDisclosureModel;
 import io.live_mall.modules.server.model.InformationModel;
 import io.live_mall.modules.server.service.ActivityService;
 import io.live_mall.modules.server.service.FinanceService;
+import io.live_mall.modules.server.service.InformationDisclosureService;
 import io.live_mall.modules.server.service.InformationService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -33,6 +35,7 @@ public class InformationController {
     private final FinanceService financeService;
     private final InformationService informationService;
     private final ActivityService activityService;
+    private final InformationDisclosureService informationDisclosureService;
 
     /**
      * 公司动态文章
@@ -160,5 +163,27 @@ public class InformationController {
         String userId = ShiroUtils.getUserId();
         JSONObject result = activityService.mySubscribeActivity(userId);
         return R.ok().put("data", result);
+    }
+
+    /**
+     * 信息披露列表
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "/disclosure-list")
+    public R  informationDisclosureList(@RequestParam Map<String, Object> params) {
+        PageUtils pages = informationDisclosureService.customerPages(params);
+        return R.ok().put("data", pages);
+    }
+
+    /**
+     * 信息披露详情
+     * @param id 主键id
+     * @return
+     */
+    @GetMapping(value = "/disclosure-info/{id}")
+    public R informationDisclosureInfo(@PathVariable("id") String id) {
+        InformationDisclosureModel model = informationDisclosureService.informationDisclosureInfo(id);
+        return R.ok().put("data", model);
     }
 }

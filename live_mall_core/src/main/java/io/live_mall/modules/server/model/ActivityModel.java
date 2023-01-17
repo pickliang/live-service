@@ -24,6 +24,11 @@ public class ActivityModel {
     @JSONField(format = "yyyy-MM-dd HH:mm")
     private Date dateTime;
     /**
+     * 审核状态 1-审核通过 2-审核拒绝 3-审核中
+     */
+    private Integer status;
+
+    /**
      * 提交人
      */
     private String realname;
