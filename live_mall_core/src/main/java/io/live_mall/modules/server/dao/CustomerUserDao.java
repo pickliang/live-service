@@ -31,7 +31,8 @@ public interface CustomerUserDao extends BaseMapper<CustomerUserEntity> {
     /**
      * 更新用户证件信息
      * @param userDto
+     * @param code 邀请码
      * @return
      */
-    int updateUserInfo(@Param("user") CustomerUserDto userDto);
+    int updateUserInfo(@Param("user") CustomerUserDto userDto, @Param("code") Integer code);
 }

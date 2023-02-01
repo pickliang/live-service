@@ -58,6 +58,14 @@ public class CustomerUserEntity implements Serializable {
      */
     private Integer saleId;
     /**
+     * 邀请码
+     */
+    private Integer code;
+    /**
+     * 被邀请码
+     */
+    private Integer askCode;
+    /**
      * 删除状态(1删除  0未删除)
      */
     private Integer delFlag;

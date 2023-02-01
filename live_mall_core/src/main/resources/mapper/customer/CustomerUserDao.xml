@@ -3,16 +3,17 @@
 
 <mapper namespace="io.live_mall.modules.server.dao.CustomerUserDao">
     <select id="login" resultType="io.live_mall.modules.server.model.CustomerUserModel">
-        SELECT id, phone, card_num, token, expire_time FROM `customer_user` WHERE phone = #{phone}
+        SELECT id, phone, card_num, token, expire_time, code FROM `customer_user` WHERE phone = #{phone}
     </select>
 
     <select id="queryByToken" resultType="io.live_mall.modules.server.model.CustomerUserModel">
-        SELECT id, phone, card_num, token, expire_time FROM `customer_user` WHERE token = #{token}
+        SELECT id, phone, card_num, token, expire_time, code FROM `customer_user` WHERE token = #{token}
     </select>
 
     <update id="updateUserInfo">
         UPDATE customer_user SET name = #{user.name}, card_num = #{user.cardNum},
-                                 card_photo_r = #{user.cardPhoneR}, card_photo_l = #{user.cardPhoneL}, card_time = #{user.cardTime}
+                                 card_photo_r = #{user.cardPhoneR}, card_photo_l = #{user.cardPhoneL}, card_time = #{user.cardTime},
+                                 code = #{code}, ask_code = #{user.askCode}
         WHERE id = #{user.id}
     </update>
 </mapper>

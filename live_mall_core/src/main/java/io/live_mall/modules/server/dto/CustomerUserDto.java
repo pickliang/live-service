@@ -28,5 +28,9 @@ public class CustomerUserDto {
 
     @NotBlank(message = "证件有效期不可为空")
     private String cardTime;
+    /**
+     * 邀请码
+     */
+    private Integer askCode;
 
 }
