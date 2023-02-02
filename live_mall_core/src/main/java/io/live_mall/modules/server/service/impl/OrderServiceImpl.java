@@ -133,7 +133,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 	}
 
 	@Override
-	@Transactional
+	@Transactional(rollbackFor = Exception.class)
 	public int updateOrder(OrderEntity order, SysUserEntity user) {
 		RaiseEntity raiseEntity = raiseService.getById(order.getRaiseId());
 		OrderEntity orderEntity = this.getById(order.getId());
@@ -150,6 +150,26 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 				order.setCustId(memberEntity.getMemberNo());
 			}
 			smsService.sendMsgToCust(orderEntity);
+			// 注册了客户小程序 赠送积分
+			CustomerUserEntity userEntity = customerUserDao.selectOne(Wrappers.lambdaQuery(CustomerUserEntity.class).eq(CustomerUserEntity::getCardNum, order.getCardNum()));
+			if (Objects.nonNull(userEntity)) {
+				// 积分规则
+				IntegralEntity integralEntity = integralDao.selectOne(Wrappers.lambdaQuery(IntegralEntity.class).orderByDesc(IntegralEntity::getCreateTime).last("LIMIT 1"));
+				Integer integral = Objects.isNull(integralEntity) ? 0 : integralEntity.getIntegral();
+				CustomerUserIntegralItemEntity integralItem = new CustomerUserIntegralItemEntity();
+				integralItem.setCustomerUserId(userEntity.getId());
+				integralItem.setOrderId(orderEntity.getId());
+				integralItem.setProductId(orderEntity.getProductId());
+				integralItem.setAppointMoney(orderEntity.getAppointMoney());
+				// 积分规则
+				// 1、产品期限 <= 12 个月，投资年化额每一万兑换商城积分数10积分（投资年化额=投资额*产品期限/12)
+				// 2、产品期限> 12个月 投资额每一万兑换10积分
+				Integer newIntegral = orderEntity.getDateNum() <= 12 ? (orderEntity.getAppointMoney() * orderEntity.getDateNum() / 12 * integral) : (orderEntity.getAppointMoney() * integral);
+				integralItem.setIntegral(newIntegral);
+				integralItem.setDescription("订单赠送");
+				integralItem.setCreateTime(new Date());
+				customerUserIntegralItemDao.insert(integralItem);
+			}
 			MemberEntity one = memberService.getOne(new QueryWrapper<MemberEntity>().eq("card_num", order.getCardNum()));
 			if( one !=null && !String.valueOf(order.getSaleId()).equals( one.getSaleId())) {
 				throw new RRException("该会员,已经是其他业务客户,请联系相关负责人");
