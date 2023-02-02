@@ -38,7 +38,9 @@ public class CustomerQuestionnaireOptionUserServiceImpl extends ServiceImpl<Cust
     @Transactional(rollbackFor = Exception.class)
     public R answer(String userId, String id, String questionnaireOptionId) {
         List<CustomerQuestionnaireEntity> questionnaireEntities = customerQuestionnaireDao.selectList(Wrappers.lambdaQuery(CustomerQuestionnaireEntity.class).eq(CustomerQuestionnaireEntity::getDelFlag, 0));
-        List<CustomerQuestionnaireOptionUserEntity> optionUserEntityList = this.baseMapper.selectList(Wrappers.lambdaQuery(CustomerQuestionnaireOptionUserEntity.class).eq(CustomerQuestionnaireOptionUserEntity::getDelFlag, 0));
+        // 用户答题记录
+        List<CustomerQuestionnaireOptionUserEntity> optionUserEntityList = this.baseMapper.selectList(Wrappers.lambdaQuery(CustomerQuestionnaireOptionUserEntity.class)
+                .eq(CustomerQuestionnaireOptionUserEntity::getCustomerUserId, userId).eq(CustomerQuestionnaireOptionUserEntity::getDelFlag, 0));
         if (questionnaireEntities.size() == optionUserEntityList.size()) {
             return R.error("已完成作答");
         }
@@ -55,8 +57,8 @@ public class CustomerQuestionnaireOptionUserServiceImpl extends ServiceImpl<Cust
         if (0 == update) {
             this.baseMapper.insert(entity);
         }
-
-        if (questionnaireEntities.size() == optionUserEntityList.size()) {
+        int size = optionUserEntityList.size() + 1;
+        if (questionnaireEntities.size() == size) {
             Integer score = optionUserEntityList.stream().collect(Collectors.summingInt(CustomerQuestionnaireOptionUserEntity::getScore));
             CustomerUserQuestionnaireEntity userQuestionnaireEntity = new CustomerUserQuestionnaireEntity();
             userQuestionnaireEntity.setCustomerUserId(userId);
