@@ -1,9 +1,16 @@
 package io.live_mall.modules.controller;
 
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.google.common.collect.Maps;
+import io.live_mall.common.utils.DateUtils;
 import io.live_mall.common.utils.PageUtils;
 import io.live_mall.common.utils.R;
 import io.live_mall.common.utils.ShiroUtils;
+import io.live_mall.modules.server.entity.IntegralActivityEntity;
+import io.live_mall.modules.server.entity.IntegralEntity;
 import io.live_mall.modules.server.model.CustomerUserModel;
+import io.live_mall.modules.server.service.IntegralActivityService;
+import io.live_mall.modules.server.service.IntegralService;
 import io.live_mall.modules.server.service.OrderService;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -24,6 +31,8 @@ import java.util.Objects;
 public class OrderController {
 
     private final OrderService orderService;
+    private final IntegralService integralService;
+    private final IntegralActivityService integralActivityService;
 
     /**
      * 订单
@@ -73,6 +82,36 @@ public class OrderController {
     @GetMapping(value = "/info/{id}")
     public R info(@PathVariable("id") String id) {
         Map<String, Object> result = orderService.customerOrderInfo(id);
+        return R.ok().put("data", result);
+    }
+
+    /**
+     * 积分规则
+     * @return
+     */
+    @GetMapping(value = "/integral-rule")
+    public R integral() {
+        Map<String, Object> result = Maps.newHashMap();
+        // 默认积分
+        IntegralEntity integralEntity = integralService.getOne(Wrappers.lambdaQuery(IntegralEntity.class).eq(IntegralEntity::getDelFlag, 0)
+                .orderByDesc(IntegralEntity::getCreateTime).last("LIMIT 1"));
+        Integer integral = Objects.nonNull(integralEntity) ? integralEntity.getIntegral() : 10;
+        result.put("integral", integral);
+
+        // 活动积分
+        IntegralActivityEntity integralActivity = integralActivityService.getOne(Wrappers.lambdaQuery(IntegralActivityEntity.class)
+                .eq(IntegralActivityEntity::getDelFlag, 0).orderByDesc(IntegralActivityEntity::getEndDate));
+        Integer activityIntegral = 15;
+        String date = "2023/01/01日--2023/03/31日";
+        String integralProportion = "50%";
+        if (Objects.nonNull(integralActivity)) {
+            activityIntegral = integralActivity.getIntegral();
+            date = DateUtils.format(integralActivity.getBeginDate(), "YYYY/MM/dd日") + "--" + DateUtils.format(integralActivity.getEndDate(), "YYYY/MM/dd日");
+            integralProportion = integralActivity.getIntegralProportion() + "%";
+        }
+        result.put("activityIntegral", activityIntegral);
+        result.put("date", date);
+        result.put("integralProportion", integralProportion);
         return R.ok().put("data", result);
     }
 

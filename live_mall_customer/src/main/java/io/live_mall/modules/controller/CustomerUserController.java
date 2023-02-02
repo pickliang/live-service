@@ -9,9 +9,7 @@ import io.live_mall.modules.server.entity.OrgRegionEntity;
 import io.live_mall.modules.server.model.CustomerUserModel;
 import io.live_mall.modules.server.model.OrgRegionModel;
 import io.live_mall.modules.server.model.SysUserModel;
-import io.live_mall.modules.server.service.CustomerUserService;
-import io.live_mall.modules.server.service.OrgRegionService;
-import io.live_mall.modules.server.service.SysOrgGroupService;
+import io.live_mall.modules.server.service.*;
 import io.live_mall.modules.sys.entity.SysUserEntity;
 import io.live_mall.modules.sys.service.SysUserService;
 import lombok.AllArgsConstructor;
@@ -35,6 +33,7 @@ public class CustomerUserController {
     private final SysUserService sysUserService;
     private final OrgRegionService orgRegionService;
     private final SysOrgGroupService sysOrgGroupService;
+
 
     /**
      * 修改用户证件信息
