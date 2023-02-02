@@ -8,17 +8,18 @@ import io.live_mall.common.utils.R;
 import io.live_mall.common.utils.ShiroUtils;
 import io.live_mall.modules.server.entity.ActivityEntity;
 import io.live_mall.modules.server.entity.FinanceEntity;
+import io.live_mall.modules.server.entity.InformationBrowseEntity;
+import io.live_mall.modules.server.entity.InformationEntity;
 import io.live_mall.modules.server.model.FinanceModel;
 import io.live_mall.modules.server.model.InformationDisclosureModel;
 import io.live_mall.modules.server.model.InformationModel;
-import io.live_mall.modules.server.service.ActivityService;
-import io.live_mall.modules.server.service.FinanceService;
-import io.live_mall.modules.server.service.InformationDisclosureService;
-import io.live_mall.modules.server.service.InformationService;
+import io.live_mall.modules.server.service.*;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -36,6 +37,7 @@ public class InformationController {
     private final InformationService informationService;
     private final ActivityService activityService;
     private final InformationDisclosureService informationDisclosureService;
+    private final InformationBrowseService informationBrowseService;
 
     /**
      * 公司动态文章
@@ -185,5 +187,36 @@ public class InformationController {
     public R informationDisclosureInfo(@PathVariable("id") String id) {
         InformationDisclosureModel model = informationDisclosureService.informationDisclosureInfo(id);
         return R.ok().put("data", model);
+    }
+
+    /**
+     * 资讯详情
+     * @param id 主键id
+     * @return
+     */
+    @GetMapping(value = "/information-info/{id}")
+    public R customerInformationInfo(@PathVariable("id") String id) {
+        InformationEntity information = informationService.getById(id);
+        if (Objects.nonNull(information) && 1 == information.getDelFlag()) {
+            return R.error("资讯已删除");
+        }
+        InformationModel model = new InformationModel();
+        BeanUtils.copyProperties(information, model);
+        return R.ok().put("data", model);
+    }
+
+    /**
+     * 资讯浏览保存
+     * @param entity
+     * @return
+     */
+    @PostMapping(value = "/information-browser")
+    public R informationBrowserSave(@RequestBody InformationBrowseEntity entity) {
+        if (StringUtils.isBlank(entity.getInformationId())) {
+            return R.error();
+        }
+        entity.setCreateTime(new Date());
+        boolean save = informationBrowseService.save(entity);
+        return save ? R.ok() : R.error();
     }
 }

@@ -3,18 +3,16 @@ package io.live_mall.modules.controller;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import io.live_mall.common.utils.R;
 import io.live_mall.modules.server.entity.CustomerUserEntity;
-import io.live_mall.modules.server.entity.InformationBrowseEntity;
-import io.live_mall.modules.server.entity.InformationEntity;
 import io.live_mall.modules.server.model.CustomerUserModel;
-import io.live_mall.modules.server.model.InformationModel;
 import io.live_mall.modules.server.service.CustomerUserService;
 import io.live_mall.modules.server.service.InformationBrowseService;
 import io.live_mall.modules.server.service.InformationService;
 import io.live_mall.modules.sys.oauth2.TokenGenerator;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -32,7 +30,7 @@ import java.util.Objects;
 public class AnonController {
     private final InformationService informationService;
     private final CustomerUserService customerUserService;
-    private final InformationBrowseService informationBrowseService;
+
 
     /**
      * 登录
@@ -74,34 +72,5 @@ public class AnonController {
         return R.ok().put("data", user);
     }
 
-    /**
-     * 资讯详情
-     * @param id 主键id
-     * @return
-     */
-    @GetMapping(value = "/information-info/{id}")
-    public R customerInformationInfo(@PathVariable("id") String id) {
-        InformationEntity information = informationService.getById(id);
-        if (Objects.nonNull(information) && 1 == information.getDelFlag()) {
-            return R.error("资讯已删除");
-        }
-        InformationModel model = new InformationModel();
-        BeanUtils.copyProperties(information, model);
-        return R.ok().put("data", model);
-    }
 
-    /**
-     * 资讯浏览保存
-     * @param entity
-     * @return
-     */
-    @PostMapping(value = "/information-browser")
-    public R informationBrowserSave(@RequestBody InformationBrowseEntity entity) {
-        if (StringUtils.isBlank(entity.getInformationId())) {
-            return R.error();
-        }
-        entity.setCreateTime(new Date());
-        boolean save = informationBrowseService.save(entity);
-        return save ? R.ok() : R.error();
-    }
 }
