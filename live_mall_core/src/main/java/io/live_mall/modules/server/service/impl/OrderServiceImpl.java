@@ -12,10 +12,7 @@ import io.live_mall.common.exception.RRException;
 import io.live_mall.common.utils.DateUtils;
 import io.live_mall.common.utils.PageUtils;
 import io.live_mall.common.utils.Query;
-import io.live_mall.modules.server.dao.HistoryDuiFuDao;
-import io.live_mall.modules.server.dao.HistoryDuifuPayDao;
-import io.live_mall.modules.server.dao.OrderDao;
-import io.live_mall.modules.server.dao.ProductDao;
+import io.live_mall.modules.server.dao.*;
 import io.live_mall.modules.server.entity.*;
 import io.live_mall.modules.server.model.OrderModel;
 import io.live_mall.modules.server.model.OrderUtils;
@@ -31,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service("orderService")
 public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> implements OrderService {
@@ -62,8 +60,14 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 	private HistoryDuifuPayDao historyDuifuPayDao;
 	@Autowired
 	private ProductDao productDao;
+	@Autowired
+	private CustomerUserDao customerUserDao;
+	@Autowired
+	private IntegralDao integralDao;
+	@Autowired
+	private CustomerUserIntegralItemDao customerUserIntegralItemDao;
 
-	
+
 	@Override
 	public PageUtils selectDuifuPage(Map<String, Object> params) {
 		IPage<JSONObject> page = this.baseMapper.selectDuifuPage(new Query<JSONObject>().getPage(params), params);
@@ -542,5 +546,46 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 		result.put("orderInfo", orderInfo);
 		result.put("productInfo", productInfo);
 		return result;
+	}
+
+	@Override
+	public void batchIntegralOrder() {
+		// 所有身份证不为空的用户
+		List<CustomerUserEntity> userEntityList = customerUserDao.selectList(Wrappers.lambdaQuery(CustomerUserEntity.class)
+				.isNotNull(CustomerUserEntity::getCardNum).eq(CustomerUserEntity::getDelFlag, 0));
+		if (!userEntityList.isEmpty()) {
+			// 根据身份证号获取用户
+			Map<String, CustomerUserEntity> userEntityMap = userEntityList.stream().collect(Collectors.toMap(CustomerUserEntity::getCardNum, entity -> entity));
+			List<String> cardNums = new ArrayList<>();
+			userEntityList.forEach(user -> cardNums.add(user.getCardNum()));
+			// 订单
+			List<JSONObject> orders = this.baseMapper.integralOrder(cardNums);
+			// 积分规则
+			IntegralEntity integralEntity = integralDao.selectOne(Wrappers.lambdaQuery(IntegralEntity.class).orderByDesc(IntegralEntity::getCreateTime).last("LIMIT 1"));
+			Integer integral = Objects.isNull(integralEntity) ? 0 : integralEntity.getIntegral();
+			orders.forEach(order -> {
+				String id = order.getString("id");
+				String productId = order.getString("product_id");
+				Integer appointMoney = order.getInteger("appoint_money");
+				Integer dateNum = order.getInteger("date_num");
+				String cardNum = order.getString("card_num");
+				CustomerUserEntity userEntity = userEntityMap.get(cardNum);
+				if (Objects.nonNull(userEntity)) {
+					CustomerUserIntegralItemEntity integralItem = new CustomerUserIntegralItemEntity();
+					integralItem.setCustomerUserId(userEntity.getId());
+					integralItem.setOrderId(id);
+					integralItem.setProductId(productId);
+					integralItem.setAppointMoney(appointMoney);
+					// 积分规则
+					// 1、产品期限 <= 12 个月，投资年化额每一万兑换商城积分数10积分（投资年化额=投资额*产品期限/12)
+					// 2、产品期限> 12个月 投资额每一万兑换10积分
+					Integer _integral = dateNum <= 12 ? (appointMoney * dateNum / 12 * integral) : (appointMoney * integral);
+					integralItem.setIntegral(_integral);
+					integralItem.setDescription("历史订单赠送");
+					integralItem.setCreateTime(new Date());
+					customerUserIntegralItemDao.insert(integralItem);
+				}
+			});
+		}
 	}
 }

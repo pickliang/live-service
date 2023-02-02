@@ -116,6 +116,16 @@ public class OrderController {
     }
 
     /**
+     * 处理已绑定身份证用户的积分订单，增加用户积分
+     * @return
+     */
+    @GetMapping(value = "/batch-integral-order")
+    public R batchIntegralOrder() {
+        orderService.batchIntegralOrder();
+        return R.ok();
+    }
+
+    /**
      * 产品详情
      * @param orderId 订单id
      * @return

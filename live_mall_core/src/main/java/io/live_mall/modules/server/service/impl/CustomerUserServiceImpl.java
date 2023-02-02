@@ -8,11 +8,14 @@ import io.live_mall.modules.server.dto.CustomerUserDto;
 import io.live_mall.modules.server.entity.CustomerUserEntity;
 import io.live_mall.modules.server.entity.OrderEntity;
 import io.live_mall.modules.server.model.CustomerUserModel;
+import io.live_mall.modules.server.service.CustomerUserIntegralItemService;
 import io.live_mall.modules.server.service.CustomerUserService;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.RandomUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @author yewl
@@ -24,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CustomerUserServiceImpl extends ServiceImpl<CustomerUserDao, CustomerUserEntity> implements CustomerUserService {
 
     private final OrderDao orderDao;
+    private final CustomerUserIntegralItemService customerUserIntegralItemService;
 
     @Override
     public CustomerUserModel login(String phone) {
@@ -36,9 +40,15 @@ public class CustomerUserServiceImpl extends ServiceImpl<CustomerUserDao, Custom
         // 是否存在有效的理财订单
         Integer count = orderDao.selectCount(Wrappers.lambdaQuery(OrderEntity.class).eq(OrderEntity::getCardNum, userDto.getCardNum()).eq(OrderEntity::getStatus, 4).last("LIMIT 1"));
         Integer code = count == 0 ? null : code();
+        // 增加积分
+        CompletableFuture.supplyAsync(() -> customerUserIntegralItemService.saveCustomerUserIntegralItem(userDto.getId(), userDto.getCardNum()));
         return this.baseMapper.updateUserInfo(userDto, code);
     }
 
+    /**
+     * 分配授权码
+     * @return Integer
+     */
     private Integer code() {
         Integer code = RandomUtils.nextInt(100000, 999999);
         Integer count = this.baseMapper.selectCount(Wrappers.lambdaQuery(CustomerUserEntity.class).eq(CustomerUserEntity::getCode, code).last("LIMIT 1"));

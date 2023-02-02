@@ -153,4 +153,10 @@ public interface OrderDao extends BaseMapper<OrderEntity> {
 
 	JSONObject customerOrderInfo(String id);
 
+	/**
+	 * 积分订单
+	 * @param cardNums 身份证号
+	 * @return
+	 */
+	List<JSONObject> integralOrder(@Param("cardNums") List<String> cardNums);
 }

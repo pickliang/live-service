@@ -535,6 +535,24 @@
 			o.id = #{id}
 	</select>
 
+	<select id="integralOrder" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT
+			o.id,
+			o.product_id,
+			o.appoint_money AS appoint_money,
+			o.date_num,
+			o.card_num
+		FROM
+			`p_order` AS o
+		WHERE
+		   o.status = 4
+		  AND o.del_flag = 0
+		  AND o.card_num in
+		<foreach collection="cardNums" item="cardNum" index="index" open="(" close=")" separator=",">
+			#{cardNum}
+		</foreach>
+	</select>
+
 	<!--	20220516 add end-->
     <select id="selectPageVo"  resultType="io.live_mall.modules.server.entity.OrderEntity" parameterType="java.util.HashMap" >
     		select o.* from  p_order o  

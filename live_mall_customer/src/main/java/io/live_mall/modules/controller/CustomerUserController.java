@@ -42,6 +42,10 @@ public class CustomerUserController {
      */
     @PostMapping(value = "/modify-info")
     public R updateCustomerInfo(@RequestBody @Valid CustomerUserDto user) {
+        int count = customerUserService.count(Wrappers.lambdaQuery(CustomerUserEntity.class).eq(CustomerUserEntity::getCardNum, user.getCardNum()));
+        if (count > 0) {
+            return R.error("身份证已被绑定");
+        }
         user.setId(ShiroUtils.getUserEntity().getId());
         customerUserService.updateUserInfo(user);
         return R.ok();
