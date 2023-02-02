@@ -9,6 +9,7 @@ import io.live_mall.common.utils.ShiroUtils;
 import io.live_mall.modules.server.entity.IntegralActivityEntity;
 import io.live_mall.modules.server.entity.IntegralEntity;
 import io.live_mall.modules.server.model.CustomerUserModel;
+import io.live_mall.modules.server.service.CustomerUserIntegralItemService;
 import io.live_mall.modules.server.service.IntegralActivityService;
 import io.live_mall.modules.server.service.IntegralService;
 import io.live_mall.modules.server.service.OrderService;
@@ -33,7 +34,7 @@ public class OrderController {
     private final OrderService orderService;
     private final IntegralService integralService;
     private final IntegralActivityService integralActivityService;
-
+    private final CustomerUserIntegralItemService customerUserIntegralItemService;
     /**
      * 订单
      * @param params
@@ -124,6 +125,28 @@ public class OrderController {
         orderService.batchIntegralOrder();
         return R.ok();
     }
+
+    /**
+     * 用户总积分
+     * @return
+     */
+    @GetMapping(value = "/total-integral")
+    public R integralTotal() {
+        Long integralTotal = customerUserIntegralItemService.customerUserIntegralTotal(ShiroUtils.getUserId());
+        return R.ok().put("data", integralTotal);
+    }
+
+    /**
+     * 积分订单列表
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "/integral-list")
+    public R integralOrder(@RequestParam Map<String, Object> params) {
+        PageUtils page = customerUserIntegralItemService.customerUserIntegral(params, ShiroUtils.getUserId());
+        return R.ok().put("data", page);
+    }
+
 
     /**
      * 产品详情

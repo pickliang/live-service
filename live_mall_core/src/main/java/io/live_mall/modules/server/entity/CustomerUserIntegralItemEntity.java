@@ -36,6 +36,10 @@ public class CustomerUserIntegralItemEntity implements Serializable {
      */
     private String productId;
     /**
+     * 募集id
+     */
+    private String raiseId;
+    /**
      * 金额
      */
     private Integer appointMoney;

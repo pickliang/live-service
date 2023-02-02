@@ -160,6 +160,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 				integralItem.setCustomerUserId(userEntity.getId());
 				integralItem.setOrderId(orderEntity.getId());
 				integralItem.setProductId(orderEntity.getProductId());
+				integralItem.setRaiseId(orderEntity.getRaiseId());
 				integralItem.setAppointMoney(orderEntity.getAppointMoney());
 				// 积分规则
 				// 1、产品期限 <= 12 个月，投资年化额每一万兑换商城积分数10积分（投资年化额=投资额*产品期限/12)
@@ -589,12 +590,14 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 				Integer appointMoney = order.getInteger("appoint_money");
 				Integer dateNum = order.getInteger("date_num");
 				String cardNum = order.getString("card_num");
+				String raiseId = order.getString("raise_id");
 				CustomerUserEntity userEntity = userEntityMap.get(cardNum);
 				if (Objects.nonNull(userEntity)) {
 					CustomerUserIntegralItemEntity integralItem = new CustomerUserIntegralItemEntity();
 					integralItem.setCustomerUserId(userEntity.getId());
 					integralItem.setOrderId(id);
 					integralItem.setProductId(productId);
+					integralItem.setRaiseId(raiseId);
 					integralItem.setAppointMoney(appointMoney);
 					// 积分规则
 					// 1、产品期限 <= 12 个月，投资年化额每一万兑换商城积分数10积分（投资年化额=投资额*产品期限/12)

@@ -541,7 +541,8 @@
 			o.product_id,
 			o.appoint_money AS appoint_money,
 			o.date_num,
-			o.card_num
+			o.card_num,
+			o.raise_id
 		FROM
 			`p_order` AS o
 		WHERE

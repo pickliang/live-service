@@ -1,8 +1,11 @@
 package io.live_mall.modules.server.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import io.live_mall.common.utils.PageUtils;
+import io.live_mall.common.utils.Query;
 import io.live_mall.modules.server.dao.CustomerUserIntegralItemDao;
 import io.live_mall.modules.server.dao.IntegralDao;
 import io.live_mall.modules.server.dao.OrderDao;
@@ -12,10 +15,7 @@ import io.live_mall.modules.server.service.CustomerUserIntegralItemService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author yewl
@@ -41,10 +41,12 @@ public class CustomerUserIntegralItemServiceImpl extends ServiceImpl<CustomerUse
             String productId = order.getString("product_id");
             Integer appointMoney = order.getInteger("appoint_money");
             Integer dateNum = order.getInteger("date_num");
+            String raiseId = order.getString("raise_id");
             CustomerUserIntegralItemEntity integralItem = new CustomerUserIntegralItemEntity();
             integralItem.setCustomerUserId(userId);
             integralItem.setOrderId(id);
             integralItem.setProductId(productId);
+            integralItem.setRaiseId(raiseId);
             integralItem.setAppointMoney(appointMoney);
             // 积分规则
             // 1、产品期限 <= 12 个月，投资年化额每一万兑换商城积分数10积分（投资年化额=投资额*产品期限/12)
@@ -56,5 +58,16 @@ public class CustomerUserIntegralItemServiceImpl extends ServiceImpl<CustomerUse
             this.baseMapper.insert(integralItem);
         });
         return null;
+    }
+
+    @Override
+    public PageUtils customerUserIntegral(Map<String, Object> params, String userId) {
+        IPage<JSONObject> pages = this.baseMapper.customerUserIntegralPages(new Query<JSONObject>().getPage(params), userId);
+        return new PageUtils(pages);
+    }
+
+    @Override
+    public Long customerUserIntegralTotal(String userId) {
+        return this.baseMapper.customerUserIntegralTotal(userId);
     }
 }
