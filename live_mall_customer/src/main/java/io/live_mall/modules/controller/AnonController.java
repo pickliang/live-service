@@ -5,7 +5,6 @@ import io.live_mall.common.utils.R;
 import io.live_mall.modules.server.entity.CustomerUserEntity;
 import io.live_mall.modules.server.model.CustomerUserModel;
 import io.live_mall.modules.server.service.CustomerUserService;
-import io.live_mall.modules.server.service.InformationBrowseService;
 import io.live_mall.modules.server.service.InformationService;
 import io.live_mall.modules.sys.oauth2.TokenGenerator;
 import lombok.AllArgsConstructor;

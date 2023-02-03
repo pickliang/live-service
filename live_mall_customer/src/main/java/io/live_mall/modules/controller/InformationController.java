@@ -200,6 +200,9 @@ public class InformationController {
         if (Objects.nonNull(information) && 1 == information.getDelFlag()) {
             return R.error("资讯已删除");
         }
+        if (information.getAuth() == 1 && Objects.isNull(ShiroUtils.getUserEntity().getCardNum())) {
+            return R.error(100, "请绑定身份证");
+        }
         InformationModel model = new InformationModel();
         BeanUtils.copyProperties(information, model);
         return R.ok().put("data", model);
