@@ -267,6 +267,15 @@ public class OrderController {
         return R.ok();
     }
 
-
+    /**
+     * 历史兑付列表
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "/history-duifu-list")
+    public R historyDuifuPage(@RequestParam Map<String, Object> params) {
+        PageUtils pageUtils = orderService.historyDuifuPage(params);
+        return R.ok().put("data", pageUtils);
+    }
 
 }

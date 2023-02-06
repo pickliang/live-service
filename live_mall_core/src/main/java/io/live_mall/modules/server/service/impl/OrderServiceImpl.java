@@ -611,4 +611,14 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 			});
 		}
 	}
+
+	@Override
+	public PageUtils historyDuifuPage(Map<String, Object> params) {
+		IPage<JSONObject> pages = this.baseMapper.historyDuifuPage(new Query<JSONObject>().getPage(params), params);
+		pages.getRecords().forEach(order -> {
+			List<HistoryDuifuPayEntity> payEntities = historyDuifuPayDao.selectList(Wrappers.lambdaQuery(HistoryDuifuPayEntity.class).eq(HistoryDuifuPayEntity::getHistoryDuifuId, order.getString("id")));
+			order.put("orderPayList", payEntities);
+		});
+		return new PageUtils(pages);
+	}
 }

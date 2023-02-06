@@ -83,5 +83,7 @@ public interface OrderService extends IService<OrderEntity> {
 	Map<String, Object> customerOrderInfo(String id);
 
 	void batchIntegralOrder();
+
+	PageUtils historyDuifuPage(Map<String, Object> params);
 }
 

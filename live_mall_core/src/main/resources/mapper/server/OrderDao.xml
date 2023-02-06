@@ -554,6 +554,21 @@
 		</foreach>
 	</select>
 
+	<select id="historyDuifuPage" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT * FROM `history_duifu`
+		WHERE del_flag = 0
+		<if test="params.productName != null and params.productName != ''">
+			AND LOCATE(#{params.productName}, product_name) > 0
+		</if>
+		<if test="params.valueDate != null and params.valueDate != ''">
+			AND value_date = #{params.valueDate}
+		</if>
+		<if test=" params.dueDate != null and params.dueDate != ''">
+			AND due_date = #{params.dueDate}
+		</if>
+		ORDER BY create_time DESC
+	</select>
+
 	<!--	20220516 add end-->
     <select id="selectPageVo"  resultType="io.live_mall.modules.server.entity.OrderEntity" parameterType="java.util.HashMap" >
     		select o.* from  p_order o  
