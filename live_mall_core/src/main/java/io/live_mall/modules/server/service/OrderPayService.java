@@ -1,9 +1,11 @@
 package io.live_mall.modules.server.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.IService;
 import io.live_mall.common.utils.PageUtils;
 import io.live_mall.modules.server.entity.OrderPayEntity;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -16,5 +18,7 @@ import java.util.Map;
 public interface OrderPayService extends IService<OrderPayEntity> {
 
     PageUtils queryPage(Map<String, Object> params);
+
+    void updatePayDate(List<JSONObject> params);
 }
 

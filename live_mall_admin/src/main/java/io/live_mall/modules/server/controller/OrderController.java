@@ -3,6 +3,7 @@ package io.live_mall.modules.server.controller;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import io.live_mall.common.exception.RRException;
 import io.live_mall.common.utils.DateUtils;
 import io.live_mall.common.utils.PageUtils;
@@ -12,16 +13,16 @@ import io.live_mall.modules.oss.cloud.OSSFactory;
 import io.live_mall.modules.oss.entity.SysOssEntity;
 import io.live_mall.modules.oss.service.SysOssService;
 import io.live_mall.modules.server.entity.OrderEntity;
+import io.live_mall.modules.server.entity.OrderPayEntity;
 import io.live_mall.modules.server.entity.RaiseEntity;
 import io.live_mall.modules.server.model.OrderModel;
 import io.live_mall.modules.server.model.OrderUtils;
-import io.live_mall.modules.server.service.MemberService;
+import io.live_mall.modules.server.service.OrderPayService;
 import io.live_mall.modules.server.service.OrderService;
 import io.live_mall.modules.server.service.RaiseService;
-import io.live_mall.modules.server.service.SmsService;
+import lombok.AllArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
@@ -40,22 +41,12 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("server/order")
+@AllArgsConstructor
 public class OrderController {
-    @Autowired
-    private OrderService orderService;
-    
-    @Autowired
-    private RaiseService raiseService;
-    
-    
-    @Autowired
-    private MemberService memberService;
-    
-    @Autowired
-	SmsService smsService;
-    
-    @Autowired
-    SysOssService sysOssService;
+    private final OrderService orderService;
+    private final RaiseService raiseService;
+    private final SysOssService sysOssService;
+    private final OrderPayService orderPayService;
 
     /**
      * 列表
@@ -122,7 +113,7 @@ public class OrderController {
 				// TODO: handle exception
 				e.printStackTrace();
 			}
-			Thread.sleep(20000l);
+			Thread.sleep(20000L);
 		}
         return R.ok().put("data", "");
     }
@@ -252,8 +243,30 @@ public class OrderController {
 
         return R.ok();
     }
-    
-    
-   
+
+    /**
+     * 订单付息详情
+     * @param orderId 订单id
+     * @return
+     */
+    @GetMapping(value = "/pay-list")
+    @RequiresPermissions("server:order:list")
+    public R orderPayList(@RequestParam String orderId) {
+        List<OrderPayEntity> list = orderPayService.list(Wrappers.lambdaQuery(OrderPayEntity.class).eq(OrderPayEntity::getOrderId, orderId).orderByAsc(OrderPayEntity::getNum));
+        return R.ok().put("data", list);
+    }
+
+    /**
+     * 更新付息日
+     * @param params
+     * @return
+     */
+    @PutMapping(value = "/update-pay")
+    public R updateOrderPay(@RequestBody List<JSONObject> params) {
+        orderPayService.updatePayDate(params);
+        return R.ok();
+    }
+
+
 
 }

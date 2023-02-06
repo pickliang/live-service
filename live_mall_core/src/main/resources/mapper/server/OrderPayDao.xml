@@ -12,5 +12,19 @@
         <result property="name" column="name"/>
     </resultMap>
 
+    <select id="getEstablishTime" resultType="string">
+        SELECT
+            establish_time
+        FROM
+            `p_order_pay` AS op
+                INNER JOIN p_order AS o ON op.order_id = o.id
+                INNER JOIN p_raise AS r ON r.id = o.raise_id
+        WHERE
+            op.order_id = #{orderId}
+            LIMIT 1
+    </select>
 
+    <update id="updateOrderPay">
+        UPDATE p_order_pay SET pay_money = #{payMoney}, pay_date = #{payDate} WHERE id = #{id}
+    </update>
 </mapper>
