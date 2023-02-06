@@ -4,31 +4,33 @@ import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.live_mall.common.utils.PageUtils;
 import io.live_mall.common.utils.Query;
+import io.live_mall.modules.server.dao.CustomerUserDao;
 import io.live_mall.modules.server.dao.MemberDao;
+import io.live_mall.modules.server.entity.CustomerUserEntity;
 import io.live_mall.modules.server.entity.MemberEntity;
 import io.live_mall.modules.server.entity.OrderEntity;
 import io.live_mall.modules.server.service.MemberService;
 import io.live_mall.modules.server.service.OrderService;
 import io.live_mall.modules.sys.service.SysUserService;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Slf4j
 @Service("memberService")
+@AllArgsConstructor
 public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> implements MemberService {
 
-	@Autowired
-	OrderService orderService;
-	
-	@Autowired
-	SysUserService  userService;
+	private final OrderService orderService;
+	private final SysUserService  userService;
+	private final CustomerUserDao customerUserDao;
 	
 	
 
@@ -80,8 +82,13 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
 				e.setSalesUser(userService.getById(e.getSaleId()));
 			}
 
+			if (StringUtils.isNotBlank(e.getCardNum())) {
+				// 是否已认证小程序
+				Integer count = customerUserDao.selectCount(Wrappers.lambdaQuery(CustomerUserEntity.class)
+						.eq(CustomerUserEntity::getCardNum, e.getCardNum()).eq(CustomerUserEntity::getDelFlag, 0).last("LIMIT 1"));
+				e.setIsLoginApplet(count > 0);
+			}
 
-			
 		});
 
 

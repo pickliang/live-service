@@ -140,4 +140,9 @@ public class MemberEntity implements Serializable {
 	
 	@TableField(exist = false)
 	private SysUserEntity salesUser;
+	/**
+	 * 是否已登录小程序
+	 */
+	@TableField(exist = false)
+	private Boolean isLoginApplet;
 }
