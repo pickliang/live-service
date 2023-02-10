@@ -480,28 +480,32 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 	@Override
 	public Map<String, Object> customerAssets(String cardNum) {
 		Map<String, Object> result = Maps.newHashMap();
-		// 总资产
+		// 总投资额 = 在投+历史的投资总额
 		Double totalAssets = this.baseMapper.customerTotalAssets(cardNum);
 		// 历史数据总资产
 		Double assets = this.baseMapper.historyFixedIncome(cardNum, 0);
 
 		// 年度收益
-		Double annualIncome = this.baseMapper.annualIncome(cardNum);
+		// Double annualIncome = this.baseMapper.annualIncome(cardNum);
 		// 历史数据本年度收益
-		Double historyAnnualIncome = this.baseMapper.historyAnnualIncome(cardNum);
-
-		// 预期收益
+		// Double historyAnnualIncome = this.baseMapper.historyAnnualIncome(cardNum);
+		// 累计收益
 		Double expectedIncome = this.baseMapper.expectedIncome(cardNum);
 		Double historyExpectedIncome = this.baseMapper.historyExpectedIncome(cardNum);
 
+		// 总资产 = 在投的总金额
 		// 在投订单金额
 		Double investing = this.baseMapper.investingOrderMoney(cardNum);
 		// 历史在投订单金额
 		Double historyInvesting = this.baseMapper.historyInvestingOrderMoney(cardNum);
 
-		result.put("totalAssets", totalAssets + assets);
-		result.put("annualIncome", annualIncome + historyAnnualIncome);
+		// 总资产
+		result.put("totalAssets", investing + historyInvesting);
+		// 总投资额
+		result.put("annualIncome", totalAssets + assets);
+		// 累计收益
 		result.put("expectedIncome", expectedIncome + historyExpectedIncome);
+		// 在投订单金额
 		result.put("investing", investing + historyInvesting);
 		return result;
 	}
