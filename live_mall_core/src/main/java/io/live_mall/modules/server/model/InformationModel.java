@@ -1,5 +1,6 @@
 package io.live_mall.modules.server.model;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;
 
 import java.util.Date;
@@ -20,6 +21,7 @@ public class InformationModel {
     /**
      * 提交时间
      */
+    @JSONField(format = "yyyy-MM-dd")
     private Date createTime;
     /**
      * 提交人
@@ -42,4 +44,8 @@ public class InformationModel {
      * 是否需要登录 0-不需要 1-需要
      */
     private Integer auth;
+    /**
+     * 作者
+     */
+    private String author;
 }

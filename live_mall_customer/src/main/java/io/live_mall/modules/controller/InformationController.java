@@ -14,6 +14,8 @@ import io.live_mall.modules.server.model.FinanceModel;
 import io.live_mall.modules.server.model.InformationDisclosureModel;
 import io.live_mall.modules.server.model.InformationModel;
 import io.live_mall.modules.server.service.*;
+import io.live_mall.modules.sys.entity.SysUserEntity;
+import io.live_mall.modules.sys.service.SysUserService;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -38,6 +40,7 @@ public class InformationController {
     private final ActivityService activityService;
     private final InformationDisclosureService informationDisclosureService;
     private final InformationBrowseService informationBrowseService;
+    private final SysUserService sysUserService;
 
     /**
      * 公司动态文章
@@ -205,6 +208,9 @@ public class InformationController {
         }
         InformationModel model = new InformationModel();
         BeanUtils.copyProperties(information, model);
+        SysUserEntity sysUser = sysUserService.getById(information.getCreateUser());
+        String author = Objects.nonNull(sysUser) ?sysUser.getRealname() : "管理员";
+        model.setAuthor(author);
         return R.ok().put("data", model);
     }
 
