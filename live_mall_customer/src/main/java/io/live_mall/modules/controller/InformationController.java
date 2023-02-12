@@ -89,27 +89,6 @@ public class InformationController {
         return R.ok().put("data", model);
     }
 
-    /**
-     * 投资资讯
-     * @return
-     */
-    @GetMapping(value = "/information-list")
-    public R customerInformation() {
-        Map<String, Object> result = Maps.newHashMap();
-        // 白话财经
-        List<InformationModel> vernacular = informationService.customerInformation(1);
-        // 固收资讯
-        List<InformationModel> income = informationService.customerInformation(2);
-        // 股权资讯
-        List<InformationModel> stock  = informationService.customerInformation(3);
-        // 二级市场资讯
-        List<InformationModel> market = informationService.customerInformation(4);
-        result.put("vernacular", vernacular);
-        result.put("income", income);
-        result.put("stock", stock);
-        result.put("market", market);
-        return R.ok().put("data", result);
-    }
 
     /**
      * 资讯列表

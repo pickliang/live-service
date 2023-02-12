@@ -1,9 +1,11 @@
 package io.live_mall.modules.controller;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.google.common.collect.Maps;
 import io.live_mall.common.utils.R;
 import io.live_mall.modules.server.entity.CustomerUserEntity;
 import io.live_mall.modules.server.model.CustomerUserModel;
+import io.live_mall.modules.server.model.InformationModel;
 import io.live_mall.modules.server.service.CustomerUserService;
 import io.live_mall.modules.server.service.InformationService;
 import io.live_mall.modules.sys.oauth2.TokenGenerator;
@@ -16,6 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -71,5 +75,27 @@ public class AnonController {
         return R.ok().put("data", user);
     }
 
+
+    /**
+     * 投资资讯
+     * @return
+     */
+    @GetMapping(value = "/information-list")
+    public R customerInformation() {
+        Map<String, Object> result = Maps.newHashMap();
+        // 白话财经
+        List<InformationModel> vernacular = informationService.customerInformation(1);
+        // 固收资讯
+        List<InformationModel> income = informationService.customerInformation(2);
+        // 股权资讯
+        List<InformationModel> stock  = informationService.customerInformation(3);
+        // 二级市场资讯
+        List<InformationModel> market = informationService.customerInformation(4);
+        result.put("vernacular", vernacular);
+        result.put("income", income);
+        result.put("stock", stock);
+        result.put("market", market);
+        return R.ok().put("data", result);
+    }
 
 }
