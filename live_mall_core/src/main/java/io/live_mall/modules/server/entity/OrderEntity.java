@@ -5,13 +5,12 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import io.live_mall.modules.sys.entity.SysUserEntity;
+import lombok.Data;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
-import lombok.Data;
 
 /**
  * 订单管理
@@ -298,5 +297,16 @@ public class OrderEntity implements Serializable {
 	private BigDecimal yongjinRate;
 	
 	private Date dateEnd;
+
+	/**
+	 * 双录视频地址1
+	 */
+	private String video;
+	/**
+	 * 双录视频地址2
+	 */
+	private String videoUrl;
+
+
 	
 }
