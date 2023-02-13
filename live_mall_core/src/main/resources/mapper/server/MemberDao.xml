@@ -22,4 +22,7 @@
 					(SELECT SUM(appoint_money) FROM p_order o INNER JOIN  p_product p on  p.id=o.product_id  WHERE o.cust_id =  #{custId}  and o.sale_id=#{salesId} AND onetype='信托' AND  o.`status` in (2,4)) xt
 			</select>
 
+	<select id="memberList" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT member_no, cust_name FROM `p_member` ORDER BY create_date DESC
+	</select>
 </mapper>

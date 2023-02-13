@@ -1,24 +1,17 @@
 package io.live_mall.modules.server.controller;
 
-import java.util.Arrays;
-import java.util.Map;
-
-import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-
-import io.live_mall.modules.server.entity.MemberEntity;
-import io.live_mall.modules.server.service.MemberService;
 import io.live_mall.common.utils.PageUtils;
 import io.live_mall.common.utils.R;
 import io.live_mall.common.utils.ShiroUtils;
+import io.live_mall.modules.server.entity.MemberEntity;
+import io.live_mall.modules.server.service.MemberService;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
 
 
 
@@ -114,4 +107,12 @@ public class MemberController {
         return R.ok();
     }
 
+    /**
+     * 客户编号和姓名 选择客户使用
+     * @return
+     */
+    @GetMapping(value = "/members")
+    public R memberList() {
+        return R.ok().put("data", memberService.memberList());
+    }
 }

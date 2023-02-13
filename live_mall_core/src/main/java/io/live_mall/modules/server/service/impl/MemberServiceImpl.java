@@ -162,4 +162,8 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
 		return this.baseMapper.getTj(custId,salesId);
 	}
 
+	@Override
+	public List<JSONObject> memberList() {
+		return this.baseMapper.memberList();
+	}
 }

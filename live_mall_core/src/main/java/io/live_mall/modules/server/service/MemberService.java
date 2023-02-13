@@ -6,7 +6,7 @@ import io.live_mall.common.utils.PageUtils;
 import io.live_mall.modules.server.entity.MemberEntity;
 import io.live_mall.modules.server.entity.OrderEntity;
 
-import java.util.Map;
+import java.util.List;
 
 /**
  * 
@@ -25,5 +25,7 @@ public interface MemberService extends IService<MemberEntity> {
 	void getMemberType(MemberEntity member);
 
 	JSONObject getTj(String custId, String salesId);
+
+	List<JSONObject> memberList();
 }
 
