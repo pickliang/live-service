@@ -261,7 +261,7 @@ public class OrderController {
      * @param params
      * @return
      */
-    @PutMapping(value = "/update-pay")
+    @PostMapping(value = "/update-pay")
     public R updateOrderPay(@RequestBody List<JSONObject> params) {
         orderPayService.updatePayDate(params);
         return R.ok();
