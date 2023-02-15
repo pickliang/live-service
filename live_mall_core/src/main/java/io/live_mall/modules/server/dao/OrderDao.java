@@ -62,7 +62,7 @@ public interface OrderDao extends BaseMapper<OrderEntity> {
 	 * @param type  1-类固收(固收) 2-权益类(股权) 3-净值型(二级市场)
 	 * @return Double
 	 */
-	Double fixedIncome(@Param("cardNum") String cardNum, @Param("type") Integer type);
+	Integer fixedIncome(@Param("cardNum") String cardNum, @Param("type") Integer type);
 
 	/**
 	 * 所有已付利息总和
@@ -75,9 +75,9 @@ public interface OrderDao extends BaseMapper<OrderEntity> {
 	 * 历史固收总资产
 	 * @param cardNum 身份证号
 	 * @param type  1-类固收(固收) 2-权益类(股权) 3-净值型(二级市场)
-	 * @return Double
+	 * @return Integer
 	 */
-	Double historyFixedIncome(@Param("cardNum") String cardNum, @Param("type") Integer type);
+	Integer historyFixedIncome(@Param("cardNum") String cardNum, @Param("type") Integer type);
 
 	/**
 	 * 查询2条固收数据 废弃
@@ -93,7 +93,7 @@ public interface OrderDao extends BaseMapper<OrderEntity> {
 	 * @param cardNum 证件号
 	 * @return Double
 	 */
-	Double customerTotalAssets(String cardNum);
+	Integer customerTotalAssets(String cardNum);
 
 	/**
 	 * 本年度收益
@@ -143,13 +143,13 @@ public interface OrderDao extends BaseMapper<OrderEntity> {
 	 * @param cardNum 身份证号
 	 * @return Double
 	 */
-	Double investingOrderMoney(String cardNum);
+	Integer investingOrderMoney(String cardNum);
 	/**
 	 * 历史在投订单金额
 	 * @param cardNum 身份证号
 	 * @return Double
 	 */
-	Double historyInvestingOrderMoney(String cardNum);
+	Integer historyInvestingOrderMoney(String cardNum);
 
 	JSONObject customerOrderInfo(String id);
 

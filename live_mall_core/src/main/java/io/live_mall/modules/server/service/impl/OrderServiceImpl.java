@@ -458,15 +458,15 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 		// 累计收益：所有已付利息总和
 		Double totalInterest = this.baseMapper.totalInterest(cardNum);
 		// 类固收(固收)
-		Double fixedIncome = this.baseMapper.fixedIncome(cardNum, 1);
-		Double historyFixedIncome = this.baseMapper.historyFixedIncome(cardNum, 1);
+		Integer fixedIncome = this.baseMapper.fixedIncome(cardNum, 1);
+		Integer historyFixedIncome = this.baseMapper.historyFixedIncome(cardNum, 1);
 
 		// 权益类(股权)
-		Double stock = this.baseMapper.fixedIncome(cardNum, 2);
-		Double historyStock = this.baseMapper.historyFixedIncome(cardNum, 2);
+		Integer stock = this.baseMapper.fixedIncome(cardNum, 2);
+		Integer historyStock = this.baseMapper.historyFixedIncome(cardNum, 2);
 		// 净值型(二级市场)
-		Double netWorth = this.baseMapper.fixedIncome(cardNum, 3);
-		Double historyNetWorth = this.baseMapper.historyFixedIncome(cardNum, 3);
+		Integer netWorth = this.baseMapper.fixedIncome(cardNum, 3);
+		Integer historyNetWorth = this.baseMapper.historyFixedIncome(cardNum, 3);
 
 		result.put("totalAssets", fixedIncome + stock + netWorth + historyFixedIncome + historyStock + historyNetWorth);
 		result.put("fixedIncome", fixedIncome + historyFixedIncome);
@@ -482,23 +482,24 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 	public Map<String, Object> customerAssets(String cardNum) {
 		Map<String, Object> result = Maps.newHashMap();
 		// 总投资额 = 在投+历史的投资总额
-		Double totalAssets = this.baseMapper.customerTotalAssets(cardNum);
+		Integer totalAssets = this.baseMapper.customerTotalAssets(cardNum);
 		// 历史数据总资产
-		Double assets = this.baseMapper.historyFixedIncome(cardNum, 0);
+		Integer assets = this.baseMapper.historyFixedIncome(cardNum, 0);
 
 		// 年度收益
 		// Double annualIncome = this.baseMapper.annualIncome(cardNum);
 		// 历史数据本年度收益
 		// Double historyAnnualIncome = this.baseMapper.historyAnnualIncome(cardNum);
+
 		// 累计收益
 		Double expectedIncome = this.baseMapper.expectedIncome(cardNum);
 		Double historyExpectedIncome = this.baseMapper.historyExpectedIncome(cardNum);
 
 		// 总资产 = 在投的总金额
 		// 在投订单金额
-		Double investing = this.baseMapper.investingOrderMoney(cardNum);
+		Integer investing = this.baseMapper.investingOrderMoney(cardNum);
 		// 历史在投订单金额
-		Double historyInvesting = this.baseMapper.historyInvestingOrderMoney(cardNum);
+		Integer historyInvesting = this.baseMapper.historyInvestingOrderMoney(cardNum);
 
 		// 总资产
 		result.put("totalAssets", investing + historyInvesting);

@@ -334,9 +334,9 @@
 		</if>
 	</select>
 
-	<select id="fixedIncome" resultType="double">
+	<select id="fixedIncome" resultType="integer">
 		SELECT
-			IFNULL(SUM(o.appoint_money * 10000),0) AS appoint_money
+			IFNULL(SUM(o.appoint_money),0) AS appoint_money
 		FROM
 			p_order AS o
 				INNER JOIN `p_product` AS p ON o.product_id = p.id
@@ -369,9 +369,9 @@
 		  AND p.pay_date <![CDATA[ < ]]> CURRENT_DATE
 	</select>
 
-	<select id="historyFixedIncome" resultType="double">
+	<select id="historyFixedIncome" resultType="integer">
 		SELECT
-			IFNULL( SUM( appoint_money ), 0 ) appoint_money
+			IFNULL( SUM( appoint_money / 10000 ), 0 ) appoint_money
 		FROM
 			`history_duifu`
 		WHERE
@@ -429,9 +429,9 @@
 		SELECT pay_date, pay_money FROM p_order_pay WHERE order_id = #{orderId} AND pay_date > CURRENT_DATE ORDER BY pay_date LIMIT 1
 	</select>
 
-	<select id="customerTotalAssets" resultType="double">
+	<select id="customerTotalAssets" resultType="Integer">
 		SELECT
-			IFNULL( SUM( appoint_money * 10000 ), 0 ) AS appoint_money
+			IFNULL( SUM( appoint_money ), 0 ) AS appoint_money
 		FROM
 			p_order
 		WHERE
@@ -502,8 +502,8 @@
 		  AND p.pay_date > CURRENT_DATE ( )
 	</select>
 
-	<select id="investingOrderMoney" resultType="double">
-		SELECT IFNULL(SUM(o.appoint_money * 10000),0) AS appoint_money
+	<select id="investingOrderMoney" resultType="integer">
+		SELECT IFNULL(SUM(o.appoint_money),0) AS appoint_money
 		FROM p_order as o
 		INNER JOIN p_raise as r on o.raise_id = r.id
 		WHERE o.card_num = #{cardNum}
@@ -511,8 +511,8 @@
 		  AND DATE_ADD(r.establish_time,INTERVAL o.date_num MONTH) <![CDATA[ > ]]> CURRENT_DATE
 	</select>
 
-	<select id="historyInvestingOrderMoney" resultType="double">
-		SELECT IFNULL(SUM(appoint_money),0) appoint_money FROM history_duifu
+	<select id="historyInvestingOrderMoney" resultType="Integer">
+		SELECT IFNULL(SUM(appoint_money / 10000),0) appoint_money FROM history_duifu
 		WHERE card_num = #{cardNum}
 		  AND end_date > CURRENT_DATE()
 	</select>
@@ -520,7 +520,7 @@
 	<select id="customerOrderInfo" resultType="com.alibaba.fastjson.JSONObject">
 		SELECT
 			p.product_name,
-			o.appoint_money * 10000 AS appoint_money,
+			o.appoint_money AS appoint_money,
 			DATE_FORMAT( o.appoint_time, '%Y-%m-%d' ) appoint_time,
 			r.establish_time as establish_time,
 			o.date_num,
