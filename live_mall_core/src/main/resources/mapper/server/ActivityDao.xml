@@ -20,7 +20,7 @@
         <if test="params.realname != null and params.trealname != ''">
             AND LOCATE(#{params.realname}, u.realname) > 0
         </if>
-        ORDER BY a.date_time DESC
+        ORDER BY a.create_time DESC
     </select>
 
     <select id="customerActivityPages" resultType="com.alibaba.fastjson.JSONObject">

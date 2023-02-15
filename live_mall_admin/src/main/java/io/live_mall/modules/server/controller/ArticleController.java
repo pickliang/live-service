@@ -7,11 +7,9 @@ import io.live_mall.common.utils.PageUtils;
 import io.live_mall.common.utils.R;
 import io.live_mall.common.utils.ShiroUtils;
 import io.live_mall.modules.server.dto.ActivityDto;
+import io.live_mall.modules.server.dto.CustomerBannerDto;
 import io.live_mall.modules.server.dto.InformationDto;
-import io.live_mall.modules.server.entity.ActivityEntity;
-import io.live_mall.modules.server.entity.FinanceEntity;
-import io.live_mall.modules.server.entity.InformationEntity;
-import io.live_mall.modules.server.entity.InformationLabelEntity;
+import io.live_mall.modules.server.entity.*;
 import io.live_mall.modules.server.service.*;
 import io.live_mall.modules.server.utils.QrCodeUtils;
 import io.live_mall.properties.QrCodeProperties;
@@ -21,10 +19,7 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author yewl
@@ -42,6 +37,7 @@ public class ArticleController {
     private final ActivityService activityService;
     private final QrCodeProperties qrCodeProperties;
     private final InformationBrowseService informationBrowseService;
+    private final CustomerBannerService customerBannerService;
 
     @GetMapping(value = "/finance/list")
     @RequiresPermissions("server:finance:list")
@@ -360,5 +356,74 @@ public class ArticleController {
         PageUtils pages = informationBrowseService.informationBrowserList(params);
         result.put("list", pages);
         return R.ok().put("data", result);
+    }
+
+    /**
+     * banner图
+     * @return
+     */
+    @GetMapping(value = "/banners")
+    public R bannerList() {
+        List<CustomerBannerEntity> list = customerBannerService.list(Wrappers.lambdaQuery(CustomerBannerEntity.class)
+                .orderByAsc(CustomerBannerEntity::getCreateTime).last("LIMIT 3"));
+        return R.ok().put("data", list);
+    }
+
+    /**
+     * 更新banner
+     * @param dto
+     * @return
+     */
+    @PostMapping(value = "/update-banner")
+    public R updateBanner(@RequestBody CustomerBannerDto dto) {
+        CustomerBannerEntity entity = new CustomerBannerEntity();
+        entity.setUpdateUser(ShiroUtils.getUserId());
+        entity.setUpdateTime(new Date());
+        BeanUtils.copyProperties(dto, entity);
+        boolean update = customerBannerService.updateById(entity);
+        return update ? R.ok() : R.error();
+    }
+
+    /**
+     * banner下的文章
+     * @param type 1-公司动态 2-资讯信息 3-公司活动
+     * @return
+     */
+    @GetMapping(value = "/banner-article")
+    public R bannerArticle(@RequestParam(defaultValue = "1") Integer type) {
+        List<Map<String, Object>> data = new ArrayList<>();
+        if (1 == type) {
+            List<FinanceEntity> list = financeService.list(Wrappers.lambdaQuery(FinanceEntity.class)
+                    .eq(FinanceEntity::getDelFlag, 0).orderByDesc(FinanceEntity::getCreateTime).last("LIMIT 20"));
+            list.forEach(entity -> {
+                Map<String, Object> result = Maps.newHashMap();
+                result.put("id", entity.getId());
+                result.put("title", entity.getTitle());
+                data.add(result);
+            });
+        }
+
+        if (2 == type) {
+            List<InformationEntity> list = informationService.list(Wrappers.lambdaQuery(InformationEntity.class)
+                    .eq(InformationEntity::getDelFlag, 0).orderByDesc(InformationEntity::getCreateTime).last("LIMIT 20"));
+            list.forEach(entity -> {
+                Map<String, Object> result = Maps.newHashMap();
+                result.put("id", entity.getId());
+                result.put("title", entity.getTitle());
+                data.add(result);
+            });
+        }
+
+        if (3 == type) {
+            List<ActivityEntity> list = activityService.list(Wrappers.lambdaQuery(ActivityEntity.class)
+                    .eq(ActivityEntity::getDelFlag, 0).orderByDesc(ActivityEntity::getCreateTime).last("LIMIT 20"));
+            list.forEach(entity -> {
+                Map<String, Object> result = Maps.newHashMap();
+                result.put("id", entity.getId());
+                result.put("title", entity.getTitle());
+                data.add(result);
+            });
+        }
+        return R.ok().put("data", data);
     }
 }
