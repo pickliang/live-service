@@ -89,6 +89,10 @@ public class CustomerUserController {
     @GetMapping(value = "/bind-sale")
     public R bindSale(@RequestParam String userId) {
         CustomerUserModel userEntity = ShiroUtils.getUserEntity();
+        int count = customerUserService.count(Wrappers.lambdaQuery(CustomerUserEntity.class).eq(CustomerUserEntity::getId, userEntity.getId()).isNotNull(CustomerUserEntity::getSaleId));
+        if (count > 0) {
+            return R.error("已绑定理财师");
+        }
         boolean update = customerUserService.update(Wrappers.lambdaUpdate(CustomerUserEntity.class)
                 .set(CustomerUserEntity::getSaleId, userId).eq(CustomerUserEntity::getId, userEntity.getId()));
         return update ? R.ok() : R.error();

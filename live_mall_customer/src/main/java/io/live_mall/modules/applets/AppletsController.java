@@ -45,8 +45,20 @@ public class AppletsController {
      */
     @GetMapping(value = "/unlimit-code")
     @SneakyThrows
-    public R getUnlimitedQRCode(@RequestParam String scene, @RequestParam String page, @RequestParam Boolean checkPath, @RequestParam String  envVersion) {
+    public R getUnlimitedQRCode(@RequestParam String scene, @RequestParam String page, @RequestParam Boolean checkPath, @RequestParam String envVersion) {
         byte[] result = appletsService.getUnlimitedQRCode(scene, page, checkPath, envVersion);
         return R.ok().put("data", result);
+    }
+
+    /**
+     * 获取小程序跳转链接
+     * @param envVersion
+     * @return
+     */
+    @GetMapping(value = "/url-link")
+    @SneakyThrows
+    public R getUrlLink(@RequestParam String envVersion) {
+        String urlLink = appletsService.getUrlLink(envVersion);
+        return R.ok().put("data", urlLink);
     }
 }
