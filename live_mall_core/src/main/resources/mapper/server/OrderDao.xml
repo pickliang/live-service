@@ -257,7 +257,7 @@
 				'二级市场'
 			END AS product_class,
 			o.id AS order_id,
-			o.appoint_money * 10000 AS appoint_money,
+			o.appoint_money AS appoint_money,
 			DATE_FORMAT( o.appoint_time, '%Y-%m-%d' ) appoint_time,
 			r.establish_time,
 			o.date_num,
@@ -299,7 +299,7 @@
 			product_name,
 			product_class,
 			id AS order_id,
-			appoint_money,
+			appoint_money / 10000 as appoint_money,
 			value_date AS appoint_time,
 			end_date AS establish_time,
 			0 AS date_num,

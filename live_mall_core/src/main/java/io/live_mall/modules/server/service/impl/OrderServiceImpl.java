@@ -387,6 +387,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
 	private List<JSONObject> assembleOrderItem(List<JSONObject> records) {
 		records.forEach(order -> {
+			order.put("appoint_money", order.getInteger("appoint_money"));
 			// 是否灰色展示 0-否 1-是
 			Integer isAsh = 0;
 			List<Map<String, Object>> maps = new ArrayList<>();
