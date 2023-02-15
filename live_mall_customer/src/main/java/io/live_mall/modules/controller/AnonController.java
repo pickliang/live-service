@@ -3,9 +3,11 @@ package io.live_mall.modules.controller;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.common.collect.Maps;
 import io.live_mall.common.utils.R;
+import io.live_mall.modules.server.entity.CustomerBannerEntity;
 import io.live_mall.modules.server.entity.CustomerUserEntity;
 import io.live_mall.modules.server.model.CustomerUserModel;
 import io.live_mall.modules.server.model.InformationModel;
+import io.live_mall.modules.server.service.CustomerBannerService;
 import io.live_mall.modules.server.service.CustomerUserService;
 import io.live_mall.modules.server.service.InformationService;
 import io.live_mall.modules.sys.oauth2.TokenGenerator;
@@ -33,6 +35,7 @@ import java.util.Objects;
 public class AnonController {
     private final InformationService informationService;
     private final CustomerUserService customerUserService;
+    private final CustomerBannerService customerBannerService;
 
 
     /**
@@ -96,6 +99,17 @@ public class AnonController {
         result.put("stock", stock);
         result.put("market", market);
         return R.ok().put("data", result);
+    }
+
+    /**
+     * 轮播图
+     * @return
+     */
+    @GetMapping(value = "/banners")
+    public R customerBanners() {
+        List<CustomerBannerEntity> list = customerBannerService.list(Wrappers.lambdaQuery(CustomerBannerEntity.class)
+                .eq(CustomerBannerEntity::getStatus, 0));
+        return R.ok().put("data", list);
     }
 
 }

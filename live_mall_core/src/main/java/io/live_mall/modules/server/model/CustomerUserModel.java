@@ -20,4 +20,6 @@ public class CustomerUserModel {
     private String token;
 
     private Date expireTime;
+
+    private Integer code;
 }
