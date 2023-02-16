@@ -101,7 +101,7 @@ public class OrderController {
 
         // 活动积分
         IntegralActivityEntity integralActivity = integralActivityService.getOne(Wrappers.lambdaQuery(IntegralActivityEntity.class)
-                .eq(IntegralActivityEntity::getDelFlag, 0).orderByDesc(IntegralActivityEntity::getEndDate));
+                .eq(IntegralActivityEntity::getDelFlag, 0).orderByDesc(IntegralActivityEntity::getEndDate).last("LIMIT 1"));
         Integer activityIntegral = 15;
         String date = "2023/01/01日--2023/03/31日";
         String integralProportion = "50%";
