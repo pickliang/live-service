@@ -44,7 +44,7 @@
             del_flag = 0
             AND classify = #{classify}
         ORDER BY create_time DESC
-        LIMIT 1
+        LIMIT 5
     </select>
 
     <select id="customerInformationPages" resultType="io.live_mall.modules.server.model.InformationModel">
