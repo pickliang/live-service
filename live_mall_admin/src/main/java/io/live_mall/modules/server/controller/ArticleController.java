@@ -10,6 +10,7 @@ import io.live_mall.modules.server.dto.ActivityDto;
 import io.live_mall.modules.server.dto.CustomerBannerDto;
 import io.live_mall.modules.server.dto.InformationDto;
 import io.live_mall.modules.server.entity.*;
+import io.live_mall.modules.server.model.CustomerBannerModel;
 import io.live_mall.modules.server.service.*;
 import io.live_mall.modules.server.utils.QrCodeUtils;
 import io.live_mall.properties.QrCodeProperties;
@@ -359,14 +360,35 @@ public class ArticleController {
     }
 
     /**
-     * banner图
+     * banner
      * @return
      */
     @GetMapping(value = "/banners")
     public R bannerList() {
         List<CustomerBannerEntity> list = customerBannerService.list(Wrappers.lambdaQuery(CustomerBannerEntity.class)
                 .orderByAsc(CustomerBannerEntity::getCreateTime).last("LIMIT 3"));
-        return R.ok().put("data", list);
+        List<CustomerBannerModel> models = new ArrayList<>();
+        list.forEach(banner -> {
+            CustomerBannerModel model = new CustomerBannerModel();
+            BeanUtils.copyProperties(banner, model);
+            if (1 == banner.getArticleType()) {
+                FinanceEntity finance = financeService.getById(banner.getArticleId());
+                String articleName = Objects.nonNull(finance) ? finance.getTitle() : "";
+                model.setArticleTitle(articleName);
+            }
+            if (2 == banner.getArticleType()) {
+                InformationEntity information = informationService.getById(banner.getArticleId());
+                String articleName = Objects.nonNull(information) ? information.getTitle() : "";
+                model.setArticleTitle(articleName);
+            }
+            if (3 == banner.getArticleType()) {
+                ActivityEntity activity = activityService.getById(banner.getArticleId());
+                String articleName = Objects.nonNull(activity) ? activity.getTitle() : "";
+                model.setArticleTitle(articleName);
+            }
+            models.add(model);
+        });
+        return R.ok().put("data", models);
     }
 
     /**
