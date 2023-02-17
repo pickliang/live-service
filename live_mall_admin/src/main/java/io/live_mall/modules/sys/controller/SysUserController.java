@@ -17,21 +17,24 @@ import io.live_mall.common.validator.ValidatorUtils;
 import io.live_mall.common.validator.group.AddGroup;
 import io.live_mall.common.validator.group.UpdateGroup;
 import io.live_mall.modules.server.entity.MemberEntity;
+import io.live_mall.modules.server.entity.SysUserArchivesEntity;
 import io.live_mall.modules.server.service.MemberService;
 import io.live_mall.modules.server.service.OrderService;
 import io.live_mall.modules.server.service.SysOrgUserService;
+import io.live_mall.modules.server.service.SysUserArchivesService;
 import io.live_mall.modules.sys.entity.SysUserEntity;
 import io.live_mall.modules.sys.form.PasswordForm;
 import io.live_mall.modules.sys.service.SysUserRoleService;
 import io.live_mall.modules.sys.service.SysUserService;
+import lombok.AllArgsConstructor;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.crypto.hash.Sha256Hash;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * 系统用户
@@ -40,20 +43,14 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/sys/user")
+@AllArgsConstructor
 public class SysUserController extends AbstractController {
-	@Autowired
-	private SysUserService sysUserService;
-	@Autowired
-	private SysUserRoleService sysUserRoleService;
-	
-	@Autowired
-	SysOrgUserService  sysOrgUserService;
-	
-	@Autowired
-	MemberService memberService;
-	
-	@Autowired
-	OrderService orderService;
+	private final SysUserService sysUserService;
+	private final SysUserRoleService sysUserRoleService;
+	private final SysOrgUserService  sysOrgUserService;
+	private final MemberService memberService;
+	private final OrderService orderService;
+	private final SysUserArchivesService sysUserArchivesService;
 	
 	@GetMapping("/getUserListByOrgId")
 	@RequiresPermissions("sys:user:list")
@@ -222,9 +219,34 @@ public class SysUserController extends AbstractController {
 	public R getUserlistByRoleId(@PathVariable("roleId")String roleId){
 		return R.ok().put("data", sysUserService.getUserlistByRoleId(roleId));
 	}
-	
-	
-	
-	
+
+	/**
+	 * 人员职业档案
+	 * @param userId 用户id
+	 * @return
+	 */
+	@GetMapping(value = "/archives-info/{userId}")
+	@RequiresPermissions("sys:user:info")
+	public R archivesInfo(@PathVariable Long userId) {
+		SysUserArchivesEntity archives = sysUserArchivesService.getById(userId);
+		if (Objects.isNull(archives)) {
+			archives = new SysUserArchivesEntity();
+			archives.setUserId(userId);
+		}
+		return R.ok().put("data", archives);
+	}
+
+	/**
+	 * 更新人员职业档案
+	 * @param entity
+	 * @return
+	 */
+	@PostMapping(value = "/archives-update")
+	@RequiresPermissions("sys:user:update")
+	public R archivesUpdate(@RequestBody SysUserArchivesEntity entity) {
+		boolean update = sysUserArchivesService.saveOrUpdate(entity);
+
+		return update ? R.ok() : R.error();
+	}
 	
 }
