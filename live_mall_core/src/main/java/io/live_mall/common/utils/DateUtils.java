@@ -9,6 +9,7 @@
 package io.live_mall.common.utils;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
@@ -194,6 +195,13 @@ public class DateUtils {
         }
         return result;
     }
-    
-  
+
+    /**
+     * unix时间戳转为date
+     * @param unix
+     * @return
+     */
+    public static Date unixToDate(Long unix) {
+        return stringToDate(DateFormatUtils.format(unix * 1000L, DATE_TIME_PATTERN), DATE_TIME_PATTERN);
+    }
 }

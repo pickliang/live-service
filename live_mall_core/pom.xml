@@ -153,6 +153,16 @@
 			<version>3.17</version>
 		</dependency>
 
+		<dependency>
+			<groupId>com.youzan</groupId>
+			<artifactId>cloud-api</artifactId>
+			<version>1.0.16-RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>com.youzan.cloud</groupId>
+			<artifactId>open-sdk-gen</artifactId>
+			<version>1.0.28.10002162202301301841-RELEASE</version>
+		</dependency>
     </dependencies>
 
 </project>

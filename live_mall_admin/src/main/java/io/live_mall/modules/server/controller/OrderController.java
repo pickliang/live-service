@@ -278,4 +278,15 @@ public class OrderController {
         return R.ok().put("data", pageUtils);
     }
 
+    /**
+     * 发送兑付完成通知
+     * @param startDate 开始日期yyyy-MM-dd
+     * @param endDate 结束日期yyyy-MM-dd
+     * @return
+     */
+    @GetMapping(value = "/duifu-notice-data")
+    public R duifuNoticeData(@RequestParam("startDate") String startDate, @RequestParam("endDate") String endDate){
+        return R.ok().put("data", orderService.duifuNoticeData(startDate, endDate));
+    }
+
 }

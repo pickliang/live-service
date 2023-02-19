@@ -14,4 +14,12 @@ public class RedisKeyConstants {
      * 小鹅通token
      */
     public static final String TOUCH_ACCESS_TOKEN = "touch_access_token";
+    /**
+     * 短信token
+     */
+    public static final String SMS_TOKEN = "sms_token";
+    /**
+     * 有赞token
+     */
+    public static final String YZ_TOKEN = "sms_token";
 }

@@ -627,4 +627,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 		});
 		return new PageUtils(pages);
 	}
+
+	@Override
+	public List<JSONObject> duifuNoticeData(String startDate, String endDate) {
+		return this.baseMapper.duifuNoticeData(startDate, endDate);
+	}
 }

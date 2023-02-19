@@ -161,4 +161,8 @@ public interface OrderDao extends BaseMapper<OrderEntity> {
 	List<JSONObject> integralOrder(@Param("cardNums") List<String> cardNums);
 
 	IPage<JSONObject> historyDuifuPage(IPage<JSONObject> page, @Param("params")Map<String, Object> params);
+
+	List<JSONObject> duifuNoticeData(@Param("startDate") String startDate, @Param("endDate") String endDate);
+
+
 }

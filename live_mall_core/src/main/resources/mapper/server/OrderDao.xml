@@ -569,6 +569,30 @@
 		ORDER BY create_time DESC
 	</select>
 
+	<select id="duifuNoticeData" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT
+			*
+		FROM
+			(
+				SELECT
+					o.id,
+					o.customer_name,
+					o.appoint_money * 10000 AS appoint_money,
+					o.phone,
+					u.realname,
+					u.mobile,
+					DATE_ADD( r.establish_time, INTERVAL o.date_num MONTH ) AS date
+				FROM
+					p_order AS o
+					LEFT JOIN sys_user AS u ON o.sale_id = u.user_id
+					LEFT JOIN p_raise AS r ON r.id = o.raise_id
+				WHERE
+					o.`status` = 4
+			) AS t
+		WHERE
+			t.date BETWEEN #{startDate} AND #{endDate}
+	</select>
+
 	<!--	20220516 add end-->
     <select id="selectPageVo"  resultType="io.live_mall.modules.server.entity.OrderEntity" parameterType="java.util.HashMap" >
     		select o.* from  p_order o  

@@ -46,7 +46,7 @@
     <orderEntry type="library" name="Maven: org.bouncycastle:bcprov-jdk15on:1.65" level="project" />
     <orderEntry type="library" name="Maven: com.github.binarywang:weixin-java-miniapp:3.7.0" level="project" />
     <orderEntry type="library" name="Maven: com.tencentcloudapi:tencentcloud-sdk-java:3.1.87" level="project" />
-    <orderEntry type="library" name="Maven: com.squareup.okio:okio:1.12.0" level="project" />
+    <orderEntry type="library" name="Maven: com.squareup.okio:okio:3.3.0" level="project" />
     <orderEntry type="library" name="Maven: com.squareup.okhttp:okhttp:2.5.0" level="project" />
     <orderEntry type="library" name="Maven: javax.xml.bind:jaxb-api:2.3.1" level="project" />
     <orderEntry type="library" name="Maven: javax.activation:javax.activation-api:1.2.0" level="project" />
@@ -65,6 +65,14 @@
     <orderEntry type="library" name="Maven: org.apache.poi:poi-ooxml-schemas:3.17" level="project" />
     <orderEntry type="library" name="Maven: org.apache.xmlbeans:xmlbeans:2.6.0" level="project" />
     <orderEntry type="library" name="Maven: stax:stax-api:1.0.1" level="project" />
+    <orderEntry type="library" name="Maven: com.youzan:cloud-api:1.0.16-RELEASE" level="project" />
+    <orderEntry type="library" name="Maven: com.youzan.cloud:open-sdk-core:1.0.25-RELEASE" level="project" />
+    <orderEntry type="library" name="Maven: com.youzan.cloud:cloud-open-data-security-client-sdk:1.0.16-RELEASE" level="project" />
+    <orderEntry type="library" name="Maven: com.youzan.cloud:cloud-open-data-security-basic-sdk:1.0.8-RELEASE" level="project" />
+    <orderEntry type="library" name="Maven: com.youzan:cloud-metadata-common:1.0.5-RELEASE" level="project" />
+    <orderEntry type="library" name="Maven: com.youzan.cloud:open-sdk-gen:1.0.28.10002162202301301841-RELEASE" level="project" />
+    <orderEntry type="library" name="Maven: com.youzan.cloud:open-sdk-api:1.0.28-RELEASE" level="project" />
+    <orderEntry type="library" name="Maven: com.youzan.cloud:open-sdk-common:1.0.28-RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework.boot:spring-boot-starter-test:2.1.4.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework.boot:spring-boot-starter:2.1.4.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework.boot:spring-boot:2.1.4.RELEASE" level="project" />
@@ -173,7 +181,13 @@
     <orderEntry type="library" name="Maven: com.github.axet:kaptcha:0.0.9" level="project" />
     <orderEntry type="library" name="Maven: com.jhlabs:filters:2.0.235" level="project" />
     <orderEntry type="library" name="Maven: com.qiniu:qiniu-java-sdk:7.2.23" level="project" />
-    <orderEntry type="library" name="Maven: com.squareup.okhttp3:okhttp:3.8.1" level="project" />
+    <orderEntry type="library" name="Maven: com.squareup.okhttp3:okhttp:4.10.0" level="project" />
+    <orderEntry type="library" name="Maven: com.squareup.okio:okio-jvm:3.0.0" level="project" />
+    <orderEntry type="library" name="Maven: org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.2.71" level="project" />
+    <orderEntry type="library" name="Maven: org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.2.71" level="project" />
+    <orderEntry type="library" name="Maven: org.jetbrains.kotlin:kotlin-stdlib-common:1.5.31" level="project" />
+    <orderEntry type="library" name="Maven: org.jetbrains.kotlin:kotlin-stdlib:1.8.0" level="project" />
+    <orderEntry type="library" name="Maven: org.jetbrains:annotations:13.0" level="project" />
     <orderEntry type="library" name="Maven: com.aliyun.oss:aliyun-sdk-oss:2.8.3" level="project" />
     <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpclient:4.5.8" level="project" />
     <orderEntry type="library" name="Maven: org.jdom:jdom:1.1" level="project" />

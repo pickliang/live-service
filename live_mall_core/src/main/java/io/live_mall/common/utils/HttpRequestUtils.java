@@ -13,6 +13,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.Map;
 
 /**
  * @author yewl
@@ -64,6 +66,28 @@ public class HttpRequestUtils {
             } catch (CloneNotSupportedException e) {
                 throw new RuntimeException(e);
             }
+        }
+        return null;
+    }
+
+    public static HttpEntity post(String url, Map<String, Object> params, String token) {
+        CloseableHttpClient client = HttpClients.createDefault();
+        HttpPost httpPost = new HttpPost(url);
+        try {
+            String charset = "UTF-8";
+            StringEntity entity = new StringEntity(JSON.toJSONString(params), Charset.defaultCharset());
+            entity.setContentEncoding(charset);
+            httpPost.setEntity(entity);
+            httpPost.addHeader("Content-Type", "application/json");
+            httpPost.addHeader("Authorization", token);
+            CloseableHttpResponse response = client.execute(httpPost);
+            int statusCode = response.getStatusLine().getStatusCode();
+            log.error("code-->{}", statusCode);
+            if (statusCode == HttpStatus.SC_OK) {
+                return response.getEntity();
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
         }
         return null;
     }

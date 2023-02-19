@@ -269,6 +269,22 @@
 		 <version>1.18.12</version>
 		</dependency>
 
+		<dependency>
+			<groupId>com.squareup.okhttp3</groupId>
+			<artifactId>okhttp</artifactId>
+			<version>4.10.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.squareup.okio</groupId>
+			<artifactId>okio</artifactId>
+			<version>3.3.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jetbrains.kotlin</groupId>
+			<artifactId>kotlin-stdlib</artifactId>
+			<version>1.8.0</version>
+		</dependency>
+
 	</dependencies>
   </dependencyManagement>
 	<!-- 阿里云maven仓库 -->
@@ -281,12 +297,31 @@
 				<enabled>true</enabled>
 			</releases>
 		</repository>
+		<repository>
+			<id>youzan-nexus-snapshot</id>
+			<name>Maven Repository Mirror running on maven.youzanyun.com</name>
+			<url>http://maven.youzanyun.com/repository/maven-public</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+		</repository>
 	</repositories>
 	<pluginRepositories>
 		<pluginRepository>
 			<id>public</id>
 			<name>aliyun nexus</name>
 			<url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</pluginRepository>
+		<pluginRepository>
+			<id>youzan-nexus-snapshot</id>
+			<name>Maven Repository Mirror running on maven.youzanyun.com</name>
+			<url>http://maven.youzanyun.com/repository/maven-public</url>
 			<releases>
 				<enabled>true</enabled>
 			</releases>

@@ -85,5 +85,13 @@ public interface OrderService extends IService<OrderEntity> {
 	void batchIntegralOrder();
 
 	PageUtils historyDuifuPage(Map<String, Object> params);
+
+	/**
+	 * 发送对付通知数据列表
+	 * @param startDate 开始日期yyyy-MM-dd
+	 * @param endDate 结束日期yyyy-MM-dd
+	 * @return
+	 */
+	List<JSONObject> duifuNoticeData(String startDate, String endDate);
 }
 
