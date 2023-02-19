@@ -21,9 +21,10 @@ public class YouZanUserServiceImpl extends ServiceImpl<YouZanUserDao, YouZanUser
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public boolean save(String yzOpenId, YouzanScrmCustomerDetailGetResult.YouzanScrmCustomerDetailGetResultData data) {
+    public boolean save(String userId, String yzOpenId, YouzanScrmCustomerDetailGetResult.YouzanScrmCustomerDetailGetResultData data) {
         YouZanUserEntity entity = new YouZanUserEntity();
         BeanUtils.copyProperties(data, entity);
+        entity.setUserId(userId);
         entity.setYzOpenId(yzOpenId);
         entity.setLastTradeAt(DateUtils.unixToDate(data.getLastTradeAt()));
         entity.setCreatedAt(DateUtils.unixToDate(data.getCreatedAt()));

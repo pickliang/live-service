@@ -75,7 +75,7 @@ public class AnonController {
             user = new CustomerUserModel();
             user.setId(userEntity.getId());
             // 保存有赞用户信息
-            CompletableFuture.supplyAsync(() -> saveYZUser(phone));
+            CompletableFuture.supplyAsync(() -> saveYzUser(userEntity.getId(), phone));
         }else {
             customerUserService.update(Wrappers.lambdaUpdate(CustomerUserEntity.class)
                     .set(CustomerUserEntity::getToken, token)
@@ -123,7 +123,7 @@ public class AnonController {
     }
 
     @SneakyThrows
-    private boolean saveYZUser(String mobile) {
+    private boolean saveYzUser(String userId, String mobile) {
         String token = redisUtils.get(RedisKeyConstants.YZ_TOKEN);
         if (StringUtils.isBlank(token)) {
             OAuthToken authToken = YouZanClients.token();
@@ -135,7 +135,7 @@ public class AnonController {
             YouzanUsersInfoQueryResult.YouzanUsersInfoQueryResultUserlist resultUserList = userList.get(0);
             YouzanUsersInfoQueryResult.YouzanUsersInfoQueryResultPrimitiveinfo primitiveInfo = resultUserList.getPrimitiveInfo();
             YouzanScrmCustomerDetailGetResult.YouzanScrmCustomerDetailGetResultData data = YouZanClients.userDetail(token, primitiveInfo.getYzOpenId(), mobile);
-            return youZanService.save(primitiveInfo.getYzOpenId(), data);
+            return youZanService.save(userId, primitiveInfo.getYzOpenId(), data);
         }
         return false;
     }

@@ -10,5 +10,5 @@ import io.live_mall.modules.server.entity.YouZanUserEntity;
  * @description
  */
 public interface YouZanUserService extends IService<YouZanUserEntity> {
-    boolean save(String yzOpenId, YouzanScrmCustomerDetailGetResult.YouzanScrmCustomerDetailGetResultData data);
+    boolean save(String userId, String yzOpenId, YouzanScrmCustomerDetailGetResult.YouzanScrmCustomerDetailGetResultData data);
 }

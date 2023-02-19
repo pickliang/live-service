@@ -26,6 +26,10 @@ public class YouZanUserEntity implements Serializable {
     @TableId(value = "yz_open_id", type = IdType.INPUT)
     private String yzOpenId;
     /**
+     * 用户id
+     */
+    private String userId;
+    /**
      * 最后购买时间
      */
     private Date lastTradeAt;
