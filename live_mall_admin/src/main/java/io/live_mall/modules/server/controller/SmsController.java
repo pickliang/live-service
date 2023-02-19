@@ -1,16 +1,13 @@
 package io.live_mall.modules.server.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
 import io.live_mall.common.utils.R;
 import io.live_mall.common.utils.ShiroUtils;
 import io.live_mall.modules.server.model.MemberModel;
 import io.live_mall.modules.server.service.SmsService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 
 @RestController
@@ -39,5 +36,9 @@ public class SmsController {
 		smsService.sendUptPhoneCode(memberModel);
 		return R.ok();
 	}
-	
+
+	public R mmsSend(@RequestParam Map<String, Object> params) {
+
+		return R.ok();
+	}
 }

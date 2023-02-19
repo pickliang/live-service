@@ -1,15 +1,7 @@
 package io.live_mall.modules.server.service.impl;
 
-import java.util.Random;
-
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.stereotype.Service;
-
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-
 import io.live_mall.common.exception.RRException;
 import io.live_mall.common.template.CommonConstant;
 import io.live_mall.common.template.MobileMsgTemplate;
@@ -22,6 +14,13 @@ import io.live_mall.modules.sys.dao.SysUserDao;
 import io.live_mall.modules.sys.entity.SysUserEntity;
 import io.live_mall.sms.handle.SmsAliyunMessageHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Service;
+
+import java.util.Map;
+import java.util.Random;
 
 @Slf4j
 @Service
@@ -185,4 +184,11 @@ public class SmsServiceImpl implements SmsService {
 	   
 	}
 
+	@Override
+	public void mmsSend(Map<String, Object> params) {
+		String ids = String.valueOf(params.get("ids"));
+		String startDate = String.valueOf(params.get("startDate"));
+		String endDate = String.valueOf(params.get("endDate"));
+
+	}
 }

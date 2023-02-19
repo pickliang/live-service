@@ -2,9 +2,10 @@ package io.live_mall.modules.server.service;
 
 
 import com.alibaba.fastjson.JSONObject;
-
 import io.live_mall.modules.server.entity.OrderEntity;
 import io.live_mall.modules.server.model.MemberModel;
+
+import java.util.Map;
 
 public interface SmsService {
 	/**
@@ -34,5 +35,5 @@ public interface SmsService {
 	 */
 	void sendMsgToCust(OrderEntity orderEntity);
 
-	
+	void mmsSend(Map<String, Object> params);
 }
