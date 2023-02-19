@@ -1,24 +1,30 @@
 package io.live_mall.modules.server.controller.scheduling;
 
-import java.util.Date;
-import java.util.List;
-
+import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.youzan.cloud.open.sdk.common.exception.SDKException;
+import com.youzan.cloud.open.sdk.core.oauth.model.OAuthToken;
+import com.youzan.cloud.open.sdk.gen.v4_0_2.model.YouzanTradesSoldGetResult;
+import io.live_mall.common.utils.RedisUtils;
+import io.live_mall.constants.RedisKeyConstants;
+import io.live_mall.modules.server.entity.OrderEntity;
+import io.live_mall.modules.server.entity.RaiseEntity;
+import io.live_mall.modules.server.entity.YouZanUserEntity;
+import io.live_mall.modules.server.model.OrderUtils;
+import io.live_mall.modules.server.service.*;
+import io.live_mall.tripartite.YouZanClients;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-
-import cn.hutool.core.date.DateTime;
-import cn.hutool.core.date.DateUtil;
-import io.live_mall.modules.server.entity.OrderEntity;
-import io.live_mall.modules.server.entity.RaiseEntity;
-import io.live_mall.modules.server.model.OrderUtils;
-import io.live_mall.modules.server.service.OrderService;
-import io.live_mall.modules.server.service.RaiseService;
-import io.live_mall.modules.server.service.SmsService;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Component
@@ -33,6 +39,12 @@ public class OrderScheduler {
 	
 	@Autowired
 	SmsService smsService;
+	@Autowired
+	private YouZanUserService youZanUserService;
+	@Autowired
+	private RedisUtils redisUtils;
+	@Autowired
+	private YouZanOrderService youZanOrderService;
 	
 	@Scheduled(cron = "0 5/5 * * * ?")
 	public void orderEnd(){
@@ -73,5 +85,38 @@ public class OrderScheduler {
 			}
 		}
 	}
-	
+
+	/**
+	 * 每周日执行
+	 */
+	@Scheduled(cron = "0 0 0 L ? 7 ")
+	public void yzOrder() {
+		CompletableFuture.supplyAsync(() -> syncYzOrder());
+	}
+
+	private String syncYzOrder() {
+		List<YouZanUserEntity> users = youZanUserService.list(Wrappers.lambdaQuery(YouZanUserEntity.class));
+		users.forEach(user -> {
+			try {
+				String token = redisUtils.get(RedisKeyConstants.YZ_TOKEN);
+				if (StringUtils.isBlank(token)) {
+					OAuthToken authToken = YouZanClients.token();
+					redisUtils.set(RedisKeyConstants.YZ_TOKEN, authToken.getAccessToken(), authToken.getExpires());
+					token = authToken.getAccessToken();
+				}
+				YouzanTradesSoldGetResult.YouzanTradesSoldGetResultData data = null;
+				data = YouZanClients.orderList(token, user.getYzOpenId());
+				youZanOrderService.save(data);
+				Long totalResults = data.getTotalResults();
+				while (100 == totalResults) {
+					data = YouZanClients.orderList(token, user.getYzOpenId());
+					youZanOrderService.save(data);
+				}
+			} catch (SDKException e) {
+				log.error("有赞订单异常--->{}", e);
+			}
+		});
+		return null;
+
+	}
 }

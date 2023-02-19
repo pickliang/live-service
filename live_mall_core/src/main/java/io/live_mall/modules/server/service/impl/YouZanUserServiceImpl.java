@@ -4,9 +4,9 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.youzan.cloud.open.sdk.gen.v1_0_0.model.YouzanScrmCustomerDetailGetResult;
 import io.live_mall.common.utils.DateUtils;
-import io.live_mall.modules.server.dao.YouZanDao;
-import io.live_mall.modules.server.entity.YouZanEntity;
-import io.live_mall.modules.server.service.YouZanService;
+import io.live_mall.modules.server.dao.YouZanUserDao;
+import io.live_mall.modules.server.entity.YouZanUserEntity;
+import io.live_mall.modules.server.service.YouZanUserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,12 +17,12 @@ import org.springframework.transaction.annotation.Transactional;
  * @description
  */
 @Service("youZanService")
-public class YouZanServiceImpl extends ServiceImpl<YouZanDao, YouZanEntity> implements YouZanService {
+public class YouZanUserServiceImpl extends ServiceImpl<YouZanUserDao, YouZanUserEntity> implements YouZanUserService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean save(String yzOpenId, YouzanScrmCustomerDetailGetResult.YouzanScrmCustomerDetailGetResultData data) {
-        YouZanEntity entity = new YouZanEntity();
+        YouZanUserEntity entity = new YouZanUserEntity();
         BeanUtils.copyProperties(data, entity);
         entity.setYzOpenId(yzOpenId);
         entity.setLastTradeAt(DateUtils.unixToDate(data.getLastTradeAt()));

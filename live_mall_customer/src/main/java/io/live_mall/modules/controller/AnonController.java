@@ -2,16 +2,21 @@ package io.live_mall.modules.controller;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.common.collect.Maps;
+import com.youzan.cloud.open.sdk.core.oauth.model.OAuthToken;
+import com.youzan.cloud.open.sdk.gen.v1_0_0.model.YouzanScrmCustomerDetailGetResult;
+import com.youzan.cloud.open.sdk.gen.v1_0_0.model.YouzanUsersInfoQueryResult;
 import io.live_mall.common.utils.R;
+import io.live_mall.common.utils.RedisUtils;
+import io.live_mall.constants.RedisKeyConstants;
 import io.live_mall.modules.server.entity.CustomerBannerEntity;
 import io.live_mall.modules.server.entity.CustomerUserEntity;
 import io.live_mall.modules.server.model.CustomerUserModel;
 import io.live_mall.modules.server.model.InformationModel;
-import io.live_mall.modules.server.service.CustomerBannerService;
-import io.live_mall.modules.server.service.CustomerUserService;
-import io.live_mall.modules.server.service.InformationService;
+import io.live_mall.modules.server.service.*;
 import io.live_mall.modules.sys.oauth2.TokenGenerator;
+import io.live_mall.tripartite.YouZanClients;
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +28,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @author yewl
@@ -36,6 +42,8 @@ public class AnonController {
     private final InformationService informationService;
     private final CustomerUserService customerUserService;
     private final CustomerBannerService customerBannerService;
+    private final YouZanUserService youZanService;
+    private final RedisUtils redisUtils;
 
 
     /**
@@ -66,6 +74,8 @@ public class AnonController {
             customerUserService.save(userEntity);
             user = new CustomerUserModel();
             user.setId(userEntity.getId());
+            // 保存有赞用户信息
+            CompletableFuture.supplyAsync(() -> saveYZUser(phone));
         }else {
             customerUserService.update(Wrappers.lambdaUpdate(CustomerUserEntity.class)
                     .set(CustomerUserEntity::getToken, token)
@@ -110,6 +120,24 @@ public class AnonController {
         List<CustomerBannerEntity> list = customerBannerService.list(Wrappers.lambdaQuery(CustomerBannerEntity.class)
                 .eq(CustomerBannerEntity::getStatus, 0));
         return R.ok().put("data", list);
+    }
+
+    @SneakyThrows
+    private boolean saveYZUser(String mobile) {
+        String token = redisUtils.get(RedisKeyConstants.YZ_TOKEN);
+        if (StringUtils.isBlank(token)) {
+            OAuthToken authToken = YouZanClients.token();
+            redisUtils.set(RedisKeyConstants.YZ_TOKEN, authToken.getAccessToken(), authToken.getExpires());
+            token = authToken.getAccessToken();
+        }
+        List<YouzanUsersInfoQueryResult.YouzanUsersInfoQueryResultUserlist> userList = YouZanClients.userList(token, mobile);
+        if (!userList.isEmpty()) {
+            YouzanUsersInfoQueryResult.YouzanUsersInfoQueryResultUserlist resultUserList = userList.get(0);
+            YouzanUsersInfoQueryResult.YouzanUsersInfoQueryResultPrimitiveinfo primitiveInfo = resultUserList.getPrimitiveInfo();
+            YouzanScrmCustomerDetailGetResult.YouzanScrmCustomerDetailGetResultData data = YouZanClients.userDetail(token, primitiveInfo.getYzOpenId(), mobile);
+            return youZanService.save(primitiveInfo.getYzOpenId(), data);
+        }
+        return false;
     }
 
 }

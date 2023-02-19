@@ -8,6 +8,7 @@ import io.live_mall.modules.server.entity.YouZanOrderEntity;
 import io.live_mall.modules.server.service.YouZanOrderService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -21,6 +22,7 @@ import java.util.List;
 @Service("youZanOrderService")
 public class YouZanOrderServiceImpl extends ServiceImpl<YouZanOrderDao, YouZanOrderEntity> implements YouZanOrderService {
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void save(YouzanTradesSoldGetResult.YouzanTradesSoldGetResultData data) {
         List<YouzanTradesSoldGetResult.YouzanTradesSoldGetResultFullorderinfolist> fullOrderInfoList = data.getFullOrderInfoList();
         List<YouZanOrderEntity> entities = new ArrayList<>();
@@ -41,7 +43,7 @@ public class YouZanOrderServiceImpl extends ServiceImpl<YouZanOrderDao, YouZanOr
             entities.add(entity);
         });
         if (!entities.isEmpty()) {
-            this.saveBatch(entities);
+            this.saveOrUpdateBatch(entities);
         }
     }
 }

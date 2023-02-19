@@ -1,7 +1,7 @@
 package io.live_mall.modules.server.dao;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import io.live_mall.modules.server.entity.YouZanEntity;
+import io.live_mall.modules.server.entity.YouZanUserEntity;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -10,5 +10,5 @@ import org.apache.ibatis.annotations.Mapper;
  * @description
  */
 @Mapper
-public interface YouZanDao extends BaseMapper<YouZanEntity> {
+public interface YouZanUserDao extends BaseMapper<YouZanUserEntity> {
 }
