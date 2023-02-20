@@ -1,4 +1,4 @@
-package io.live_mall.modules.applets.service;
+package io.live_mall.modules.applets;
 
 import com.alibaba.fastjson.JSONObject;
 import io.live_mall.common.utils.HttpRequestUtils;
@@ -24,34 +24,10 @@ import java.io.IOException;
 @Slf4j
 public class AppletsService {
     private static final String GET_ACCESS_TOKEN_URL = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=APPID&secret=SECRET";
-    private static final String GET_PHONE_NUMBER_URL = "https://api.weixin.qq.com/wxa/business/getuserphonenumber?access_token=ACCESS_TOKEN";
-    private static final String CODE_UN_LIMIT = "https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token=ACCESS_TOKEN";
     private static final String URL_LINK = "https://api.weixin.qq.com/wxa/generate_urllink?access_token=ACCESS_TOKEN";
     private final RedisUtils redisUtils;
     private final WxAppletsProperties wxAppletsProperties;
 
-    public String getPhoneNumber(String code) throws IOException {
-        String accessToken = getAccessToken();
-        String url = GET_PHONE_NUMBER_URL.replace("ACCESS_TOKEN", accessToken);
-        JSONObject json = new JSONObject();
-        json.put("code", code);
-        HttpEntity httpEntity= HttpRequestUtils.post(url, json);
-        JSONObject result = JSONObject.parseObject(EntityUtils.toString(httpEntity, "UTF-8"));
-        JSONObject phoneInfo = result.getJSONObject("phone_info");
-        return phoneInfo.getString("purePhoneNumber");
-    }
-
-    public byte[] getUnlimitedQRCode(String scene, String page, Boolean checkPath, String  envVersion) throws IOException {
-        String accessToken = getAccessToken();
-        String url = CODE_UN_LIMIT.replace("ACCESS_TOKEN", accessToken);
-        JSONObject params = new JSONObject();
-        params.put("scene", scene);
-        params.put("page", page);
-        params.put("check_path", checkPath);
-        params.put("env_version", envVersion);
-        HttpEntity httpEntity = HttpRequestUtils.post(url, params);
-        return EntityUtils.toByteArray(httpEntity);
-    }
 
     /**
      * https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/qrcode-link/url-link/generateUrlLink.html
@@ -61,8 +37,7 @@ public class AppletsService {
      * @throws IOException
      */
     public String getUrlLink(String envVersion) throws IOException {
-        // String accessToken = getAccessToken();
-        String accessToken = "65_0IttUb-EeJkEeWaD1X4OtTNP8pHj-CmcQZdY_dA_dZ5lKuSo5__Vq8GJ6ZRCmxyyub17e21Dqi5YMy05dTwm5U0iHepAT_jjq-6yev0y8y53JFf_GjAn5flHTKoHSPcAIABMJ";
+        String accessToken = getAccessToken();
         String url = URL_LINK.replace("ACCESS_TOKEN", accessToken);
         JSONObject params = new JSONObject();
         params.put("is_expire", false);

@@ -121,16 +121,16 @@ public class MmsClient {
      * @return
      * @throws Exception
      */
-    public static void send(String token, String text, String mobile, String value, String mmsId) throws Exception {
+    public static JSONObject send(String token, String text, String mobile, String value, String mmsId) throws Exception {
         TreeMap<String, Object> params = new TreeMap<>();
 
         Map<String, Object> content = Maps.newHashMap();
         TreeMap<String,Object> varUserElement = new TreeMap<>();
-        varUserElement.put("titles", "Text1|Text2");
+        varUserElement.put("titles", text);
         List<Map<String, Object>> varUsers = new ArrayList<>();
         Map<String, Object> varUser = Maps.newHashMap();
-        varUser.put("mobile", "15039491933");
-        varUser.put("varElements", "叶先生|123456");
+        varUser.put("mobile", mobile);
+        varUser.put("varElements", value);
         varUsers.add(varUser);
         varUserElement.put("varUsers", varUsers);
         content.put("userInfos", JSONObject.toJSONString(varUserElement, SerializerFeature.SortField));
@@ -149,11 +149,10 @@ public class MmsClient {
 
         String sign = Md5Util.getMd5Base64(JSON.toJSONString(params));
         params.put("sign", sign);
-        log.error("sign-->{}", sign);
         log.error("params-->{}", JSON.toJSONString(params));
         HttpEntity httpEntity = HttpRequestUtils.post(MmsConstants.VARIABLE_SEND, params, token);
         JSONObject result = JSONObject.parseObject(EntityUtils.toString(httpEntity, Charset.defaultCharset()));
         log.error("result-->{}", result);
-
+        return result;
     }
 }

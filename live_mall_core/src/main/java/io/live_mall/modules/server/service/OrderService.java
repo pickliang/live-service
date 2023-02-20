@@ -87,11 +87,24 @@ public interface OrderService extends IService<OrderEntity> {
 	PageUtils historyDuifuPage(Map<String, Object> params);
 
 	/**
-	 * 发送对付通知数据列表
+	 * 发送兑付通知数据列表
 	 * @param startDate 开始日期yyyy-MM-dd
 	 * @param endDate 结束日期yyyy-MM-dd
 	 * @return
 	 */
 	List<JSONObject> duifuNoticeData(String startDate, String endDate);
+
+	/**
+	 * 选中的要下发短信的兑付通知数据
+	 * @param startDate 开始日期yyyy-MM-dd
+	 * @param endDate 结束日期yyyy-MM-dd
+	 * @param ids 订单号
+	 * @param urlLink 小程序跳转链接
+	 * @param mmsToken 短信token
+	 * @param userId 用户id
+	 */
+	void selectDuifuNoticeData(String startDate, String endDate, String ids, String urlLink, String mmsToken, Long userId);
+
+
 }
 

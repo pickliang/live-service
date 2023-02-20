@@ -27,5 +27,25 @@ public class MmsConstants {
      */
     public static final String VARIABLE_SEND = BASE_URL + "sendTask/variableMms/send";
 
+    /**
+     * 内部兑付通知
+     */
+    public static final String CASHING_COMPLETE_MMS_ID = "1720098";
+    /**
+     * 内部兑付预警通知
+     */
+    public static final String CASHING_EARLY_WARING_MMS_ID = "1720102";
+    /**
+     * 内部付息通知
+     */
+    public static final String PAYMENT_COMPLETE_MMS_ID = "1720104";
+    /**
+     * 内部付息预警通知
+     */
+    public static final String PAYMENT_EARLY_WARNING_MMS_ID = "1720106";
+    /**
+     * 短信验证码
+     */
+    public static final String CODE_TEMPLATE_MMS_ID = "1715804";
 
 }

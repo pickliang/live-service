@@ -593,6 +593,30 @@
 			t.date BETWEEN #{startDate} AND #{endDate}
 	</select>
 
+	<select id="selectDuifuNoticeData" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT
+			o.id,
+			o.customer_name,
+			o.appoint_money * 10000 AS appoint_money,
+			o.phone,
+		   (SELECT IFNULL(pay_money,0) + o.appoint_money * 10000 FROM p_order_pay WHERE order_id = o.id ORDER BY pay_date DESC LIMIT 1) as sum_money,
+			u.realname,
+			u.mobile,
+		    p.product_name,
+		    DATE_ADD( r.establish_time, INTERVAL o.date_num MONTH ) AS date
+		FROM
+			p_order AS o
+			LEFT JOIN sys_user AS u ON o.sale_id = u.user_id
+		    LEFT JOIN p_product as p on o.product_id = p.id
+		    LEFT JOIN p_raise AS r ON r.id = o.raise_id
+		WHERE
+			o.`status` = 4
+		  AND o.id IN
+		<foreach collection="orderIds" item="orderId" index="index" open="(" close=")" separator=",">
+			#{orderId}
+		</foreach>
+	</select>
+
 	<!--	20220516 add end-->
     <select id="selectPageVo"  resultType="io.live_mall.modules.server.entity.OrderEntity" parameterType="java.util.HashMap" >
     		select o.* from  p_order o  

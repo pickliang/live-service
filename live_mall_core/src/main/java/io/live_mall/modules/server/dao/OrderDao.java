@@ -165,4 +165,10 @@ public interface OrderDao extends BaseMapper<OrderEntity> {
 	List<JSONObject> duifuNoticeData(@Param("startDate") String startDate, @Param("endDate") String endDate);
 
 
+	/**
+	 * 选中的要下发短信的兑付通知数据
+	 * @param orderIds 订单id
+	 * @return
+	 */
+	List<JSONObject> selectDuifuNoticeData(@Param("orderIds") List<String> orderIds);
 }

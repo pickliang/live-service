@@ -8,13 +8,15 @@
 
 package io.live_mall;
 
+import io.live_mall.wxpay.config.WxAppletsProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 
 @EnableWebSocket
 @SpringBootApplication
+@EnableConfigurationProperties(WxAppletsProperties.class)
 public class liveMallAdminApplication {
 
 	public static void main(String[] args) {

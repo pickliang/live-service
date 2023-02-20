@@ -12,6 +12,7 @@ import io.live_mall.common.exception.RRException;
 import io.live_mall.common.utils.DateUtils;
 import io.live_mall.common.utils.PageUtils;
 import io.live_mall.common.utils.Query;
+import io.live_mall.constants.MmsConstants;
 import io.live_mall.modules.server.dao.*;
 import io.live_mall.modules.server.entity.*;
 import io.live_mall.modules.server.model.OrderModel;
@@ -20,8 +21,10 @@ import io.live_mall.modules.server.service.*;
 import io.live_mall.modules.server.utils.ValidateUtils;
 import io.live_mall.modules.sys.entity.SysUserEntity;
 import io.live_mall.modules.sys.service.SysUserService;
+import io.live_mall.sms.mms.MmsClient;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,6 +54,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 	@Autowired
 	SmsService smsService;
 	@Autowired
+	@Lazy
 	private MemberService memberService;
 	@Autowired
 	OrderPayService orderPaySerivce;
@@ -66,7 +70,10 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 	private IntegralDao integralDao;
 	@Autowired
 	private CustomerUserIntegralItemDao customerUserIntegralItemDao;
-
+	@Autowired
+	private MmsLogDao mmsLogDao;
+	@Autowired
+	private MmsLogItemService mmsLogItemService;
 
 	@Override
 	public PageUtils selectDuifuPage(Map<String, Object> params) {
@@ -631,5 +638,72 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 	@Override
 	public List<JSONObject> duifuNoticeData(String startDate, String endDate) {
 		return this.baseMapper.duifuNoticeData(startDate, endDate);
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void selectDuifuNoticeData(String startDate, String endDate, String ids, String urlLink, String mmsToken, Long userId) {
+		List<String> orderIds = Arrays.asList(ids.split(","));
+		List<JSONObject> list = this.baseMapper.selectDuifuNoticeData(orderIds);
+		// 保存mms发送日志
+		MmsLogEntity logEntity = new MmsLogEntity();
+		logEntity.setStartDate(DateUtils.stringToDate(startDate, DateUtils.DATE_PATTERN));
+		logEntity.setEndDate(DateUtils.stringToDate(endDate, DateUtils.DATE_PATTERN));
+		logEntity.setRowNum(list.size());
+		logEntity.setCreateTime(new Date());
+		logEntity.setCreateUser(userId);
+		mmsLogDao.insert(logEntity);
+		sendSaleMms(mmsToken, urlLink, list, logEntity.getId(), userId);
+		// CompletableFuture.supplyAsync(() -> sendSaleMms(mmsToken, urlLink, list, logEntity.getId(), userId));
+	}
+
+	/**
+	 * 理财师兑付短信通知
+	 * @param token token
+	 * @param urlLink 小程序跳转链接
+	 * @param list 兑付数据
+	 * @return boolean
+	 */
+	public boolean sendSaleMms(String token, String urlLink, List<JSONObject> list, String logId, Long userId) {
+		List<MmsLogItemEntity> entities = new ArrayList<>();
+		String text = "Text1|Text2|Text3|Text4|Text5|Text6|Text7";
+		// 理财师姓名|客户姓名|产品名称|到日期|认购金额|到期还本付息元|小程序链接
+		list.forEach(record -> {
+			String mobile = record.getString("mobile");
+			JSONObject result = null;
+			if (StringUtils.isNotBlank(mobile)) {
+				try {
+					StringBuilder sb = new StringBuilder();
+					sb.append(record.getString("realname")).append("|").append(record.getString("customer_name")).append(("|"))
+							.append(record.getString("product_name")).append("|").append(record.getString("date")).append("|")
+							.append(record.getString("appoint_money")).append("|").append(record.getString("sum_money")).append("|")
+							.append(urlLink);
+					result = MmsClient.send(token, text, mobile, sb.toString(), MmsConstants.CASHING_COMPLETE_MMS_ID);
+				} catch (Exception e) {
+					log.error("e-->{}", e);
+				}
+			}
+			// 保存发送明细
+			MmsLogItemEntity entity = new MmsLogItemEntity();
+			entity.setMmsLogId(logId);
+			entity.setOrderId(record.getString("id"));
+			entity.setAppointMoney(record.getInteger("appoint_money") / 10000);
+			entity.setCustomerName(record.getString("customer_name"));
+			entity.setCustomerPhone(record.getString("phone"));
+			entity.setSaleName(record.getString("realname"));
+			entity.setSaleMobile(mobile);
+			entity.setEndDate(DateUtils.stringToDate(record.getString("date"), DateUtils.DATE_PATTERN));
+			entity.setCreateUser(userId);
+			entity.setCreateTime(new Date());
+			if (null != result) {
+				// entity.setStatus();
+				// entity.setResult();
+			}
+			entities.add(entity);
+		});
+		if (!entities.isEmpty()) {
+			mmsLogItemService.saveBatch(entities);
+		}
+		return true;
 	}
 }
