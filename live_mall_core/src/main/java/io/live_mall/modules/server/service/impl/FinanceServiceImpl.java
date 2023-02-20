@@ -28,7 +28,7 @@ public class FinanceServiceImpl extends ServiceImpl<FinanceDao, FinanceEntity> i
     }
 
     @Override
-    public FinanceModel financeInfo(String id) {
+    public FinanceModel financeInfo(Long id) {
         FinanceEntity finance = this.baseMapper.selectById(id);
         FinanceModel model = new FinanceModel();
         BeanUtils.copyProperties(finance, model);

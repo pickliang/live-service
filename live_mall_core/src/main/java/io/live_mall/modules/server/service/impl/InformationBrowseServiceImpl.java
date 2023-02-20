@@ -25,7 +25,7 @@ public class InformationBrowseServiceImpl extends ServiceImpl<InformationBrowseD
     }
 
     @Override
-    public Long countPeopleNumber(String informationId) {
+    public Long countPeopleNumber(Long informationId) {
         return this.baseMapper.countPeopleNumber(informationId);
     }
 }

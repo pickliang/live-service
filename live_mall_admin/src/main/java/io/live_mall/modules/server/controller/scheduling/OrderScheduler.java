@@ -87,9 +87,9 @@ public class OrderScheduler {
 	}
 
 	/**
-	 * 每周日执行
+	 * 每周六的5点执行
 	 */
-	@Scheduled(cron = "0 0 0 L ? 7 ")
+	@Scheduled(cron = "0 0 5 ? * SAT")
 	public void yzOrder() {
 		CompletableFuture.supplyAsync(() -> syncYzOrder());
 	}

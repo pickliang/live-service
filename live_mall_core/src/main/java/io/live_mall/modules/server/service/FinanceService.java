@@ -16,7 +16,7 @@ import java.util.Map;
 public interface FinanceService extends IService<FinanceEntity> {
     PageUtils financePages(Map<String, Object> params);
 
-    FinanceModel financeInfo(String id);
+    FinanceModel financeInfo(Long id);
 
     List<FinanceEntity> companyDynamics(Integer classify);
 

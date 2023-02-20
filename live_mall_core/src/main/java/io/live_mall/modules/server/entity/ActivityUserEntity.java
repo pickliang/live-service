@@ -22,11 +22,11 @@ public class ActivityUserEntity implements Serializable {
     /**
      * 用户id
      */
-    private String userId;
+    private Long userId;
     /**
      * 活动id
      */
-    private String activityId;
+    private Long activityId;
     /**
      * 报名状态 1-报名成功 2-取消报名
      */

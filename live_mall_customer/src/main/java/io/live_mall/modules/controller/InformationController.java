@@ -134,7 +134,7 @@ public class InformationController {
      * @return
      */
     @GetMapping(value = "/activity-subscribe/{activityId}")
-    public R activitySubscribe(@PathVariable("activityId") String activityId) {
+    public R activitySubscribe(@PathVariable("activityId") Long activityId) {
         return activityService.activitySubscribe(activityId, ShiroUtils.getUserId());
     }
 

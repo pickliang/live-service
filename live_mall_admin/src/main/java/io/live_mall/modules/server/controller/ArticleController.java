@@ -85,7 +85,7 @@ public class ArticleController {
     @PutMapping(value = "/finance-status")
     @RequiresPermissions("server:finance:update")
     public R financeUpdateStatus(@RequestBody JSONObject params) {
-        String id = params.getString("id");
+        Long id = params.getLong("id");
         Integer status = params.getInteger("status");
         FinanceEntity finance = new FinanceEntity();
         finance.setId(id);
@@ -103,7 +103,7 @@ public class ArticleController {
      */
     @GetMapping(value = "/finance-info/{id}")
     @RequiresPermissions("server:finance:info")
-    public R financeInfo(@PathVariable("id") String id) {
+    public R financeInfo(@PathVariable("id") Long id) {
         return R.ok().put("data", financeService.financeInfo(id));
     }
 
@@ -210,7 +210,7 @@ public class ArticleController {
      */
     @GetMapping(value = "/information-info/{id}")
     @RequiresPermissions("server:information:info")
-    public R informationInfo(@PathVariable("id") String id) {
+    public R informationInfo(@PathVariable("id") Long id) {
         InformationEntity entity = informationService.getById(id);
         InformationDto dto = new InformationDto();
         BeanUtils.copyProperties(entity, dto);
@@ -224,7 +224,7 @@ public class ArticleController {
      */
     @PutMapping(value = "/information-delete/{id}")
     @RequiresPermissions("server:information:update")
-    public R informationDelete(@PathVariable("id") String id) {
+    public R informationDelete(@PathVariable("id") Long id) {
         boolean update = informationService.update(Wrappers.lambdaUpdate(InformationEntity.class)
                 .set(InformationEntity::getDelFlag, 1)
                 .set(InformationEntity::getDelTime, new Date())
@@ -283,7 +283,7 @@ public class ArticleController {
      */
     @GetMapping(value = "/activity-info/{id}")
     @RequiresPermissions("server:activity:info")
-    public R activityInfo(@PathVariable("id") String id) {
+    public R activityInfo(@PathVariable("id") Long id) {
         ActivityEntity entity = activityService.getById(id);
         ActivityDto dto = new ActivityDto();
         BeanUtils.copyProperties(entity, dto);
@@ -297,7 +297,7 @@ public class ArticleController {
      */
     @PutMapping(value = "/activity-delete/{id}")
     @RequiresPermissions("server:activity:update")
-    public R activityDelete(@PathVariable("id") String id) {
+    public R activityDelete(@PathVariable("id") Long id) {
         boolean update = activityService.update(Wrappers.lambdaUpdate(ActivityEntity.class)
                 .set(ActivityEntity::getDelFlag, 1)
                 .set(ActivityEntity::getDelTime, new Date())
@@ -313,7 +313,7 @@ public class ArticleController {
     @PutMapping(value = "/activity-status")
     @RequiresPermissions("server:activity:update")
     public R activityStatus(@RequestBody JSONObject params) {
-        String id = params.getString("id");
+        Long id = params.getLong("id");
         Integer status = params.getInteger("status");
         boolean update = activityService.update(Wrappers.lambdaUpdate(ActivityEntity.class)
                 .set(ActivityEntity::getStatus, status).eq(ActivityEntity::getId, id));
@@ -327,7 +327,7 @@ public class ArticleController {
      */
     @PutMapping(value = "/activity-qr/{id}")
     @RequiresPermissions("server:information:update")
-    public R activityQr(@PathVariable("id") String id) {
+    public R activityQr(@PathVariable("id") Long id) {
         ActivityEntity entity = activityService.getById(id);
         if (Objects.nonNull(entity) && StringUtils.isNotBlank(entity.getQrCode())) {
             return R.error("二维码已存在");
@@ -348,7 +348,7 @@ public class ArticleController {
     @RequiresPermissions("server:information:list")
     public R informationBrowserPages(@RequestParam Map<String, Object> params) {
         Map<String, Object> result = Maps.newHashMap();
-        String id = String.valueOf(params.get("id"));
+        Long id = Long.valueOf(String.valueOf(params.get("id")));
         InformationEntity information = informationService.getById(id);
         String title = information.getTitle();
         result.put("title", title);

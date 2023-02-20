@@ -18,7 +18,7 @@ public interface ActivityService extends IService<ActivityEntity> {
 
     PageUtils customerActivityPages(Map<String, Object> params);
 
-    R activitySubscribe(String activityId, String userId);
+    R activitySubscribe(Long activityId, String userId);
 
     JSONObject mySubscribeActivity(String userId);
 }

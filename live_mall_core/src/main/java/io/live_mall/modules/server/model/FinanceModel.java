@@ -11,7 +11,7 @@ import java.util.Date;
  */
 @Data
 public class FinanceModel {
-    private String id;
+    private Long id;
 
     /**
      * 标题

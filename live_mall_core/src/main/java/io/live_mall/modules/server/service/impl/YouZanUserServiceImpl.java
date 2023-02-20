@@ -11,6 +11,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
+
 /**
  * @author yewl
  * @date 2023/2/19 11:14
@@ -22,6 +24,9 @@ public class YouZanUserServiceImpl extends ServiceImpl<YouZanUserDao, YouZanUser
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean save(String userId, String yzOpenId, YouzanScrmCustomerDetailGetResult.YouzanScrmCustomerDetailGetResultData data) {
+        if (Objects.isNull(data)) {
+            return false;
+        }
         YouZanUserEntity entity = new YouZanUserEntity();
         BeanUtils.copyProperties(data, entity);
         entity.setUserId(userId);

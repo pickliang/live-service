@@ -17,5 +17,5 @@ import java.util.Map;
 public interface InformationBrowseDao extends BaseMapper<InformationBrowseEntity> {
     IPage<InformationBrowserModel> informationBrowserList(IPage<InformationBrowserModel> pages, Map<String, Object> params);
 
-    Long countPeopleNumber(String informationId);
+    Long countPeopleNumber(Long informationId);
 }

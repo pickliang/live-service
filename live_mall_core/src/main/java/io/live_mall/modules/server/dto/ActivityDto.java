@@ -12,7 +12,7 @@ import java.util.Date;
  */
 @Data
 public class ActivityDto {
-    private String id;
+    private Long id;
 
     /**
      * 标题

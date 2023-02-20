@@ -11,7 +11,7 @@ import javax.validation.constraints.NotBlank;
  */
 @Data
 public class InformationDto {
-    private String id;
+    private Long id;
     /**
      * 标题
      */

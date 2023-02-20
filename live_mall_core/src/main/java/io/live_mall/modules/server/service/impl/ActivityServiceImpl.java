@@ -39,7 +39,7 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityDao, ActivityEntity
     }
 
     @Override
-    public R activitySubscribe(String activityId, String userId) {
+    public R activitySubscribe(Long activityId, String userId) {
         ActivityEntity activity = this.baseMapper.selectOne(Wrappers.lambdaQuery(ActivityEntity.class)
                 .eq(ActivityEntity::getStatus, 1).eq(ActivityEntity::getDelFlag, 0)
                 .eq(ActivityEntity::getId, activityId).last("LIMIT 1"));
@@ -57,7 +57,7 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityDao, ActivityEntity
             return R.error("已预约，请勿重复预约");
         }
         ActivityUserEntity entity = new ActivityUserEntity();
-        entity.setUserId(userId);
+        entity.setUserId(Long.valueOf(userId));
         entity.setActivityId(activityId);
         entity.setStatus(1);
         entity.setCreateTime(now);

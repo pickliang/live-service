@@ -14,5 +14,5 @@ import java.util.Map;
 public interface InformationBrowseService extends IService<InformationBrowseEntity> {
     PageUtils informationBrowserList(Map<String, Object> params);
 
-    Long countPeopleNumber(String informationId);
+    Long countPeopleNumber(Long informationId);
 }

@@ -1,6 +1,5 @@
 package io.live_mall.modules.server.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -18,8 +17,8 @@ import java.util.Date;
 public class FinanceEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    @TableId(type = IdType.ASSIGN_ID)
-    private String id;
+    @TableId
+    private Long id;
 
     /**
      * 标题
