@@ -436,7 +436,7 @@
 		FROM
 			history_duifu_pay
 		WHERE
-			id IN ( SELECT history_duifu_id FROM history_duifu WHERE card_num = #{cardNum} )
+			history_duifu_id IN ( SELECT id FROM history_duifu WHERE card_num = #{cardNum} )
 		    AND pay_date > CURRENT_DATE ( )
 	</select>
 
