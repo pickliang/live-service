@@ -1,6 +1,7 @@
 package io.live_mall.modules.server.service.impl;
 
 import cn.hutool.core.date.DateUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -8,6 +9,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Maps;
+import com.youzan.cloud.open.sdk.common.exception.SDKException;
+import com.youzan.cloud.open.sdk.gen.v3_1_0.model.YouzanCrmCustomerPointsIncreaseResult;
 import io.live_mall.common.exception.RRException;
 import io.live_mall.common.utils.DateUtils;
 import io.live_mall.common.utils.PageUtils;
@@ -22,6 +25,7 @@ import io.live_mall.modules.server.utils.ValidateUtils;
 import io.live_mall.modules.sys.entity.SysUserEntity;
 import io.live_mall.modules.sys.service.SysUserService;
 import io.live_mall.sms.mms.MmsClient;
+import io.live_mall.tripartite.YouZanClients;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -74,6 +78,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 	private MmsLogDao mmsLogDao;
 	@Autowired
 	private MmsLogItemService mmsLogItemService;
+	@Autowired
+	private YouZanUserDao youZanUserDao;
 
 	@Override
 	public PageUtils selectDuifuPage(Map<String, Object> params) {
@@ -157,27 +163,6 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 				order.setCustId(memberEntity.getMemberNo());
 			}
 			smsService.sendMsgToCust(orderEntity);
-			// 注册了客户小程序 赠送积分
-			CustomerUserEntity userEntity = customerUserDao.selectOne(Wrappers.lambdaQuery(CustomerUserEntity.class).eq(CustomerUserEntity::getCardNum, order.getCardNum()));
-			if (Objects.nonNull(userEntity)) {
-				// 积分规则
-				IntegralEntity integralEntity = integralDao.selectOne(Wrappers.lambdaQuery(IntegralEntity.class).orderByDesc(IntegralEntity::getCreateTime).last("LIMIT 1"));
-				Integer integral = Objects.isNull(integralEntity) ? 0 : integralEntity.getIntegral();
-				CustomerUserIntegralItemEntity integralItem = new CustomerUserIntegralItemEntity();
-				integralItem.setCustomerUserId(userEntity.getId());
-				integralItem.setOrderId(orderEntity.getId());
-				integralItem.setProductId(orderEntity.getProductId());
-				integralItem.setRaiseId(orderEntity.getRaiseId());
-				integralItem.setAppointMoney(orderEntity.getAppointMoney());
-				// 积分规则
-				// 1、产品期限 <= 12 个月，投资年化额每一万兑换商城积分数10积分（投资年化额=投资额*产品期限/12)
-				// 2、产品期限> 12个月 投资额每一万兑换10积分
-				Integer newIntegral = orderEntity.getDateNum() <= 12 ? (orderEntity.getAppointMoney() * orderEntity.getDateNum() / 12 * integral) : (orderEntity.getAppointMoney() * integral);
-				integralItem.setIntegral(newIntegral);
-				integralItem.setDescription("订单赠送");
-				integralItem.setCreateTime(new Date());
-				customerUserIntegralItemDao.insert(integralItem);
-			}
 			MemberEntity one = memberService.getOne(new QueryWrapper<MemberEntity>().eq("card_num", order.getCardNum()));
 			if( one !=null && !String.valueOf(order.getSaleId()).equals( one.getSaleId())) {
 				throw new RRException("该会员,已经是其他业务客户,请联系相关负责人");
@@ -382,11 +367,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
 	@Override
 	public PageUtils customerDuifuPage(Map<String, Object> params, String cardNum) {
-		Integer type = Integer.valueOf(String.valueOf(params.get("type")));
-		type = Objects.isNull(type) ? 0 : type;
 		Integer isHistory = Integer.valueOf(String.valueOf(params.get("isHistory")));
 		isHistory = Objects.isNull(isHistory) ? 1 : isHistory;
-		IPage<JSONObject> pages = this.baseMapper.customerDuifuPage(new Query<JSONObject>().getPage(params), cardNum, type, isHistory);
+		IPage<JSONObject> pages = this.baseMapper.customerDuifuPage(new Query<JSONObject>().getPage(params), cardNum, isHistory);
 		pages.setRecords(assembleOrderItem(pages.getRecords()));
 
 		return new PageUtils(pages);
@@ -394,12 +377,17 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
 	private List<JSONObject> assembleOrderItem(List<JSONObject> records) {
 		records.forEach(order -> {
+			String productClass = "";
+			OrderEntity orderEntity = this.baseMapper.selectById(order.getString("order_id"));
+			if (Objects.nonNull(orderEntity)) {
+				ProductEntity product = productService.getById(orderEntity.getProductId());
+				productClass = Objects.nonNull(product) ? product.getProductClass() : "";
+			}
+			order.put("product_class", productClass);
 			order.put("appoint_money", order.getInteger("appoint_money"));
 			// 是否灰色展示 0-否 1-是
 			Integer isAsh = 0;
 			List<Map<String, Object>> maps = new ArrayList<>();
-			 String pay_date = "";
-			 String pay_money = "";
 			 Integer dateNum = order.getInteger("date_num");
 			 String end_date = "";
 			 if (dateNum == 0) {
@@ -425,17 +413,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 				});
 				OrderPayEntity payEntity = orderPayList.get(orderPayList.size() - 1);
 				isAsh = payEntity.getPayDate().compareTo(now) < 0 ? 1 : 0;
-				// OrderPayEntity orderPayEntity = this.baseMapper.nextOrder(order.getString("order_id"));
-				// if (Objects.nonNull(orderPayEntity)) {
-				// 	pay_date = orderPayEntity.getPayDate();
-				// 	pay_money = String.valueOf(orderPayEntity.getPayMoney());
-				// }
 			}else {
-				// HistoryDuifuPayEntity duifuPayEntity = historyDuifuPayDao.nextHistoryDuifuPay(order.getString("order_id"));
-				// if (Objects.nonNull(duifuPayEntity)) {
-				// 	pay_date = duifuPayEntity.getPayDate();
-				// 	pay_money = String.valueOf(duifuPayEntity.getPayMoney());
-				// }
 				List<HistoryDuifuPayEntity> payEntityList = historyDuifuPayDao.selectList(Wrappers.lambdaQuery(HistoryDuifuPayEntity.class)
 						.eq(HistoryDuifuPayEntity::getHistoryDuifuId, order.getString("order_id")).orderByAsc(HistoryDuifuPayEntity::getPayDate));
 				if (!payEntityList.isEmpty()) {
@@ -451,8 +429,6 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 					isAsh = historyDuifuPay.getPayDate().compareTo(now) < 0 ? 1 : 0;
 				}
 			}
-			// order.put("pay_date", pay_date);
-			// order.put("pay_money", pay_money);
 			order.put("orderPayList",maps);
 			order.put("isAsh", isAsh);
 		});
@@ -655,6 +631,39 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 		mmsLogDao.insert(logEntity);
 		sendSaleMms(mmsToken, urlLink, list, logEntity.getId(), userId);
 		// CompletableFuture.supplyAsync(() -> sendSaleMms(mmsToken, urlLink, list, logEntity.getId(), userId));
+	}
+
+	@Override
+	public String addYouZanPoints(String token, String orderId, String uptType) throws SDKException {
+		OrderEntity orderEntity = this.getById(orderId);
+		if ("pass".equals(uptType)) {
+			// 注册了客户小程序 赠送积分
+			CustomerUserEntity userEntity = customerUserDao.selectOne(Wrappers.lambdaQuery(CustomerUserEntity.class).eq(CustomerUserEntity::getCardNum, orderEntity.getCardNum()));
+			if (Objects.nonNull(userEntity)) {
+				// 积分规则
+				IntegralEntity integralEntity = integralDao.selectOne(Wrappers.lambdaQuery(IntegralEntity.class).orderByDesc(IntegralEntity::getCreateTime).last("LIMIT 1"));
+				Integer integral = Objects.isNull(integralEntity) ? 0 : integralEntity.getIntegral();
+				CustomerUserIntegralItemEntity integralItem = new CustomerUserIntegralItemEntity();
+				integralItem.setCustomerUserId(userEntity.getId());
+				integralItem.setOrderId(orderEntity.getId());
+				integralItem.setProductId(orderEntity.getProductId());
+				integralItem.setRaiseId(orderEntity.getRaiseId());
+				integralItem.setAppointMoney(orderEntity.getAppointMoney());
+				// 积分规则
+				// 1、产品期限 <= 12 个月，投资年化额每一万兑换商城积分数10积分（投资年化额=投资额*产品期限/12)
+				// 2、产品期限> 12个月 投资额每一万兑换10积分
+				Integer newIntegral = orderEntity.getDateNum() <= 12 ? (orderEntity.getAppointMoney() * orderEntity.getDateNum() / 12 * integral) : (orderEntity.getAppointMoney() * integral);
+				integralItem.setIntegral(newIntegral);
+				integralItem.setDescription("订单赠送");
+				integralItem.setCreateTime(new Date());
+				YouZanUserEntity youZanUserEntity = youZanUserDao.selectOne(Wrappers.lambdaQuery(YouZanUserEntity.class).eq(YouZanUserEntity::getUserId, userEntity.getId()).last("LIMIT 1"));
+				YouzanCrmCustomerPointsIncreaseResult result = YouZanClients.addPoints(token, youZanUserEntity.getYzOpenId(), newIntegral);
+				integralItem.setCode(result.getCode());
+				integralItem.setResult(JSON.toJSONString(result));
+				customerUserIntegralItemDao.insert(integralItem);
+			}
+		}
+		return null;
 	}
 
 	/**

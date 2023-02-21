@@ -4,11 +4,10 @@ import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.youzan.cloud.open.sdk.core.oauth.model.OAuthToken;
 import io.live_mall.common.exception.RRException;
-import io.live_mall.common.utils.DateUtils;
-import io.live_mall.common.utils.PageUtils;
-import io.live_mall.common.utils.R;
-import io.live_mall.common.utils.ShiroUtils;
+import io.live_mall.common.utils.*;
+import io.live_mall.constants.RedisKeyConstants;
 import io.live_mall.modules.oss.cloud.OSSFactory;
 import io.live_mall.modules.oss.entity.SysOssEntity;
 import io.live_mall.modules.oss.service.SysOssService;
@@ -20,7 +19,9 @@ import io.live_mall.modules.server.model.OrderUtils;
 import io.live_mall.modules.server.service.OrderPayService;
 import io.live_mall.modules.server.service.OrderService;
 import io.live_mall.modules.server.service.RaiseService;
+import io.live_mall.tripartite.YouZanClients;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +30,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
+import java.util.concurrent.CompletableFuture;
 
 
 /**
@@ -42,11 +43,13 @@ import java.util.Map;
 @RestController
 @RequestMapping("server/order")
 @AllArgsConstructor
+@Slf4j
 public class OrderController {
     private final OrderService orderService;
     private final RaiseService raiseService;
     private final SysOssService sysOssService;
     private final OrderPayService orderPayService;
+    private final RedisUtils redisUtils;
 
     /**
      * 列表
@@ -230,6 +233,22 @@ public class OrderController {
     @RequiresPermissions("server:order:update")
     public R update(@RequestBody OrderEntity order){
     	 orderService.updateOrder(order,ShiroUtils.getUserEntity());
+         // 有赞增加积分
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                String token = redisUtils.get(RedisKeyConstants.YZ_TOKEN);
+                if (org.apache.commons.lang3.StringUtils.isBlank(token)) {
+                    OAuthToken authToken = YouZanClients.token();
+                    redisUtils.set(RedisKeyConstants.YZ_TOKEN, authToken.getAccessToken(), authToken.getExpires());
+                    token = authToken.getAccessToken();
+                }
+                return orderService.addYouZanPoints(token, order.getId(), order.getUptType());
+            } catch (Exception e) {
+                log.error("e-->{},", e);
+                return false;
+            }
+        }
+        );
 		return R.ok();
     }
 

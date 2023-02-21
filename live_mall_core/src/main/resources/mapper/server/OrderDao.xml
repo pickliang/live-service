@@ -246,54 +246,26 @@
 
 	<select id="customerDuifuPage" resultType="com.alibaba.fastjson.JSONObject">
 		SELECT
-			p.product_name,
-			CASE
-			p.product_class
-				WHEN '类固收' THEN
-				'固收'
-				WHEN '权益类' THEN
-				'股权'
-				WHEN '净值型' THEN
-				'二级市场'
-			END AS product_class,
-			o.id AS order_id,
-			o.appoint_money AS appoint_money,
-			DATE_FORMAT( o.appoint_time, '%Y-%m-%d' ) appoint_time,
-			r.establish_time,
-			o.date_num,
-			CONCAT( o.date_num, o.date_uint ) AS term
+			product_name,
+			"" as product_class,
+			order_id,
+			appoint_money,
+			"" AS appoint_time,
+			establish_time,
+		    date_num,
+			CONCAT( date_num, date_uint ) AS term
 		FROM
-			p_order AS o
-			INNER JOIN `p_product` AS p ON o.product_id = p.id
-			INNER JOIN p_raise AS r ON o.raise_id = r.id
+			tuifu_view
 		WHERE
-		    o.status = 4
-			AND o.id IN (
-				SELECT
-					DISTINCT o.id
-				FROM
-					p_order AS o
-					INNER JOIN p_order_pay AS p ON o.id = p.order_id
-				WHERE
-					o.card_num = #{cardNum}
-			)
+			card_num = #{cardNum}
 		<choose>
 			<when test="isHistory == 1">
-				AND DATE_ADD(r.establish_time,INTERVAL o.date_num MONTH) <![CDATA[ > ]]> CURRENT_DATE
+				AND DATE_ADD(establish_time,INTERVAL date_num MONTH) <![CDATA[ > ]]> CURRENT_DATE
 			</when>
 			<otherwise>
-				AND DATE_ADD(r.establish_time,INTERVAL o.date_num MONTH) <![CDATA[ <= ]]> CURRENT_DATE
+				AND DATE_ADD(establish_time,INTERVAL date_num MONTH) <![CDATA[ <= ]]> CURRENT_DATE
 			</otherwise>
 		</choose>
-		<if test="type == 1">
-			AND p.product_class = '类固收'
-		</if>
-		<if test="type == 2">
-			AND p.product_class = '权益类'
-		</if>
-		<if test="type == 3">
-			AND p.product_class = '净值型'
-		</if>
 		UNION ALL
 		SELECT
 			product_name,
@@ -323,27 +295,17 @@
 				AND end_date <![CDATA[ <= ]]> CURRENT_DATE ( )
 			</otherwise>
 		</choose>
-		<if test="type == 1">
-			AND product_class = '类固收'
-		</if>
-		<if test="type == 2">
-			AND product_class = '权益类'
-		</if>
-		<if test="type == 3">
-			AND product_class = '净值型'
-		</if>
 	</select>
 
 	<select id="fixedIncome" resultType="integer">
 		SELECT
-			IFNULL(SUM(o.appoint_money),0) AS appoint_money
+			IFNULL( SUM( t.appoint_money / 10000 ), 0 ) AS appoint_money
 		FROM
-			p_order AS o
-				INNER JOIN `p_product` AS p ON o.product_id = p.id
-				INNER JOIN p_raise AS r ON o.raise_id = r.id
+			tuifu_view AS t
+			LEFT JOIN p_order AS o ON t.order_id = o.id
+			LEFT JOIN p_product AS p ON o.product_id = p.id
 		WHERE
-			o.card_num = #{cardNum}
-		  AND O.status = 4
+			t.card_num = #{cardNum}
 		<choose>
 			<when test="type == 2">
 				AND p.product_class = '权益类'
@@ -359,13 +321,12 @@
 
 	<select id="totalInterest" resultType="double">
 		SELECT
-			SUM( pay_money ) pay_money
+			IFNULL(SUM( pay_money ), 0) pay_money
 		FROM
 			p_order_pay AS p
-				INNER JOIN p_order AS o ON p.order_id = o.id
+			INNER JOIN tuifu_view AS t ON p.order_id = t.order_id
 		WHERE
-			o.card_num = #{cardNum}
-		  AND o.`status` = 4
+			card_num = #{cardNum}
 		  AND p.pay_date <![CDATA[ < ]]> CURRENT_DATE
 	</select>
 
@@ -431,12 +392,11 @@
 
 	<select id="customerTotalAssets" resultType="Integer">
 		SELECT
-			IFNULL( SUM( appoint_money ), 0 ) AS appoint_money
+			IFNULL( SUM( appoint_money / 10000 ), 0 ) AS appoint_money
 		FROM
-			p_order
+			tuifu_view
 		WHERE
 			card_num = #{cardNum}
-			AND status = 4
 	</select>
 
 	<select id="annualIncome" resultType="double">
@@ -466,7 +426,7 @@
 		FROM
 			p_order_pay
 		WHERE
-			order_id IN ( SELECT id FROM p_order WHERE card_num = #{cardNum} )
+			order_id IN ( SELECT order_id FROM tuifu_view WHERE card_num = #{cardNum} )
 		  AND pay_date > CURRENT_DATE ( )
 	</select>
 
@@ -503,12 +463,12 @@
 	</select>
 
 	<select id="investingOrderMoney" resultType="integer">
-		SELECT IFNULL(SUM(o.appoint_money),0) AS appoint_money
-		FROM p_order as o
-		INNER JOIN p_raise as r on o.raise_id = r.id
-		WHERE o.card_num = #{cardNum}
-		  AND o.status = 4
-		  AND DATE_ADD(r.establish_time,INTERVAL o.date_num MONTH) <![CDATA[ > ]]> CURRENT_DATE
+		SELECT
+			IFNULL( SUM( appoint_money / 10000 ), 0 ) AS appoint_money
+		FROM
+			tuifu_view
+		WHERE card_num = #{cardNum}
+		  AND DATE_ADD(establish_time,INTERVAL date_num MONTH) <![CDATA[ > ]]> CURRENT_DATE
 	</select>
 
 	<select id="historyInvestingOrderMoney" resultType="Integer">

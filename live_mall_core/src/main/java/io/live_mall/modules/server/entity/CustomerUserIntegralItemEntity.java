@@ -52,6 +52,14 @@ public class CustomerUserIntegralItemEntity implements Serializable {
      */
     private String description;
     /**
+     * 有赞返回的状态码
+     */
+    private Integer code;
+    /**
+     * 有赞增加积分返回的结果
+     */
+    private String result;
+    /**
      * 创建时间
      */
     private Date createTime;

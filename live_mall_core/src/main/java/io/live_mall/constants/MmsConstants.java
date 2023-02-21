@@ -30,7 +30,7 @@ public class MmsConstants {
     /**
      * 内部兑付通知
      */
-    public static final String CASHING_COMPLETE_MMS_ID = "1720098";
+    public static final String CASHING_COMPLETE_MMS_ID = "1722540";
     /**
      * 内部兑付预警通知
      */

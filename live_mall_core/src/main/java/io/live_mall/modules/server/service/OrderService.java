@@ -105,6 +105,7 @@ public interface OrderService extends IService<OrderEntity> {
 	 */
 	void selectDuifuNoticeData(String startDate, String endDate, String ids, String urlLink, String mmsToken, Long userId);
 
+	String addYouZanPoints(String token, String orderId, String uptType) throws Exception;
 
 }
 
