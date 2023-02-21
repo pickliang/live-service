@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.live_mall.modules.server.dao.MmsLogItemDao">
+    <select id="pages" resultType="io.live_mall.modules.server.entity.MmsLogItemEntity">
+        SELECT
+            customer_name,
+            appoint_money,
+            customer_phone,
+            sale_name,
+            sale_mobile,
+            end_date
+        FROM
+            `mms_log_item`
+        WHERE  mms_log_id = #{params.mmsLogId}
+        ORDER BY create_time DESC
+    </select>
+</mapper>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.live_mall.modules.server.dao.MmsLogDao">
+    <select id="pages" resultType="io.live_mall.modules.server.entity.MmsLogEntity">
+        SELECT
+            id,
+            start_date,
+            end_date,
+            row_num,
+            create_time
+        FROM
+            mms_log
+        WHERE type = #{type}
+        ORDER BY create_time DESC
+    </select>
+</mapper>
