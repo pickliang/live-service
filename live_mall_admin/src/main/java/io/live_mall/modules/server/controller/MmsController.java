@@ -1,5 +1,6 @@
 package io.live_mall.modules.server.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import io.live_mall.common.utils.PageUtils;
 import io.live_mall.common.utils.R;
 import io.live_mall.common.utils.RedisUtils;
@@ -7,9 +8,7 @@ import io.live_mall.common.utils.ShiroUtils;
 import io.live_mall.constants.RedisKeyConstants;
 import io.live_mall.modules.applets.AppletsService;
 import io.live_mall.modules.server.entity.MmsTemplateEntity;
-import io.live_mall.modules.server.service.MmsLogItemService;
-import io.live_mall.modules.server.service.MmsLogService;
-import io.live_mall.modules.server.service.MmsTemplateService;
+import io.live_mall.modules.server.service.*;
 import io.live_mall.sms.mms.MmsClient;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
@@ -36,6 +35,8 @@ public class MmsController {
     private final MmsLogService mmsLogService;
     private final MmsLogItemService mmsLogItemService;
     private final RedisUtils redisUtils;
+    private final OrderService orderService;
+    private final MmsPaymentItemService mmsPaymentItemService;
 
     /**
      * 保存短信链接模板
@@ -51,16 +52,16 @@ public class MmsController {
             long expire = 60 * 60 * 10;
             redisUtils.set(RedisKeyConstants.MMS_TOKEN, token, expire);
         }
-        // JSONObject result = MmsClient.getMMsIdStatus(token, entity.getMmsId());
-        // JSONObject content = result.getJSONObject("content");
-        // JSONObject contentResult = content.getJSONObject("result");
-        // Integer code = contentResult.getInteger("code");
-        // // 33004003 表示通道审核完成
-        // if (code.equals(33004003)) {
-        //     return R.error("通道审核未完成，请待审核完成再添加！");
-        // }
-        // entity.setCode(code);
-        // entity.setResult(result.toJSONString());
+        JSONObject result = MmsClient.getMMsIdStatus(token, entity.getMmsId());
+        JSONObject content = result.getJSONObject("content");
+        JSONObject contentResult = content.getJSONObject("result");
+        Integer code = contentResult.getInteger("code");
+        // 33004003 表示通道审核完成
+        if (33004003 != code) {
+            return R.error("通道审核未完成，请待审核完成再添加！");
+        }
+        entity.setCode(code);
+        entity.setResult(result.toJSONString());
         entity.setCreateTime(new Date());
         entity.setCreateUser(ShiroUtils.getUserId());
         boolean save = mmsTemplateService.save(entity);
@@ -79,6 +80,50 @@ public class MmsController {
         return R.ok().put("data", urlLink);
     }
 
+
+    /**
+     * 发送对付完成通知短信
+     * @param params
+     * @return
+     */
+    @PostMapping(value = "/send-duifu")
+    @SneakyThrows
+    public R mmsSend(@RequestBody Map<String, Object> params) {
+        String token = redisUtils.get(RedisKeyConstants.MMS_TOKEN);
+        if (StringUtils.isBlank(token)) {
+            token = MmsClient.getToken();
+            long expire = 60 * 60 * 10;
+            redisUtils.set(RedisKeyConstants.MMS_TOKEN, token, expire);
+        }
+        String startDate = String.valueOf(params.get("startDate"));
+        String endDate = String.valueOf(params.get("endDate"));
+        String ids = String.valueOf(params.get("ids"));
+
+        orderService.selectDuifuNoticeData(startDate, endDate, ids, token, ShiroUtils.getUserId());
+        return R.ok();
+    }
+
+    /**
+     * 发送付息完成通知短信
+     * @param params
+     * @return
+     */
+    @PostMapping(value = "/send-payment")
+    @SneakyThrows
+    public R mmsSenPayment(@RequestBody Map<String, Object> params) {
+        String token = redisUtils.get(RedisKeyConstants.MMS_TOKEN);
+        if (StringUtils.isBlank(token)) {
+            token = MmsClient.getToken();
+            long expire = 60 * 60 * 10;
+            redisUtils.set(RedisKeyConstants.MMS_TOKEN, token, expire);
+        }
+        String startDate = String.valueOf(params.get("startDate"));
+        String endDate = String.valueOf(params.get("endDate"));
+        String ids = String.valueOf(params.get("ids"));
+        orderService.sendPayMend(startDate, endDate, ids, token, ShiroUtils.getUserId());
+        return R.ok();
+    }
+
     /**
      * 兑付完成发送列表
      * @param params 分页
@@ -91,13 +136,24 @@ public class MmsController {
     }
 
     /**
-     * 查询通知结果
+     * 对付查询通知结果
      * @param params
      * @return
      */
     @GetMapping(value = "/log-items")
     public R mmsLogItems(@RequestParam Map<String, Object> params) {
         PageUtils pages = mmsLogItemService.pages(params);
+        return R.ok().put("data", pages);
+    }
+
+    /**
+     *  付息查询通知结果
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "/payment-items")
+    public R mmsPaymentItem(@RequestParam Map<String, Object> params) {
+        PageUtils pages = mmsPaymentItemService.pages(params);
         return R.ok().put("data", pages);
     }
 }

@@ -86,11 +86,6 @@ public class MmsClient {
         frames.add(frame);
         mmsContent.put("frames", frames);
         content.put("mms", JSONObject.toJSONString(mmsContent, SerializerFeature.SortField));
-        // cashingComplete "mmsId":"1715788"
-        // cashingEarlyWarning "mmsId":"1715792"
-        // codeTemplate "mmsId":"1715804"
-        // paymentComplete "mmsId":"1715794"
-        // paymentEarlyWarning "mmsId":"1715796"
         File file = new File(path);
         String mmsFile = Hex.encodeHexString(FileUtils.readFileToByteArray(file));
         content.put("mmsFile", mmsFile);
@@ -151,6 +146,36 @@ public class MmsClient {
         params.put("sign", sign);
         log.error("params-->{}", JSON.toJSONString(params));
         HttpEntity httpEntity = HttpRequestUtils.post(MmsConstants.VARIABLE_SEND, params, token);
+        JSONObject result = JSONObject.parseObject(EntityUtils.toString(httpEntity, Charset.defaultCharset()));
+        log.error("result-->{}", result);
+        return result;
+    }
+
+    /**
+     * 获取创建短信模板的审核状态 也可以根据下面的链接看到
+     * http://v-mas.cn:9000/zmms_cms/index.do?ticket=ST-355-f59WXE9QKSgqtGQr16ShjtmMJBkhYNWsNUq-20
+     * @throws Exception
+     * @return JSONObject
+     */
+    public static JSONObject getMMsIdStatus(String token, String mmsId) throws Exception {
+        TreeMap<String, Object> params = Maps.newTreeMap();
+        Map<String, Object> content = Maps.newHashMap();
+        params.put("content", content);
+
+        TreeMap<String, Object> id = Maps.newTreeMap();
+        id.put("mmsId", mmsId);
+        id.put("productId", "320412");
+        params.put("id", id);
+
+        Map<String, Object> option = Maps.newHashMap();
+        option.put("reqtime", System.currentTimeMillis());
+        params.put("option", option);
+
+        String sign = Md5Util.getMd5Base64(JSON.toJSONString(params));
+        params.put("sign", sign);
+        log.error("params-->{}", JSON.toJSONString(params));
+
+        HttpEntity httpEntity = HttpRequestUtils.post(MmsConstants.MMS_STATUS, params, token);
         JSONObject result = JSONObject.parseObject(EntityUtils.toString(httpEntity, Charset.defaultCharset()));
         log.error("result-->{}", result);
         return result;

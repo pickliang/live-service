@@ -30,9 +30,9 @@ public class MmsTemplateEntity implements Serializable {
      */
     private String url;
     /**
-     * 小程序链接
+     * 短信模板id
      */
-    private Integer mmsId;
+    private String mmsId;
     /**
      * 短信模板审核状态
      */

@@ -86,6 +86,9 @@ public class InformationController {
         }
         FinanceModel model = new FinanceModel();
         BeanUtils.copyProperties(finance, model);
+        SysUserEntity sysUser = sysUserService.getById(finance.getCreateUser());
+        String author = Objects.nonNull(sysUser) ?sysUser.getRealname() : "管理员";
+        model.setAuthor(author);
         return R.ok().put("data", model);
     }
 

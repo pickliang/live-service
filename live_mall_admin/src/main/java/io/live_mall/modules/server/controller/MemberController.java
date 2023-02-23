@@ -6,7 +6,9 @@ import io.live_mall.common.utils.PageUtils;
 import io.live_mall.common.utils.R;
 import io.live_mall.common.utils.ShiroUtils;
 import io.live_mall.modules.server.entity.MemberEntity;
+import io.live_mall.modules.server.model.YouZanUserModel;
 import io.live_mall.modules.server.service.MemberService;
+import io.live_mall.modules.server.service.YouZanUserService;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +29,8 @@ import java.util.Arrays;
 public class MemberController {
     @Autowired
     private MemberService memberService;
+    @Autowired
+    private YouZanUserService youZanUserService;
 
     /**
      * 列表
@@ -114,5 +118,16 @@ public class MemberController {
     @GetMapping(value = "/members")
     public R memberList() {
         return R.ok().put("data", memberService.memberList());
+    }
+
+    /**
+     * 客户三方信息 有赞和小鹅通
+     * @param cardNum 身份证号
+     * @return
+     */
+    @GetMapping(value = "/trilateral-info")
+    public R trilateralInfo(String cardNum) {
+        YouZanUserModel model = youZanUserService.yzUserInfo(cardNum);
+        return R.ok().put("data", model);
     }
 }

@@ -32,7 +32,7 @@ public class AppletsService {
     /**
      * https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/qrcode-link/url-link/generateUrlLink.html
      * 获取 URL Link
-     * @param envVersion
+     * @param envVersion 默认值"release"。要打开的小程序版本。正式版为 "release"，体验版为"trial"，开发版为"develop"，仅在微信外打开时生效
      * @return String
      * @throws IOException
      */

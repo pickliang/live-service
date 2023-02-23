@@ -24,7 +24,10 @@ public class YouZanOrderEntity implements Serializable {
     @Id
     @TableId(value = "tid", type = IdType.INPUT)
     private String tid;
-
+    /**
+     * 有赞唯一id
+     */
+    private String yzOpenId;
     /**
      * remark_info
      */
@@ -33,6 +36,10 @@ public class YouZanOrderEntity implements Serializable {
      * 交易明细
      */
     private String orders;
+    /**
+     * 商品优惠后总价 单位:元
+     */
+    private Double totalFee;
     /**
      * 交易明细
      */

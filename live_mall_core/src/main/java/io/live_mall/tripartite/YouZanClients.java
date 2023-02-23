@@ -1,6 +1,7 @@
 package io.live_mall.tripartite;
 
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.youzan.cloud.open.sdk.common.exception.SDKException;
 import com.youzan.cloud.open.sdk.core.client.auth.Token;
 import com.youzan.cloud.open.sdk.core.client.core.DefaultYZClient;
@@ -12,6 +13,9 @@ import com.youzan.cloud.open.sdk.gen.v1_0_0.model.YouzanUsersInfoQueryParams;
 import com.youzan.cloud.open.sdk.gen.v1_0_0.model.YouzanUsersInfoQueryResult;
 import com.youzan.cloud.open.sdk.gen.v1_0_1.api.YouzanScrmCustomerDetailGet;
 import com.youzan.cloud.open.sdk.gen.v1_0_1.model.YouzanScrmCustomerDetailGetParams;
+import com.youzan.cloud.open.sdk.gen.v3_1_0.model.YouzanCrmCustomerPointsIncreaseResult;
+import com.youzan.cloud.open.sdk.gen.v4_0_0.api.YouzanCrmCustomerPointsIncrease;
+import com.youzan.cloud.open.sdk.gen.v4_0_0.model.YouzanCrmCustomerPointsIncreaseParams;
 import com.youzan.cloud.open.sdk.gen.v4_0_2.api.YouzanTradesSoldGet;
 import com.youzan.cloud.open.sdk.gen.v4_0_2.model.YouzanTradesSoldGetParams;
 import com.youzan.cloud.open.sdk.gen.v4_0_2.model.YouzanTradesSoldGetResult;
@@ -111,6 +115,34 @@ public class YouZanClients {
         YouzanTradesSoldGetResult result = yzClient.invoke(tradesSoldGet, token, YouzanTradesSoldGetResult.class);
         log.error("result-->{}", JSON.toJSON(result));
         return result.getData();
+    }
 
+    /**
+     * https://doc.youzanyun.com/detail/API/0/872
+     * 给客户增加积分
+     * @param accessToken token
+     * @param yzOpenId 有赞唯一id
+     * @param points 增加的积分
+     * @throws SDKException
+     */
+    public static YouzanCrmCustomerPointsIncreaseResult addPoints(String accessToken, String yzOpenId, Integer points) throws SDKException {
+        //1.创建 YZClient
+        DefaultYZClient yzClient = new DefaultYZClient();
+        YouzanCrmCustomerPointsIncrease pointsIncrease = new YouzanCrmCustomerPointsIncrease();
+        YouzanCrmCustomerPointsIncreaseParams params = new YouzanCrmCustomerPointsIncreaseParams();
+        YouzanCrmCustomerPointsIncreaseParams.YouzanCrmCustomerPointsIncreaseParamsParams paramsParams = new YouzanCrmCustomerPointsIncreaseParams.YouzanCrmCustomerPointsIncreaseParamsParams();
+        paramsParams.setReason("客户购买服务");
+        paramsParams.setBizValue("wd_" + IdWorker.getId());
+        paramsParams.setPoints(points);
+        YouzanCrmCustomerPointsIncreaseParams.YouzanCrmCustomerPointsIncreaseParamsUser user = new YouzanCrmCustomerPointsIncreaseParams.YouzanCrmCustomerPointsIncreaseParamsUser();
+        user.setAccountType(5);
+        user.setAccountId(yzOpenId);
+        paramsParams.setUser(user);
+        params.setParams(paramsParams);
+        pointsIncrease.setAPIParams(params);
+        Token token = new Token(accessToken);
+        YouzanCrmCustomerPointsIncreaseResult result = yzClient.invoke(pointsIncrease, token, YouzanCrmCustomerPointsIncreaseResult.class);
+        log.error("result-->{}", JSON.toJSON(result));
+        return result;
     }
 }

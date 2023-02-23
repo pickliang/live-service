@@ -26,6 +26,10 @@ public class MmsConstants {
      * 下发短信任务
      */
     public static final String VARIABLE_SEND = BASE_URL + "sendTask/variableMms/send";
+    /**
+     *  获取创建短信模板的审核状态
+     */
+    public static final String MMS_STATUS = BASE_URL + "saveMms/selectStatus";
 
     /**
      * 内部兑付通知

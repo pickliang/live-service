@@ -272,8 +272,8 @@
 			product_class,
 			id AS order_id,
 			appoint_money / 10000 as appoint_money,
-			value_date AS appoint_time,
-			end_date AS establish_time,
+			due_date AS appoint_time,
+			value_date AS establish_time,
 			0 AS date_num,
 			term
 		FROM
@@ -289,10 +289,10 @@
 		)
 		<choose>
 			<when test="isHistory == 1">
-				AND end_date <![CDATA[ > ]]> CURRENT_DATE ( )
+				AND due_date <![CDATA[ > ]]> CURRENT_DATE ( )
 			</when>
 			<otherwise>
-				AND end_date <![CDATA[ <= ]]> CURRENT_DATE ( )
+				AND due_date <![CDATA[ <= ]]> CURRENT_DATE ( )
 			</otherwise>
 		</choose>
 	</select>
@@ -427,7 +427,7 @@
 			p_order_pay
 		WHERE
 			order_id IN ( SELECT order_id FROM tuifu_view WHERE card_num = #{cardNum} )
-		  AND pay_date > CURRENT_DATE ( )
+		  AND pay_date <![CDATA[ < ]]> CURRENT_DATE ( )
 	</select>
 
 	<select id="historyExpectedIncome" resultType="double">
@@ -437,7 +437,7 @@
 			history_duifu_pay
 		WHERE
 			history_duifu_id IN ( SELECT id FROM history_duifu WHERE card_num = #{cardNum} )
-		    AND pay_date > CURRENT_DATE ( )
+		    AND pay_date  <![CDATA[ < ]]> CURRENT_DATE ( )
 	</select>
 
 	<select id="cutsomerOrderIds" resultType="string">
@@ -479,20 +479,17 @@
 
 	<select id="customerOrderInfo" resultType="com.alibaba.fastjson.JSONObject">
 		SELECT
-			p.product_name,
-			o.appoint_money AS appoint_money,
-			DATE_FORMAT( o.appoint_time, '%Y-%m-%d' ) appoint_time,
-			r.establish_time as establish_time,
-			o.date_num,
-			CONCAT( o.date_num, o.date_uint ) AS term,
-			(SELECT IFNULL(pay_money,0) + o.appoint_money * 10000 FROM p_order_pay WHERE order_id = o.id ORDER BY pay_date DESC LIMIT 1) as end_sum_money,
-	        (SELECT IFNULL(SUM(pay_money),0) + o.appoint_money * 10000 FROM p_order_pay WHERE order_id = o.id)	as sum_money
+			product_name,
+			appoint_money / 10000 AS appoint_money,
+			date_num,
+			CONCAT( date_num, date_uint ) AS term,
+			establish_time,
+			endSumMoney as end_sum_money,
+			sumMoney as sum_money
 		FROM
-			p_order AS o
-			INNER JOIN `p_product` AS p ON o.product_id = p.id
-			INNER JOIN p_raise AS r ON o.raise_id = r.id
+			`tuifu_view`
 		WHERE
-			o.id = #{id}
+			order_id = #{id}
 	</select>
 
 	<select id="integralOrder" resultType="com.alibaba.fastjson.JSONObject">
@@ -553,13 +550,13 @@
 			t.date BETWEEN #{startDate} AND #{endDate}
 	</select>
 
-	<select id="selectDuifuNoticeData" resultType="com.alibaba.fastjson.JSONObject">
+	<select id="selectDuifuNoticeData" resultType="io.live_mall.modules.server.model.DuiFuNoticeModel">
 		SELECT
 			o.id,
 			o.customer_name,
-			o.appoint_money * 10000 AS appoint_money,
+			IFNULL(o.appoint_money * 10000, 0) AS appoint_money,
 			o.phone,
-		   (SELECT IFNULL(pay_money,0) + o.appoint_money * 10000 FROM p_order_pay WHERE order_id = o.id ORDER BY pay_date DESC LIMIT 1) as sum_money,
+		    IFNULL((SELECT IFNULL(pay_money,0) + o.appoint_money * 10000 FROM p_order_pay WHERE order_id = o.id ORDER BY pay_date DESC LIMIT 1), 0) as sum_money,
 			u.realname,
 			u.mobile,
 		    p.product_name,

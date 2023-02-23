@@ -3,6 +3,7 @@ package io.live_mall.modules.server.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.youzan.cloud.open.sdk.gen.v1_0_0.model.YouzanScrmCustomerDetailGetResult;
 import io.live_mall.modules.server.entity.YouZanUserEntity;
+import io.live_mall.modules.server.model.YouZanUserModel;
 
 /**
  * @author yewl
@@ -11,4 +12,6 @@ import io.live_mall.modules.server.entity.YouZanUserEntity;
  */
 public interface YouZanUserService extends IService<YouZanUserEntity> {
     boolean save(String userId, String yzOpenId, YouzanScrmCustomerDetailGetResult.YouzanScrmCustomerDetailGetResultData data);
+
+    YouZanUserModel yzUserInfo(String cardNum);
 }

@@ -11,13 +11,13 @@ import java.util.Date;
 
 /**
  * @author yewl
- * @date 2023/2/20 21:04
+ * @date 2023/2/23 13:21
  * @description
  */
 @Data
-@TableName("mms_log_item")
-public class MmsLogItemEntity implements Serializable {
-    private static final long serialVersionUID = 1L;
+@TableName("mms_payment_item")
+public class MmsPaymentItemEntity implements Serializable {
+    private final static long serialVersionUID = 1L;
 
     @TableId(type = IdType.ASSIGN_ID)
     private String id;
@@ -48,10 +48,14 @@ public class MmsLogItemEntity implements Serializable {
      */
     private String saleMobile;
     /**
-     * 兑付到期日
+     * 第几次付息
+     */
+    private String name;
+    /**
+     * 付息日
      */
     @JSONField(format = "yyyy-MM-dd")
-    private Date endDate;
+    private Date payDate;
     /**
      * 创建人
      */

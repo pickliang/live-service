@@ -38,11 +38,11 @@ public class YouZanUserEntity implements Serializable {
      */
     private Long giftcardBalance;
     /**
-     * 礼品卡余额，单位：分
+     * 客户标签
      */
     private String tags;
     /**
-     * 礼品卡余额，单位：分
+     * 创建时间
      */
     private Date createdAt;
     /**
@@ -50,7 +50,7 @@ public class YouZanUserEntity implements Serializable {
      */
     private Date updatedAt;
     /**
-     * 更新时间
+     * 客户会员卡
      */
     private String cards;
     /**

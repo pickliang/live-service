@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import sun.misc.BASE64Encoder;
 
 /**
  * @author yewl
@@ -48,8 +47,7 @@ public class AppletsController {
     @SneakyThrows
     public R getUnlimitedQRCode(@RequestParam String scene, @RequestParam String page, @RequestParam Boolean checkPath, @RequestParam String envVersion) {
         byte[] result = appletsService.getUnlimitedQRCode(scene, page, checkPath, envVersion);
-        BASE64Encoder encoder = new BASE64Encoder();
-        return R.ok().put("data", encoder.encode(result));
+        return R.ok().put("data", result);
     }
 
     /**

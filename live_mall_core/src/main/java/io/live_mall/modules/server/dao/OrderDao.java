@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.live_mall.modules.server.entity.OrderEntity;
 import io.live_mall.modules.server.entity.OrderPayEntity;
+import io.live_mall.modules.server.model.DuiFuNoticeModel;
 import io.live_mall.modules.server.model.OrderModel;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -169,5 +170,5 @@ public interface OrderDao extends BaseMapper<OrderEntity> {
 	 * @param orderIds 订单id
 	 * @return
 	 */
-	List<JSONObject> selectDuifuNoticeData(@Param("orderIds") List<String> orderIds);
+	List<DuiFuNoticeModel> selectDuifuNoticeData(@Param("orderIds") List<String> orderIds);
 }

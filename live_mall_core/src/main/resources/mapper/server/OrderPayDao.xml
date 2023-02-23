@@ -27,4 +27,21 @@
     <update id="updateOrderPay">
         UPDATE p_order_pay SET pay_money = #{payMoney}, pay_date = #{payDate} WHERE id = #{id}
     </update>
+
+    <select id="orderPayList" resultType="io.live_mall.modules.server.entity.OrderPayEntity">
+        SELECT
+            order_id,
+            `name`,
+            pay_date
+        FROM
+            `p_order_pay`
+        WHERE
+            pay_date BETWEEN #{startDate} AND #{endDate}
+        <if test="orderIds.size() > 0">
+            AND order_id in
+            <foreach collection="orderIds" item="orderId" index="index" open="(" close=")" separator=",">
+                #{orderId}
+            </foreach>
+        </if>
+    </select>
 </mapper>

@@ -10,5 +10,5 @@ import io.live_mall.modules.server.entity.YouZanOrderEntity;
  * @description
  */
 public interface YouZanOrderService extends IService<YouZanOrderEntity> {
-    void save( YouzanTradesSoldGetResult.YouzanTradesSoldGetResultData data);
+    void save(String yzOpenId, YouzanTradesSoldGetResult.YouzanTradesSoldGetResultData data);
 }

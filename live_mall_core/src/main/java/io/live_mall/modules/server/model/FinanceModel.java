@@ -41,4 +41,8 @@ public class FinanceModel {
      * 封面图
      */
     private String coverImg;
+    /**
+     * 作者
+     */
+    private String author;
 }

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.live_mall.modules.server.dao.MmsPaymentItemDao">
+    <select id="pages" resultType="io.live_mall.modules.server.entity.MmsPaymentItemEntity">
+        SELECT
+            customer_name,
+            appoint_money,
+            `name`,
+            pay_date,
+            customer_phone,
+            sale_name,
+            sale_mobile
+        FROM
+            `mms_payment_item`
+        WHERE
+            mms_log_id = #{mmsLogId}
+        ORDER BY create_time DESC
+    </select>
+</mapper>

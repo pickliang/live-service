@@ -17,9 +17,9 @@ public class RedisKeyConstants {
     /**
      * 短信token
      */
-    public static final String SMS_TOKEN = "sms_token";
+    public static final String MMS_TOKEN = "mms_token";
     /**
      * 有赞token
      */
-    public static final String YZ_TOKEN = "sms_token";
+    public static final String YZ_TOKEN = "yz_token";
 }

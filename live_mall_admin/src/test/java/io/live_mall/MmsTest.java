@@ -175,7 +175,7 @@ public class MmsTest {
         params.put("content", content);
 
         TreeMap<String, Object> id = Maps.newTreeMap();
-        id.put("mmsId", "1715804");
+        id.put("mmsId", "1715792");
         id.put("productId", "320412");
         params.put("id", id);
 

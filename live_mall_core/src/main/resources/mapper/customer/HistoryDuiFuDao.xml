@@ -5,7 +5,7 @@
     <select id="HistoryDuiFuInfo" resultType="com.alibaba.fastjson.JSONObject">
         SELECT
             product_name,
-            appoint_money,
+            appoint_money / 10000 as appoint_money,
             term,
             value_date as appoint_time,
             end_date,

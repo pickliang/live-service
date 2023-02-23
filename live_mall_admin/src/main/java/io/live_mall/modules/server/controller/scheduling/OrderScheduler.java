@@ -106,11 +106,11 @@ public class OrderScheduler {
 				}
 				YouzanTradesSoldGetResult.YouzanTradesSoldGetResultData data = null;
 				data = YouZanClients.orderList(token, user.getYzOpenId());
-				youZanOrderService.save(data);
+				youZanOrderService.save(user.getYzOpenId(), data);
 				Long totalResults = data.getTotalResults();
 				while (100 == totalResults) {
 					data = YouZanClients.orderList(token, user.getYzOpenId());
-					youZanOrderService.save(data);
+					youZanOrderService.save(user.getYzOpenId(), data);
 				}
 			} catch (SDKException e) {
 				log.error("有赞订单异常--->{}", e);

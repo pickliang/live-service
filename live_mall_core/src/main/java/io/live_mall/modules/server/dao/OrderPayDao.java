@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 结算信息
@@ -31,4 +32,15 @@ public interface OrderPayDao extends BaseMapper<OrderPayEntity> {
      * @return int
      */
     int updateOrderPay(@Param("id") String id, @Param("payDate") String payDate, @Param("payMoney") BigDecimal payMoney);
+
+    /**
+     * 付息计划列表
+     * @param orderIds 订单id
+     * @param startDate yyyy-MM-dd
+     * @param endDate yyyy-MM-dd
+     * @return
+     */
+    List<OrderPayEntity> orderPayList(@Param("orderIds") List<String> orderIds, @Param("startDate") String startDate, @Param("endDate") String endDate);
+
+
 }

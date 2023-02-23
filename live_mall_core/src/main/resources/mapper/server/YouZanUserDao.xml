@@ -2,5 +2,21 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="io.live_mall.modules.server.dao.YouZanUserDao">
-
+    <select id="yzUserDetail" resultType="io.live_mall.modules.server.model.YouZanUserModel">
+        SELECT
+            yz_open_id,
+            created_at,
+            mobile,
+            birthday,
+            gender,
+            province_name,
+            city_name,
+            county_name,
+            tags,
+            points
+        FROM
+            t_youzan_user
+        WHERE
+            user_id = #{userId}
+    </select>
 </mapper>

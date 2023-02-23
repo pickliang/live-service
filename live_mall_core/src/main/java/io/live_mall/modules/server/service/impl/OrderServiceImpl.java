@@ -15,9 +15,9 @@ import io.live_mall.common.exception.RRException;
 import io.live_mall.common.utils.DateUtils;
 import io.live_mall.common.utils.PageUtils;
 import io.live_mall.common.utils.Query;
-import io.live_mall.constants.MmsConstants;
 import io.live_mall.modules.server.dao.*;
 import io.live_mall.modules.server.entity.*;
+import io.live_mall.modules.server.model.DuiFuNoticeModel;
 import io.live_mall.modules.server.model.OrderModel;
 import io.live_mall.modules.server.model.OrderUtils;
 import io.live_mall.modules.server.service.*;
@@ -35,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service("orderService")
@@ -80,6 +81,12 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 	private MmsLogItemService mmsLogItemService;
 	@Autowired
 	private YouZanUserDao youZanUserDao;
+	@Autowired
+	private MmsTemplateDao mmsTemplateDao;
+	@Autowired
+	private OrderPayDao orderPayDao;
+	@Autowired
+	private MmsPaymentItemService mmsPaymentItemService;
 
 	@Override
 	public PageUtils selectDuifuPage(Map<String, Object> params) {
@@ -391,7 +398,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 			 Integer dateNum = order.getInteger("date_num");
 			 String end_date = "";
 			 if (dateNum == 0) {
-			 	end_date = order.getString("establish_time");
+			 	end_date = order.getString("appoint_time");
 			 }else {
 			 	Date establishTime = order.getDate("establish_time");
 			 	if (Objects.nonNull(establishTime) && Objects.nonNull(dateNum)) {
@@ -439,7 +446,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 	public Map<String, Object> totalAssets(String cardNum) {
 		Map<String, Object> result = Maps.newHashMap();
 		// 累计收益：所有已付利息总和
-		Double totalInterest = this.baseMapper.totalInterest(cardNum);
+		Double expectedIncome = this.baseMapper.expectedIncome(cardNum);
+		Double historyExpectedIncome = this.baseMapper.historyExpectedIncome(cardNum);
+		// Double totalInterest = this.baseMapper.totalInterest(cardNum);
 		// 类固收(固收)
 		Integer fixedIncome = this.baseMapper.fixedIncome(cardNum, 1);
 		Integer historyFixedIncome = this.baseMapper.historyFixedIncome(cardNum, 1);
@@ -455,7 +464,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 		result.put("fixedIncome", fixedIncome + historyFixedIncome);
 		result.put("stock", stock + historyStock);
 		result.put("netWorth", netWorth + historyNetWorth);
-		result.put("totalInterest", totalInterest);
+		result.put("totalInterest", expectedIncome + historyExpectedIncome);
 		return result;
 	}
 
@@ -521,9 +530,6 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 	public Map<String, Object> customerOrderInfo(String id) {
 		Map<String, Object> result = Maps.newHashMap();
 		JSONObject orderInfo = this.baseMapper.customerOrderInfo(id);
-//		if (Objects.isNull(orderInfo)) {
-//			orderInfo = historyDuiFuDao.HistoryDuiFuInfo(id);
-//		}
 		if (Objects.nonNull(orderInfo)) {
 			String end_date = "";
 			Integer dateNum = orderInfo.getInteger("date_num");
@@ -618,20 +624,123 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void selectDuifuNoticeData(String startDate, String endDate, String ids, String urlLink, String mmsToken, Long userId) {
+	public void selectDuifuNoticeData(String startDate, String endDate, String ids, String mmsToken, Long userId) {
 		List<String> orderIds = Arrays.asList(ids.split(","));
-		List<JSONObject> list = this.baseMapper.selectDuifuNoticeData(orderIds);
-		// 保存mms发送日志
+		List<DuiFuNoticeModel> list = this.baseMapper.selectDuifuNoticeData(orderIds);
+		// 保存mms发送对付日志
 		MmsLogEntity logEntity = new MmsLogEntity();
 		logEntity.setStartDate(DateUtils.stringToDate(startDate, DateUtils.DATE_PATTERN));
 		logEntity.setEndDate(DateUtils.stringToDate(endDate, DateUtils.DATE_PATTERN));
 		logEntity.setRowNum(list.size());
+		logEntity.setType(1);
 		logEntity.setCreateTime(new Date());
 		logEntity.setCreateUser(userId);
 		mmsLogDao.insert(logEntity);
-		sendSaleMms(mmsToken, urlLink, list, logEntity.getId(), userId);
-		// CompletableFuture.supplyAsync(() -> sendSaleMms(mmsToken, urlLink, list, logEntity.getId(), userId));
+		MmsTemplateEntity mmsTemplateEntity = mmsTemplateDao.selectOne(Wrappers.lambdaQuery(MmsTemplateEntity.class)
+				.eq(MmsTemplateEntity::getType, 1).orderByDesc(MmsTemplateEntity::getCreateTime).last("LIMIT 1"));
+		if (Objects.nonNull(mmsTemplateEntity)) {
+			// sendDuifuMms(mmsToken, list, logEntity.getId(), userId, mmsTemplateEntity.getMmsId());
+			CompletableFuture.supplyAsync(() -> sendDuifuMms(mmsToken, list, logEntity.getId(), userId, mmsTemplateEntity.getMmsId()));
+		}
 	}
+
+	/**
+	 * 对付完成通知
+	 * @param token
+	 * @param list
+	 * @param logId
+	 * @param userId
+	 * @param mmsId
+	 * @return
+	 */
+	public boolean sendDuifuMms(String token, List<DuiFuNoticeModel> list, String logId, Long userId, String mmsId) {
+		List<MmsLogItemEntity> entities = new ArrayList<>();
+		// 理财师姓名|客户姓名|产品名称|到期还本付息
+		String text = "Text1|Text2|Text3|Text4";
+		list.forEach(record -> {
+			String mobile = record.getMobile();
+			JSONObject result = null;
+			if (StringUtils.isNotBlank(mobile)) {
+				try {
+					StringBuilder sb = new StringBuilder();
+					sb.append(record.getRealname()).append("|").append(record.getCustomerName()).append(("|"))
+							.append(record.getProductName()).append("|").append(record.getSumMoney());
+					result = MmsClient.send(token, text, mobile, sb.toString(), mmsId);
+				} catch (Exception e) {
+					log.error("e-->{}", e);
+				}
+			}
+			// 保存发送明细
+			MmsLogItemEntity entity = new MmsLogItemEntity();
+			entity.setMmsLogId(logId);
+			entity.setOrderId(record.getId());
+			entity.setAppointMoney(record.getAppointMoney() / 10000);
+			entity.setCustomerName(record.getCustomerName());
+			entity.setCustomerPhone(record.getPhone());
+			entity.setSaleName(record.getRealname());
+			entity.setSaleMobile(mobile);
+			entity.setEndDate(record.getDate());
+			entity.setCreateUser(userId);
+			entity.setCreateTime(new Date());
+			if (null != result) {
+				JSONObject content = result.getJSONObject("content");
+				entity.setCode(Integer.valueOf(content.getString("code")));
+				entity.setResult(result.toJSONString());
+			}
+			entities.add(entity);
+		});
+		if (!entities.isEmpty()) {
+			mmsLogItemService.saveBatch(entities);
+		}
+		return true;
+	}
+
+	/**
+	 * 理财师兑付预警短信通知
+	 * @return boolean
+	 */
+	// public boolean sendSaleMms(String token, List<DuiFuNoticeModel> list, String logId, Long userId, String mmsId) {
+	// 	List<MmsLogItemEntity> entities = new ArrayList<>();
+	// 	// 理财师姓名|客户姓名|产品名称|到日期|认购金额|到期还本付息元|小程序链接
+	// 	String text = "Text1|Text2|Text3|Text4|Text5|Text6";
+	// 	list.forEach(record -> {
+	// 		String mobile = record.getMobile();
+	// 		JSONObject result = null;
+	// 		if (StringUtils.isNotBlank(mobile)) {
+	// 			try {
+	// 				StringBuilder sb = new StringBuilder();
+	// 				sb.append(record.getRealname()).append("|").append(record.getCustomerName()).append(("|"))
+	// 						.append(record.getProductName()).append("|").append(record.getDate()).append("|")
+	// 						.append(record.getAppointMoney()).append("|").append(record.getSumMoney());
+	// 				result = MmsClient.send(token, text, mobile, sb.toString(), mmsId);
+	// 			} catch (Exception e) {
+	// 				log.error("e-->{}", e);
+	// 			}
+	// 		}
+	// 		// 保存发送明细
+	// 		MmsLogItemEntity entity = new MmsLogItemEntity();
+	// 		entity.setMmsLogId(logId);
+	// 		entity.setOrderId(record.getId());
+	// 		entity.setAppointMoney(record.getAppointMoney() / 10000);
+	// 		entity.setCustomerName(record.getCustomerName());
+	// 		entity.setCustomerPhone(record.getPhone());
+	// 		entity.setSaleName(record.getRealname());
+	// 		entity.setSaleMobile(mobile);
+	// 		entity.setEndDate(record.getDate());
+	// 		entity.setCreateUser(userId);
+	// 		entity.setCreateTime(new Date());
+	// 		if (null != result) {
+	// 			JSONObject content = result.getJSONObject("content");
+	// 			entity.setCode(Integer.valueOf(content.getString("code")));
+	// 			entity.setResult(result.toJSONString());
+	// 		}
+	// 		entities.add(entity);
+	// 	});
+	// 	if (!entities.isEmpty()) {
+	// 		mmsLogItemService.saveBatch(entities);
+	// 	}
+	// 	return true;
+	// }
 
 	@Override
 	public String addYouZanPoints(String token, String orderId, String uptType) throws SDKException {
@@ -666,53 +775,96 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 		return null;
 	}
 
-	/**
-	 * 理财师兑付短信通知
-	 * @param token token
-	 * @param urlLink 小程序跳转链接
-	 * @param list 兑付数据
-	 * @return boolean
-	 */
-	public boolean sendSaleMms(String token, String urlLink, List<JSONObject> list, String logId, Long userId) {
-		List<MmsLogItemEntity> entities = new ArrayList<>();
-		String text = "Text1|Text2|Text3|Text4|Text5|Text6|Text7";
-		// 理财师姓名|客户姓名|产品名称|到日期|认购金额|到期还本付息元|小程序链接
+	@Override
+	public List<DuiFuNoticeModel> orderPayNoticeData(String startDate, String endDate) {
+		List<DuiFuNoticeModel> models = this.payMendData(startDate, endDate, new ArrayList<>());
+		return models;
+	}
+
+	private List<DuiFuNoticeModel> payMendData(String startDate, String endDate, List<String> ids) {
+		List<OrderPayEntity> orderPayEntities = orderPayDao.orderPayList(ids, startDate, endDate);
+		List<DuiFuNoticeModel> models = new ArrayList<>();
+		if (!orderPayEntities.isEmpty()) {
+			Set<String> orderIds = new HashSet<>();
+			orderPayEntities.forEach(orderPayEntity -> orderIds.add(orderPayEntity.getOrderId()));
+			List<DuiFuNoticeModel> list = this.baseMapper.selectDuifuNoticeData(new ArrayList<>(orderIds));
+			Map<String, DuiFuNoticeModel> noticeModelMap = list.stream().collect(Collectors.toMap(DuiFuNoticeModel::getId, model -> model));
+			orderPayEntities.forEach(entity -> {
+				DuiFuNoticeModel noticeModel = noticeModelMap.get(entity.getOrderId());
+				if (Objects.nonNull(noticeModel)) {
+					noticeModel.setName(entity.getName());
+					noticeModel.setPayDate(entity.getPayDate());
+					models.add(noticeModel);
+				}
+			});
+		}
+		return models;
+	}
+
+	@Override
+	public void sendPayMend(String startDate, String endDate, String ids, String mmsToken, Long userId) {
+		List<String> order_ids = Arrays.asList(ids.split(","));
+		List<DuiFuNoticeModel> models = this.payMendData(startDate, endDate, order_ids);
+		// 保存mms发送付息日志
+		MmsLogEntity logEntity = new MmsLogEntity();
+		logEntity.setStartDate(DateUtils.stringToDate(startDate, DateUtils.DATE_PATTERN));
+		logEntity.setEndDate(DateUtils.stringToDate(endDate, DateUtils.DATE_PATTERN));
+		logEntity.setRowNum(models.size());
+		logEntity.setType(2);
+		logEntity.setCreateTime(new Date());
+		logEntity.setCreateUser(userId);
+		mmsLogDao.insert(logEntity);
+		MmsTemplateEntity mmsTemplateEntity = mmsTemplateDao.selectOne(Wrappers.lambdaQuery(MmsTemplateEntity.class)
+				.eq(MmsTemplateEntity::getType, 3).orderByDesc(MmsTemplateEntity::getCreateTime).last("LIMIT 1"));
+		if (Objects.nonNull(mmsTemplateEntity)) {
+			// sendSalePayment(mmsToken, models, logEntity.getId(), userId, mmsTemplateEntity.getMmsId());
+			CompletableFuture.supplyAsync(() -> sendSalePayment(mmsToken, models, logEntity.getId(), userId, mmsTemplateEntity.getMmsId()));
+		}
+	}
+
+	private boolean sendSalePayment(String token, List<DuiFuNoticeModel> list, String logId, Long userId, String mmsId) {
+		List<MmsPaymentItemEntity> entities = new ArrayList<>();
+		// 理财师姓名|客户姓名|产品名称|认购金额|第N次付息金额
+		String text = "Text1|Text2|Text3|Text4|Text5";
 		list.forEach(record -> {
-			String mobile = record.getString("mobile");
+			String mobile = record.getMobile();
 			JSONObject result = null;
 			if (StringUtils.isNotBlank(mobile)) {
 				try {
 					StringBuilder sb = new StringBuilder();
-					sb.append(record.getString("realname")).append("|").append(record.getString("customer_name")).append(("|"))
-							.append(record.getString("product_name")).append("|").append(record.getString("date")).append("|")
-							.append(record.getString("appoint_money")).append("|").append(record.getString("sum_money")).append("|")
-							.append(urlLink);
-					result = MmsClient.send(token, text, mobile, sb.toString(), MmsConstants.CASHING_COMPLETE_MMS_ID);
+					sb.append(record.getRealname()).append("|").append(record.getCustomerName()).append(("|"))
+							.append(record.getProductName()).append("|").append(record.getAppointMoney()).append("|")
+							.append(record.getName()).append(record.getSumMoney());
+					result = MmsClient.send(token, text, mobile, sb.toString(), mmsId);
 				} catch (Exception e) {
 					log.error("e-->{}", e);
 				}
 			}
 			// 保存发送明细
-			MmsLogItemEntity entity = new MmsLogItemEntity();
+			MmsPaymentItemEntity entity = new MmsPaymentItemEntity();
 			entity.setMmsLogId(logId);
-			entity.setOrderId(record.getString("id"));
-			entity.setAppointMoney(record.getInteger("appoint_money") / 10000);
-			entity.setCustomerName(record.getString("customer_name"));
-			entity.setCustomerPhone(record.getString("phone"));
-			entity.setSaleName(record.getString("realname"));
+			entity.setOrderId(record.getId());
+			entity.setAppointMoney(record.getAppointMoney() / 10000);
+			entity.setCustomerName(record.getCustomerName());
+			entity.setCustomerPhone(record.getPhone());
+			entity.setSaleName(record.getRealname());
 			entity.setSaleMobile(mobile);
-			entity.setEndDate(DateUtils.stringToDate(record.getString("date"), DateUtils.DATE_PATTERN));
+			entity.setName(record.getName());
+			entity.setPayDate(record.getDate());
 			entity.setCreateUser(userId);
 			entity.setCreateTime(new Date());
 			if (null != result) {
-				// entity.setStatus();
-				// entity.setResult();
+				JSONObject content = result.getJSONObject("content");
+				entity.setCode(Integer.valueOf(content.getString("code")));
+				entity.setResult(result.toJSONString());
 			}
 			entities.add(entity);
 		});
 		if (!entities.isEmpty()) {
-			mmsLogItemService.saveBatch(entities);
+			mmsPaymentItemService.saveBatch(entities);
 		}
 		return true;
 	}
+
+
 }

@@ -23,15 +23,24 @@ import java.util.List;
 public class YouZanOrderServiceImpl extends ServiceImpl<YouZanOrderDao, YouZanOrderEntity> implements YouZanOrderService {
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void save(YouzanTradesSoldGetResult.YouzanTradesSoldGetResultData data) {
+    public void save(String yzOpenId, YouzanTradesSoldGetResult.YouzanTradesSoldGetResultData data) {
         List<YouzanTradesSoldGetResult.YouzanTradesSoldGetResultFullorderinfolist> fullOrderInfoList = data.getFullOrderInfoList();
         List<YouZanOrderEntity> entities = new ArrayList<>();
         fullOrderInfoList.forEach(order -> {
             YouzanTradesSoldGetResult.YouzanTradesSoldGetResultFullorderinfo orderInfo = order.getFullOrderInfo();
+            List<YouzanTradesSoldGetResult.YouzanTradesSoldGetResultOrders> orders = orderInfo.getOrders();
+            Double totalFee = 0.00;
+            if (!orders.isEmpty()) {
+                for (YouzanTradesSoldGetResult.YouzanTradesSoldGetResultOrders o : orders) {
+                    totalFee += Double.valueOf(o.getTotalFee());
+                }
+            }
             YouZanOrderEntity entity = new YouZanOrderEntity();
             YouzanTradesSoldGetResult.YouzanTradesSoldGetResultOrderinfo info = orderInfo.getOrderInfo();
             entity.setOrderInfo(JSON.toJSONString(info));
             BeanUtils.copyProperties(info, entity);
+            entity.setYzOpenId(yzOpenId);
+            entity.setTotalFee(totalFee);
             entity.setAddressInfo(JSON.toJSONString(orderInfo.getAddressInfo()));
             entity.setOrders(JSON.toJSONString(orderInfo.getOrders()));
             entity.setBuyerInfo(JSON.toJSONString(orderInfo.getBuyerInfo()));

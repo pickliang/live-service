@@ -4,7 +4,9 @@ import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.youzan.cloud.open.sdk.common.exception.SDKException;
 import com.youzan.cloud.open.sdk.core.oauth.model.OAuthToken;
+import com.youzan.cloud.open.sdk.gen.v4_0_2.model.YouzanTradesSoldGetResult;
 import io.live_mall.common.exception.RRException;
 import io.live_mall.common.utils.*;
 import io.live_mall.constants.RedisKeyConstants;
@@ -14,11 +16,10 @@ import io.live_mall.modules.oss.service.SysOssService;
 import io.live_mall.modules.server.entity.OrderEntity;
 import io.live_mall.modules.server.entity.OrderPayEntity;
 import io.live_mall.modules.server.entity.RaiseEntity;
+import io.live_mall.modules.server.entity.YouZanUserEntity;
 import io.live_mall.modules.server.model.OrderModel;
 import io.live_mall.modules.server.model.OrderUtils;
-import io.live_mall.modules.server.service.OrderPayService;
-import io.live_mall.modules.server.service.OrderService;
-import io.live_mall.modules.server.service.RaiseService;
+import io.live_mall.modules.server.service.*;
 import io.live_mall.tripartite.YouZanClients;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -60,32 +61,32 @@ public class OrderController {
         PageUtils page = orderService.queryPage(params);
         return R.ok().put("page", page);
     }
-  
+
     @RequestMapping("/selectDuifuPage")
     public R selectDuifuPage(@RequestParam Map<String, Object> params){
         PageUtils page = orderService.selectDuifuPage(params);
         return R.ok().put("page", page);
     }
-    
-    
+
+
     @RequestMapping("/selectYjPage")
     public R selectYjPage(@RequestParam Map<String, Object> params){
         PageUtils page = orderService.selectYjPage(params);
         return R.ok().put("page", page);
     }
-    
+
     @RequestMapping("/selectYjSum")
     public R selectYjSum(@RequestParam Map<String, Object> params){
         return R.ok().put("data", orderService.selectYjSum(params));
     }
-    
-    
+
+
     @RequestMapping("/selectYongjin")
     public R selectYongjin(@RequestParam Map<String, Object> params){
         PageUtils page = orderService.selectYongjin(params);
         return R.ok().put("page", page);
     }
-    
+
     @RequestMapping("/selectYongjinSum")
     public R selectYongjinSum(@RequestParam Map<String, Object> params){
         return R.ok().put("data", orderService.selectYongjinSum(params));
@@ -120,8 +121,8 @@ public class OrderController {
 		}
         return R.ok().put("data", "");
     }
-    
-    
+
+
 	private String saveImage(String cardPhotoL) {
 		if(StringUtils.isBlank(cardPhotoL)  || ! cardPhotoL.contains("wx-wudo.oss-cn-beijing.aliyuncs.com") ) {
 			return cardPhotoL;
@@ -147,15 +148,15 @@ public class OrderController {
 		}
 		return cardPhotoL;
 	}
-    
-    
+
+
     @RequestMapping("/getOrderSuccess")
     @RequiresPermissions("server:order:list")
     public R getOrderSuccess(@RequestParam Map<String, Object> params){
        List<JSONObject> list= orderService.getOrderSuccess(params);
         return R.ok().put("data", list);
     }
-    
+
     @RequestMapping("/getOrderCurrentUserList")
     @RequiresPermissions("server:order:list")
     public R getOrderCurrentUserList(@RequestBody JSONObject params){
@@ -173,15 +174,15 @@ public class OrderController {
 		OrderEntity order = orderService.getById(id);
         return R.ok().put("order", order);
     }
-    
-    
+
+
     @RequestMapping("getOneOrderModel")
     @RequiresPermissions("server:order:info")
     public R getOneOrderModel(@RequestParam String orderId){
 		OrderModel order = orderService.getOneOrderModel(orderId);
         return R.ok().put("data", order);
     }
-    
+
     /**
      * 保存
      */
@@ -199,7 +200,7 @@ public class OrderController {
 		orderService.save(order);
         return R.ok();
     }
-    
+
     @RequestMapping("/saveApp")
     @RequiresPermissions("server:order:save")
     public R saveApp(@RequestBody OrderEntity order){
@@ -224,7 +225,7 @@ public class OrderController {
 		orderService.save(order);
         return R.ok().put("data",order.getId());
     }
-    
+
 
     /**
      * 修改
@@ -308,4 +309,43 @@ public class OrderController {
         return R.ok().put("data", orderService.duifuNoticeData(startDate, endDate));
     }
 
+    /**
+     * 发送付息通知列表
+     * @param startDate 开始日期yyyy-MM-dd
+     * @param endDate 结束日期yyyy-MM-dd
+     * @return
+     */
+    @GetMapping(value = "/payment-notice-data")
+    public R paymentNoticeData(@RequestParam("startDate") String startDate, @RequestParam("endDate") String endDate) {
+        return R.ok().put("data", orderService.orderPayNoticeData(startDate, endDate));
+    }
+
+    private final YouZanOrderService youZanOrderService;
+    private final YouZanUserService youZanUserService;
+    @GetMapping(value = "yz-order")
+    public String syncYzOrder() {
+        List<YouZanUserEntity> users = youZanUserService.list(Wrappers.lambdaQuery(YouZanUserEntity.class));
+        users.forEach(user -> {
+            try {
+                String token = redisUtils.get(RedisKeyConstants.YZ_TOKEN);
+                if (org.apache.commons.lang3.StringUtils.isBlank(token)) {
+                    OAuthToken authToken = YouZanClients.token();
+                    redisUtils.set(RedisKeyConstants.YZ_TOKEN, authToken.getAccessToken(), authToken.getExpires());
+                    token = authToken.getAccessToken();
+                }
+                YouzanTradesSoldGetResult.YouzanTradesSoldGetResultData data = null;
+                data = YouZanClients.orderList(token, user.getYzOpenId());
+                youZanOrderService.save(user.getYzOpenId(), data);
+                Long totalResults = data.getTotalResults();
+                while (100 == totalResults) {
+                    data = YouZanClients.orderList(token, user.getYzOpenId());
+                    youZanOrderService.save(user.getYzOpenId(), data);
+                }
+            } catch (SDKException e) {
+                log.error("有赞订单异常--->{}", e);
+            }
+        });
+        return null;
+
+    }
 }

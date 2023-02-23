@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import io.live_mall.common.utils.PageUtils;
 import io.live_mall.modules.server.entity.OrderEntity;
 import io.live_mall.modules.server.entity.RaiseEntity;
+import io.live_mall.modules.server.model.DuiFuNoticeModel;
 import io.live_mall.modules.server.model.OrderModel;
 import io.live_mall.modules.sys.entity.SysUserEntity;
 
@@ -99,13 +100,29 @@ public interface OrderService extends IService<OrderEntity> {
 	 * @param startDate 开始日期yyyy-MM-dd
 	 * @param endDate 结束日期yyyy-MM-dd
 	 * @param ids 订单号
-	 * @param urlLink 小程序跳转链接
 	 * @param mmsToken 短信token
 	 * @param userId 用户id
 	 */
-	void selectDuifuNoticeData(String startDate, String endDate, String ids, String urlLink, String mmsToken, Long userId);
+	void selectDuifuNoticeData(String startDate, String endDate, String ids, String mmsToken, Long userId);
 
 	String addYouZanPoints(String token, String orderId, String uptType) throws Exception;
+
+	/**
+	 * 发送付息通知列表数据
+	 * @param startDate 开始日期yyyy-MM-dd
+	 * @param endDate 结束日期yyyy-MM-dd
+	 * @return
+	 */
+	List<DuiFuNoticeModel> orderPayNoticeData(String startDate, String endDate);
+	/**
+	 * 选中要下发短信的付息通知数据
+	 * @param startDate 开始日期yyyy-MM-dd
+	 * @param endDate 结束日期yyyy-MM-dd
+	 * @param ids 订单号
+	 * @param mmsToken 短信token
+	 * @param userId 用户id
+	 */
+	void sendPayMend(String startDate, String endDate, String ids, String mmsToken, Long userId);
 
 }
 
