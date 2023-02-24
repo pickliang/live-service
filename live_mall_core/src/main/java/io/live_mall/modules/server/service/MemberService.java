@@ -27,5 +27,9 @@ public interface MemberService extends IService<MemberEntity> {
 	JSONObject getTj(String custId, String salesId);
 
 	List<JSONObject> memberList();
+
+	List<JSONObject> memberList(String startDate, String endDate);
+
+	void sendMmsIntegral(String startDate, String endDate, String memberNos, Long userId, String mmsToken);
 }
 

@@ -56,6 +56,13 @@ public class YouZanUserServiceImpl extends ServiceImpl<YouZanUserDao, YouZanUser
         CustomerUserEntity userEntity = customerUserDao.selectOne(Wrappers.lambdaQuery(CustomerUserEntity.class).eq(CustomerUserEntity::getCardNum, cardNum).last("LIMIT 1"));
         if (Objects.nonNull(userEntity)) {
             YouZanUserModel model = this.baseMapper.yzUserDetail(userEntity.getId());
+            String memberSourceChannelName = model.getMemberSourceChannel() == 100 ? "微信": model.getMemberSourceChannel() == 101 ? "微信公众号" : model.getMemberSourceChannel() == 102 ? "微信小程序" :
+                model.getMemberSourceChannel() == 103 ? "微信朋友圈" : model.getMemberSourceChannel() == 104 ? "微信聊天" : model.getMemberSourceChannel() == 105 ? "有赞精选小程序" :
+                model.getMemberSourceChannel() == 200 ? "支付宝" : model.getMemberSourceChannel() == 300 ? "微博" : model.getMemberSourceChannel() == 400 ? "QQ" :
+                model.getMemberSourceChannel() == 401 ? "QQ购物号" : model.getMemberSourceChannel() == 500 ? "今日头条" : model.getMemberSourceChannel() == 600 ? "浏览器" :
+                model.getMemberSourceChannel() == 900 ? "有赞云开放平台" : model.getMemberSourceChannel() == 1000 ? "线下门店" : model.getMemberSourceChannel() == 1200 ? "支付宝小程序" :
+                model.getMemberSourceChannel() == 1300 ? "QQ小程序" : "其他";
+            model.setMemberSourceChannelName(memberSourceChannelName);
             model.setConsumerAmount(youZanOrderDao.consumerAmount(model.getYzOpenId()));
             model.setConsumerOrderNum(youZanOrderDao.consumerOrderNum(model.getYzOpenId()));
             model.setRecentlyOderTime(youZanOrderDao.recentlyOderTime(model.getYzOpenId()));

@@ -50,7 +50,7 @@ public interface OrderService extends IService<OrderEntity> {
 	 */
 	Boolean getCouldFz(RaiseEntity raise);
 
-	int updateOrder(OrderEntity order, SysUserEntity user);
+	int updateOrder(OrderEntity order, SysUserEntity user, String touchToken);
 
 	void success(RaiseEntity raise);
 

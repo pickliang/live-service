@@ -21,4 +21,8 @@ public interface MemberDao extends BaseMapper<MemberEntity> {
 	JSONObject getTj(@Param("custId")String custId,@Param("salesId")String salesId);
 
 	List<JSONObject> memberList();
+
+	List<JSONObject> members(@Param("startDate") String startDate, @Param("endDate") String endDate);
+
+	List<JSONObject> mmsMemberIntegralData(@Param("memberNos") List<String> memberNos);
 }

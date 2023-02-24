@@ -25,4 +25,38 @@
 	<select id="memberList" resultType="com.alibaba.fastjson.JSONObject">
 		SELECT member_no, cust_name FROM `p_member` ORDER BY create_date DESC
 	</select>
+
+	<select id="members" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT
+			m.member_no,
+			m.cust_name,
+			m.birthday,
+			m.phone,
+			u.realname
+		FROM
+			p_member as m
+				LEFT JOIN sys_user as u on u.user_id = m.sale_id
+		WHERE
+			m.birthday BETWEEN #{startDate} AND #{endDate}
+		  AND m.phone is not null
+	</select>
+
+	<select id="mmsMemberIntegralData" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT
+			m.member_no,
+			m.cust_name,
+			m.birthday,
+			m.phone,
+			m.sale_id,
+			u.realname
+		FROM
+			p_member as m
+				LEFT JOIN sys_user as u on u.user_id = m.sale_id
+		WHERE
+			m.member_no in
+			<foreach collection="memberNos" item="memberNo" index="index" open="(" close=")" separator=",">
+				#{memberNo}
+			</foreach>
+		  AND m.phone is not null
+	</select>
 </mapper>

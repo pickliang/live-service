@@ -2,6 +2,7 @@ package io.live_mall.modules.server.service.impl;
 
 import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -25,13 +26,16 @@ import io.live_mall.modules.server.utils.ValidateUtils;
 import io.live_mall.modules.sys.entity.SysUserEntity;
 import io.live_mall.modules.sys.service.SysUserService;
 import io.live_mall.sms.mms.MmsClient;
+import io.live_mall.tripartite.TouchClients;
 import io.live_mall.tripartite.YouZanClients;
+import lombok.SneakyThrows;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.*;
@@ -87,6 +91,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 	private OrderPayDao orderPayDao;
 	@Autowired
 	private MmsPaymentItemService mmsPaymentItemService;
+	@Autowired
+	private TouchUserDao touchUserDao;
 
 	@Override
 	public PageUtils selectDuifuPage(Map<String, Object> params) {
@@ -154,7 +160,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public int updateOrder(OrderEntity order, SysUserEntity user) {
+	public int updateOrder(OrderEntity order, SysUserEntity user, String touchToken) {
 		RaiseEntity raiseEntity = raiseService.getById(order.getRaiseId());
 		OrderEntity orderEntity = this.getById(order.getId());
 		orderEntity.setStatus(order.getStatus());
@@ -169,6 +175,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 			if (memberEntity != null) {
 				order.setCustId(memberEntity.getMemberNo());
 			}
+			// 同步小鹅通用户信息
+			CompletableFuture.supplyAsync(() -> this.touchUserInfo(touchToken, memberEntity.getPhone(), memberEntity.getMemberNo()));
 			smsService.sendMsgToCust(orderEntity);
 			MemberEntity one = memberService.getOne(new QueryWrapper<MemberEntity>().eq("card_num", order.getCardNum()));
 			if( one !=null && !String.valueOf(order.getSaleId()).equals( one.getSaleId())) {
@@ -224,6 +232,49 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 		}
 		this.updateById(order);
 		return 0;
+	}
+
+	/**
+	 *
+	 * @param phone
+	 * @param memberNo
+	 * @return
+	 * @throws IOException
+	 */
+	@SneakyThrows
+	public boolean touchUserInfo(String token, String phone, String memberNo) {
+		JSONObject userList = TouchClients.userList(token, phone);
+		if (Objects.nonNull(userList)) {
+			JSONObject data = userList.getJSONObject("data");
+			JSONArray list = data.getJSONArray("list");
+			if(!list.isEmpty()) {
+				JSONObject userJson = list.getJSONObject(0);
+				String userId = userJson.getString("user_id");
+				JSONObject userInfo = TouchClients.userInfo(token, userId);
+				Integer code = userInfo.getInteger("code");
+				if (0 == code) {
+					JSONObject userData = userInfo.getJSONObject("data");
+					TouchUserEntity entity = new TouchUserEntity();
+					entity.setUserId(userId);
+					entity.setMemberNo(memberNo);
+					entity.setNickname(userData.getString("nickname"));
+					entity.setName(userData.getString("name"));
+					entity.setAvatar(userData.getString("avatar"));
+					entity.setGender(userData.getInteger("gender"));
+					entity.setPhone(userData.getString("phone"));
+					entity.setIsSeal(userData.getInteger("is_seal"));
+					entity.setPhoneCollect(userData.getString("phone_collect"));
+					entity.setSdkUserId(userData.getString("sdk_user_id"));
+					entity.setCreatedAt(userData.getString("created_at"));
+					entity.setAppId(userData.getString("app_id"));
+					entity.setAreaCode(userData.getString("area_code"));
+					entity.setPhoneResource(userData.getString("phone_resource"));
+					entity.setCreateTime(new Date());
+					touchUserDao.insert(entity);
+				}
+			}
+		}
+		return true;
 	}
 
 	@Override
@@ -619,6 +670,16 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
 	@Override
 	public List<JSONObject> duifuNoticeData(String startDate, String endDate) {
+		List<JSONObject> list = this.baseMapper.duifuNoticeData(startDate, endDate);
+		list.forEach(record -> {
+			JSONObject order = this.baseMapper.getOrderById(record.getString("order_id"));
+			record.put("phone", order.getString("phone"));
+			SysUserEntity userEntity = sysUserService.getById(order.getLong("saleId"));
+			if (Objects.nonNull(userEntity)) {
+				record.put("realname", userEntity.getRealname());
+				record.put("mobile", userEntity.getMobile());
+			}
+		});
 		return this.baseMapper.duifuNoticeData(startDate, endDate);
 	}
 
@@ -627,6 +688,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 	public void selectDuifuNoticeData(String startDate, String endDate, String ids, String mmsToken, Long userId) {
 		List<String> orderIds = Arrays.asList(ids.split(","));
 		List<DuiFuNoticeModel> list = this.baseMapper.selectDuifuNoticeData(orderIds);
+
 		// 保存mms发送对付日志
 		MmsLogEntity logEntity = new MmsLogEntity();
 		logEntity.setStartDate(DateUtils.stringToDate(startDate, DateUtils.DATE_PATTERN));
@@ -658,7 +720,10 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 		// 理财师姓名|客户姓名|产品名称|到期还本付息
 		String text = "Text1|Text2|Text3|Text4";
 		list.forEach(record -> {
-			String mobile = record.getMobile();
+			JSONObject order = this.baseMapper.getOrderById(record.getId());
+			SysUserEntity userEntity = sysUserService.getById(order.getLong("saleId"));
+
+			String mobile = userEntity.getMobile();
 			JSONObject result = null;
 			if (StringUtils.isNotBlank(mobile)) {
 				try {
@@ -676,8 +741,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 			entity.setOrderId(record.getId());
 			entity.setAppointMoney(record.getAppointMoney() / 10000);
 			entity.setCustomerName(record.getCustomerName());
-			entity.setCustomerPhone(record.getPhone());
-			entity.setSaleName(record.getRealname());
+			entity.setCustomerPhone(order.getString("phone"));
+			entity.setSaleName(userEntity.getRealname());
 			entity.setSaleMobile(mobile);
 			entity.setEndDate(record.getDate());
 			entity.setCreateUser(userId);

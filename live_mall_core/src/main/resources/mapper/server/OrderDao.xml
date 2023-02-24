@@ -530,48 +530,30 @@
 		SELECT
 			*
 		FROM
-			(
-				SELECT
-					o.id,
-					o.customer_name,
-					o.appoint_money * 10000 AS appoint_money,
-					o.phone,
-					u.realname,
-					u.mobile,
-					DATE_ADD( r.establish_time, INTERVAL o.date_num MONTH ) AS date
-				FROM
-					p_order AS o
-					LEFT JOIN sys_user AS u ON o.sale_id = u.user_id
-					LEFT JOIN p_raise AS r ON r.id = o.raise_id
-				WHERE
-					o.`status` = 4
-			) AS t
+			( SELECT order_id, customer_name, appoint_money, sumMoney AS sum_money, product_name, DATE_ADD( establish_time, INTERVAL date_num MONTH ) AS date FROM `tuifu_view` ) AS t
 		WHERE
 			t.date BETWEEN #{startDate} AND #{endDate}
 	</select>
 
 	<select id="selectDuifuNoticeData" resultType="io.live_mall.modules.server.model.DuiFuNoticeModel">
 		SELECT
-			o.id,
-			o.customer_name,
-			IFNULL(o.appoint_money * 10000, 0) AS appoint_money,
-			o.phone,
-		    IFNULL((SELECT IFNULL(pay_money,0) + o.appoint_money * 10000 FROM p_order_pay WHERE order_id = o.id ORDER BY pay_date DESC LIMIT 1), 0) as sum_money,
-			u.realname,
-			u.mobile,
-		    p.product_name,
-		    DATE_ADD( r.establish_time, INTERVAL o.date_num MONTH ) AS date
+			order_id as id,
+			customer_name,
+			appoint_money,
+			sumMoney,
+			product_name,
+			DATE_ADD( establish_time, INTERVAL date_num MONTH ) AS date
 		FROM
-			p_order AS o
-			LEFT JOIN sys_user AS u ON o.sale_id = u.user_id
-		    LEFT JOIN p_product as p on o.product_id = p.id
-		    LEFT JOIN p_raise AS r ON r.id = o.raise_id
+			`tuifu_view`
 		WHERE
-			o.`status` = 4
-		  AND o.id IN
+			order_id IN
 		<foreach collection="orderIds" item="orderId" index="index" open="(" close=")" separator=",">
 			#{orderId}
 		</foreach>
+	</select>
+
+	<select id="getOrderById" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT sale_id,phone FROM p_order WHERE id = #{orderId}
 	</select>
 
 	<!--	20220516 add end-->

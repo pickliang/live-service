@@ -20,17 +20,16 @@ import io.live_mall.modules.server.entity.YouZanUserEntity;
 import io.live_mall.modules.server.model.OrderModel;
 import io.live_mall.modules.server.model.OrderUtils;
 import io.live_mall.modules.server.service.*;
+import io.live_mall.tripartite.TouchClients;
 import io.live_mall.tripartite.YouZanClients;
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 
@@ -232,13 +231,24 @@ public class OrderController {
      */
     @RequestMapping("/update")
     @RequiresPermissions("server:order:update")
+    @SneakyThrows
     public R update(@RequestBody OrderEntity order){
-    	 orderService.updateOrder(order,ShiroUtils.getUserEntity());
+        // 同步小鹅通用户信息
+        String touchToken = redisUtils.get(RedisKeyConstants.TOUCH_ACCESS_TOKEN);
+        if (Objects.isNull(touchToken)) {
+            JSONObject data = TouchClients.getToken();
+            if (null != data) {
+                touchToken = data.getString("access_token");
+                Integer expiresIn = data.getInteger("expires_in");
+                redisUtils.set(RedisKeyConstants.TOUCH_ACCESS_TOKEN, touchToken, expiresIn);
+            }
+        }
+    	 orderService.updateOrder(order,ShiroUtils.getUserEntity(), touchToken);
          // 有赞增加积分
         CompletableFuture.supplyAsync(() -> {
             try {
                 String token = redisUtils.get(RedisKeyConstants.YZ_TOKEN);
-                if (org.apache.commons.lang3.StringUtils.isBlank(token)) {
+                if (Objects.isNull(token)) {
                     OAuthToken authToken = YouZanClients.token();
                     redisUtils.set(RedisKeyConstants.YZ_TOKEN, authToken.getAccessToken(), authToken.getExpires());
                     token = authToken.getAccessToken();
@@ -250,6 +260,7 @@ public class OrderController {
             }
         }
         );
+
 		return R.ok();
     }
 
@@ -348,4 +359,5 @@ public class OrderController {
         return null;
 
     }
+
 }

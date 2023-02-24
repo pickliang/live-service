@@ -171,4 +171,6 @@ public interface OrderDao extends BaseMapper<OrderEntity> {
 	 * @return
 	 */
 	List<DuiFuNoticeModel> selectDuifuNoticeData(@Param("orderIds") List<String> orderIds);
+
+	JSONObject getOrderById(String orderId);
 }

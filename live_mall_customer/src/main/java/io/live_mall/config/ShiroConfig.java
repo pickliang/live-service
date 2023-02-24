@@ -62,6 +62,7 @@ public class ShiroConfig {
         filterMap.put("/excel/**", "anon");
         filterMap.put("/applets/**", "anon");
         filterMap.put("/anon/**", "anon");
+        filterMap.put("/information/company-dynamics", "anon");
         filterMap.put("/**", "oauth2");
         shiroFilter.setFilterChainDefinitionMap(filterMap);
         return shiroFilter;

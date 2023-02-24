@@ -18,6 +18,8 @@ public class YouZanUserModel {
      * 900:有赞云开放平台;1000:线下门店;1100-后台录入;1200:支付宝小程序;1300:QQ小程序
      */
     private Integer memberSourceChannel;
+
+    private String memberSourceChannelName;
     /**
      * 创建时间
      */

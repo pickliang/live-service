@@ -37,6 +37,8 @@ public class MmsController {
     private final RedisUtils redisUtils;
     private final OrderService orderService;
     private final MmsPaymentItemService mmsPaymentItemService;
+    private final MemberService memberService;
+    private final MmsMemberService mmsMemberService;
 
     /**
      * 保存短信链接模板
@@ -155,5 +157,36 @@ public class MmsController {
     public R mmsPaymentItem(@RequestParam Map<String, Object> params) {
         PageUtils pages = mmsPaymentItemService.pages(params);
         return R.ok().put("data", pages);
+    }
+
+    /**
+     * 发送客户生日短信
+     * @param params
+     * @return
+     */
+    @PostMapping(value = "/send-integral")
+    @SneakyThrows
+    public R sendIntegral(@RequestBody Map<String, Object> params) {
+        String token = redisUtils.get(RedisKeyConstants.MMS_TOKEN);
+        if (StringUtils.isBlank(token)) {
+            token = MmsClient.getToken();
+            long expire = 60 * 60 * 10;
+            redisUtils.set(RedisKeyConstants.MMS_TOKEN, token, expire);
+        }
+        String startDate = String.valueOf(params.get("startDate"));
+        String endDate = String.valueOf(params.get("endDate"));
+        String memberNos = String.valueOf(params.get("memberNos"));
+        memberService.sendMmsIntegral(startDate, endDate, memberNos, ShiroUtils.getUserId(), token);
+        return R.ok();
+    }
+
+    /**
+     * 积分发放通知结果
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "/member-item")
+    public R mmsMembers(@RequestParam Map<String, Object> params) {
+        return R.ok().put("data", mmsMemberService.pages(params));
     }
 }
