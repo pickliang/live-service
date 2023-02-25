@@ -24,6 +24,10 @@ public class MmsLogItemEntity implements Serializable {
 
     private String mmsLogId;
     /**
+     * 1-兑付完成 2-兑付预警
+     */
+    private Integer type;
+    /**
      * 订单号
      */
     private String orderId;

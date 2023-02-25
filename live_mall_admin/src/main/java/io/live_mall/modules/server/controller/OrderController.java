@@ -4,9 +4,7 @@ import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.youzan.cloud.open.sdk.common.exception.SDKException;
 import com.youzan.cloud.open.sdk.core.oauth.model.OAuthToken;
-import com.youzan.cloud.open.sdk.gen.v4_0_2.model.YouzanTradesSoldGetResult;
 import io.live_mall.common.exception.RRException;
 import io.live_mall.common.utils.*;
 import io.live_mall.constants.RedisKeyConstants;
@@ -16,10 +14,11 @@ import io.live_mall.modules.oss.service.SysOssService;
 import io.live_mall.modules.server.entity.OrderEntity;
 import io.live_mall.modules.server.entity.OrderPayEntity;
 import io.live_mall.modules.server.entity.RaiseEntity;
-import io.live_mall.modules.server.entity.YouZanUserEntity;
 import io.live_mall.modules.server.model.OrderModel;
 import io.live_mall.modules.server.model.OrderUtils;
-import io.live_mall.modules.server.service.*;
+import io.live_mall.modules.server.service.OrderPayService;
+import io.live_mall.modules.server.service.OrderService;
+import io.live_mall.modules.server.service.RaiseService;
 import io.live_mall.tripartite.TouchClients;
 import io.live_mall.tripartite.YouZanClients;
 import lombok.AllArgsConstructor;
@@ -329,35 +328,6 @@ public class OrderController {
     @GetMapping(value = "/payment-notice-data")
     public R paymentNoticeData(@RequestParam("startDate") String startDate, @RequestParam("endDate") String endDate) {
         return R.ok().put("data", orderService.orderPayNoticeData(startDate, endDate));
-    }
-
-    private final YouZanOrderService youZanOrderService;
-    private final YouZanUserService youZanUserService;
-    @GetMapping(value = "yz-order")
-    public String syncYzOrder() {
-        List<YouZanUserEntity> users = youZanUserService.list(Wrappers.lambdaQuery(YouZanUserEntity.class));
-        users.forEach(user -> {
-            try {
-                String token = redisUtils.get(RedisKeyConstants.YZ_TOKEN);
-                if (org.apache.commons.lang3.StringUtils.isBlank(token)) {
-                    OAuthToken authToken = YouZanClients.token();
-                    redisUtils.set(RedisKeyConstants.YZ_TOKEN, authToken.getAccessToken(), authToken.getExpires());
-                    token = authToken.getAccessToken();
-                }
-                YouzanTradesSoldGetResult.YouzanTradesSoldGetResultData data = null;
-                data = YouZanClients.orderList(token, user.getYzOpenId());
-                youZanOrderService.save(user.getYzOpenId(), data);
-                Long totalResults = data.getTotalResults();
-                while (100 == totalResults) {
-                    data = YouZanClients.orderList(token, user.getYzOpenId());
-                    youZanOrderService.save(user.getYzOpenId(), data);
-                }
-            } catch (SDKException e) {
-                log.error("有赞订单异常--->{}", e);
-            }
-        });
-        return null;
-
     }
 
 }

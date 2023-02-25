@@ -35,7 +35,6 @@ public class MmsController {
     private final MmsLogService mmsLogService;
     private final MmsLogItemService mmsLogItemService;
     private final RedisUtils redisUtils;
-    private final OrderService orderService;
     private final MmsPaymentItemService mmsPaymentItemService;
     private final MemberService memberService;
     private final MmsMemberService mmsMemberService;
@@ -101,7 +100,7 @@ public class MmsController {
         String endDate = String.valueOf(params.get("endDate"));
         String ids = String.valueOf(params.get("ids"));
 
-        orderService.selectDuifuNoticeData(startDate, endDate, ids, token, ShiroUtils.getUserId());
+        mmsLogService.sendDuiFuMms(startDate, endDate, ids, token, ShiroUtils.getUserId());
         return R.ok();
     }
 
@@ -122,7 +121,7 @@ public class MmsController {
         String startDate = String.valueOf(params.get("startDate"));
         String endDate = String.valueOf(params.get("endDate"));
         String ids = String.valueOf(params.get("ids"));
-        orderService.sendPayMend(startDate, endDate, ids, token, ShiroUtils.getUserId());
+        mmsLogService.sendPayMendMms(startDate, endDate, ids, token, ShiroUtils.getUserId());
         return R.ok();
     }
 

@@ -3,6 +3,7 @@ package io.live_mall.modules.server.model;
 import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -49,7 +50,6 @@ public class DuiFuNoticeModel {
      */
     @JSONField(format = "yyyy-MM-dd")
     private Date date;
-
     /**
      * 第几次付息
      */
@@ -58,4 +58,8 @@ public class DuiFuNoticeModel {
      * 付息日期
      */
     private String payDate;
+    /**
+     * 付息金额
+     */
+    private BigDecimal payMoney;
 }

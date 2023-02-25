@@ -95,16 +95,6 @@ public interface OrderService extends IService<OrderEntity> {
 	 */
 	List<JSONObject> duifuNoticeData(String startDate, String endDate);
 
-	/**
-	 * 选中的要下发短信的兑付通知数据
-	 * @param startDate 开始日期yyyy-MM-dd
-	 * @param endDate 结束日期yyyy-MM-dd
-	 * @param ids 订单号
-	 * @param mmsToken 短信token
-	 * @param userId 用户id
-	 */
-	void selectDuifuNoticeData(String startDate, String endDate, String ids, String mmsToken, Long userId);
-
 	String addYouZanPoints(String token, String orderId, String uptType) throws Exception;
 
 	/**
@@ -114,15 +104,7 @@ public interface OrderService extends IService<OrderEntity> {
 	 * @return
 	 */
 	List<DuiFuNoticeModel> orderPayNoticeData(String startDate, String endDate);
-	/**
-	 * 选中要下发短信的付息通知数据
-	 * @param startDate 开始日期yyyy-MM-dd
-	 * @param endDate 结束日期yyyy-MM-dd
-	 * @param ids 订单号
-	 * @param mmsToken 短信token
-	 * @param userId 用户id
-	 */
-	void sendPayMend(String startDate, String endDate, String ids, String mmsToken, Long userId);
+
 
 }
 

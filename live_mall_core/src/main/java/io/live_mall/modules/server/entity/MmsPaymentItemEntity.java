@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -27,6 +28,14 @@ public class MmsPaymentItemEntity implements Serializable {
      * 订单号
      */
     private String orderId;
+    /**
+     * 1-付息完成 2-付息预警
+     */
+    private Integer type;
+    /**
+     * 产品名称
+     */
+    private String productName;
     /**
      * 投资金额
      */
@@ -56,6 +65,10 @@ public class MmsPaymentItemEntity implements Serializable {
      */
     @JSONField(format = "yyyy-MM-dd")
     private Date payDate;
+    /**
+     * 付息金额
+     */
+    private BigDecimal payMoney;
     /**
      * 创建人
      */
