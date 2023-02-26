@@ -64,6 +64,7 @@ public class MmsPaymentItemServiceImpl extends ServiceImpl<MmsPaymentItemDao, Mm
                 entity.setAppointMoney(record.getAppointMoney() / 10000);
                 entity.setCustomerName(record.getCustomerName());
                 entity.setCustomerPhone(record.getPhone());
+                entity.setSaleId(record.getSaleId());
                 entity.setSaleName(record.getRealname());
                 entity.setSaleMobile(mobile);
                 entity.setName(record.getName());
@@ -92,7 +93,7 @@ public class MmsPaymentItemServiceImpl extends ServiceImpl<MmsPaymentItemDao, Mm
                 .eq(MmsTemplateEntity::getType, 4).orderByDesc(MmsTemplateEntity::getCreateTime).last("LIMIT 1"));
         if (Objects.nonNull(mmsTemplate)) {
             List<MmsPaymentItemEntity> entities = new ArrayList<>();
-            // 理财师姓名|客户姓名|产品名称|认购金额|第N次付息金额
+            // 理财师姓名|客户姓名|产品名称|付息次数|付息日|认购金额|第N次付息金额
             String text = "Text1|Text2|Text3|Text4|Text5|Text6|Text7";
             list.forEach(record -> {
                 String mobile = record.getMobile();
@@ -101,8 +102,9 @@ public class MmsPaymentItemServiceImpl extends ServiceImpl<MmsPaymentItemDao, Mm
                     try {
                         StringBuilder sb = new StringBuilder();
                         sb.append(record.getRealname()).append("|").append(record.getCustomerName()).append(("|"))
-                                .append(record.getProductName()).append("|").append(record.getAppointMoney()).append("|")
-                                .append(record.getName()).append(record.getPayMoney());
+                                .append(record.getProductName()).append("|").append(record.getName()).append("|")
+                                .append(record.getPayDate()).append("|").append(record.getAppointMoney()).append("|")
+                                .append(record.getPayMoney());
                         result = MmsClient.send(token, text, mobile, sb.toString(), mmsTemplate.getMmsId());
                     } catch (Exception e) {
                         log.error("e-->{}", e);
@@ -116,6 +118,7 @@ public class MmsPaymentItemServiceImpl extends ServiceImpl<MmsPaymentItemDao, Mm
                 entity.setAppointMoney(record.getAppointMoney() / 10000);
                 entity.setCustomerName(record.getCustomerName());
                 entity.setCustomerPhone(record.getPhone());
+                entity.setSaleId(record.getSaleId());
                 entity.setSaleName(record.getRealname());
                 entity.setSaleMobile(mobile);
                 entity.setName(record.getName());

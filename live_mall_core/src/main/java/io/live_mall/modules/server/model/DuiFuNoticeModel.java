@@ -34,6 +34,10 @@ public class DuiFuNoticeModel {
      */
     private Double sumMoney;
     /**
+     * 理财师id
+     */
+    private Long saleId;
+    /**
      * 理财师姓名
      */
     private String realname;

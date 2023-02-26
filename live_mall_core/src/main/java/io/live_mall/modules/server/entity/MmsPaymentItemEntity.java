@@ -49,6 +49,10 @@ public class MmsPaymentItemEntity implements Serializable {
      */
     private String customerPhone;
     /**
+     * 理财师id
+     */
+    private Long saleId;
+    /**
      * 理财师姓名
      */
     private String saleName;

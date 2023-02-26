@@ -727,8 +727,13 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 			Map<String, DuiFuNoticeModel> noticeModelMap = list.stream().collect(Collectors.toMap(DuiFuNoticeModel::getId, model -> model));
 			orderPayEntities.forEach(entity -> {
 				DuiFuNoticeModel noticeModel = noticeModelMap.get(entity.getOrderId());
+				OrderEntity orderEntity = this.baseMapper.selectById(entity.getOrderId());
+				SysUserEntity userEntity = sysUserService.getById(orderEntity.getSaleId());
+				if (Objects.nonNull(userEntity)) {
+					noticeModel.setSaleId(userEntity.getUserId());
+					noticeModel.setRealname(userEntity.getRealname());
+				}
 				if (Objects.nonNull(noticeModel)) {
-					noticeModel.setProductName(noticeModel.getProductName());
 					noticeModel.setName(entity.getName());
 					noticeModel.setPayDate(entity.getPayDate());
 					models.add(noticeModel);

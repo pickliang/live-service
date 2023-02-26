@@ -8,11 +8,14 @@ import io.live_mall.modules.server.dao.MmsLogDao;
 import io.live_mall.modules.server.dao.OrderDao;
 import io.live_mall.modules.server.dao.OrderPayDao;
 import io.live_mall.modules.server.entity.MmsLogEntity;
+import io.live_mall.modules.server.entity.OrderEntity;
 import io.live_mall.modules.server.entity.OrderPayEntity;
 import io.live_mall.modules.server.model.DuiFuNoticeModel;
 import io.live_mall.modules.server.service.MmsLogItemService;
 import io.live_mall.modules.server.service.MmsLogService;
 import io.live_mall.modules.server.service.MmsPaymentItemService;
+import io.live_mall.modules.sys.entity.SysUserEntity;
+import io.live_mall.modules.sys.service.SysUserService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +36,7 @@ public class MmsLogServiceImpl extends ServiceImpl<MmsLogDao, MmsLogEntity> impl
     private final OrderDao orderDao;
     private final OrderPayDao orderPayDao;
     private final MmsLogItemService mmsLogItemService;
+    private final SysUserService sysUserService;
     @Override
     public PageUtils pages(Map<String, Object> params) {
         Integer type = Integer.valueOf(String.valueOf(params.get("type")));
@@ -86,8 +90,13 @@ public class MmsLogServiceImpl extends ServiceImpl<MmsLogDao, MmsLogEntity> impl
             Map<String, DuiFuNoticeModel> noticeModelMap = list.stream().collect(Collectors.toMap(DuiFuNoticeModel::getId, model -> model));
             orderPayEntities.forEach(entity -> {
                 DuiFuNoticeModel noticeModel = noticeModelMap.get(entity.getOrderId());
+                OrderEntity orderEntity = orderDao.selectById(entity.getOrderId());
+                SysUserEntity userEntity = sysUserService.getById(orderEntity.getSaleId());
+                if (Objects.nonNull(userEntity)) {
+                    noticeModel.setSaleId(userEntity.getUserId());
+                    noticeModel.setRealname(userEntity.getRealname());
+                }
                 if (Objects.nonNull(noticeModel)) {
-                    noticeModel.setProductName(noticeModel.getProductName());
                     noticeModel.setName(entity.getName());
                     noticeModel.setPayDate(entity.getPayDate());
                     models.add(noticeModel);
