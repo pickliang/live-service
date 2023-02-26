@@ -2,7 +2,6 @@ package io.live_mall.modules.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.google.common.collect.Maps;
 import io.live_mall.common.utils.PageUtils;
 import io.live_mall.common.utils.R;
 import io.live_mall.common.utils.ShiroUtils;
@@ -22,7 +21,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -41,25 +39,9 @@ public class InformationController {
     private final InformationDisclosureService informationDisclosureService;
     private final InformationBrowseService informationBrowseService;
     private final SysUserService sysUserService;
+    private final LivePlaybackService livePlaybackService;
 
-    /**
-     * 公司动态文章
-     * @return
-     */
-    @GetMapping(value = "/company-dynamics")
-    public R companyDynamics() {
-        Map<String, Object> result = Maps.newHashMap();
-        // 五道财经
-        List<FinanceEntity> finances = financeService.companyDynamics(1);
-        // 高尔夫活动
-        List<FinanceEntity> golf = financeService.companyDynamics(2);
-        // 公益活动
-        List<FinanceEntity> welfare = financeService.companyDynamics(3);
-        result.put("finances", finances);
-        result.put("golf", golf);
-        result.put("welfare", welfare);
-        return R.ok().put("data", result);
-    }
+
 
     /**
      * 财经列表 分页
@@ -209,5 +191,16 @@ public class InformationController {
         entity.setCreateTime(new Date());
         boolean save = informationBrowseService.save(entity);
         return save ? R.ok() : R.error();
+    }
+
+    /**
+     * 直播回放列表
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "/live-playback-list")
+    public R livePlaybackList(@RequestParam Map<String, Object> params) {
+        PageUtils pages = livePlaybackService.pages(params);
+        return R.ok().put("data", pages);
     }
 }

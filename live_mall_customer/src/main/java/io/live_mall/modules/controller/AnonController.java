@@ -10,6 +10,8 @@ import io.live_mall.common.utils.RedisUtils;
 import io.live_mall.constants.RedisKeyConstants;
 import io.live_mall.modules.server.entity.CustomerBannerEntity;
 import io.live_mall.modules.server.entity.CustomerUserEntity;
+import io.live_mall.modules.server.entity.FinanceEntity;
+import io.live_mall.modules.server.entity.LivePlaybackEntity;
 import io.live_mall.modules.server.model.CustomerUserModel;
 import io.live_mall.modules.server.model.InformationModel;
 import io.live_mall.modules.server.service.*;
@@ -43,6 +45,8 @@ public class AnonController {
     private final CustomerUserService customerUserService;
     private final CustomerBannerService customerBannerService;
     private final YouZanUserService youZanService;
+    private final FinanceService financeService;
+    private final LivePlaybackService livePlaybackService;
     private final RedisUtils redisUtils;
 
 
@@ -140,4 +144,33 @@ public class AnonController {
         return false;
     }
 
+    /**
+     * 公司动态文章
+     * @return
+     */
+    @GetMapping(value = "/company-dynamics")
+    public R companyDynamics() {
+        Map<String, Object> result = Maps.newHashMap();
+        // 五道财经
+        List<FinanceEntity> finances = financeService.companyDynamics(1);
+        // 高尔夫活动
+        List<FinanceEntity> golf = financeService.companyDynamics(2);
+        // 公益活动
+        List<FinanceEntity> welfare = financeService.companyDynamics(3);
+        result.put("finances", finances);
+        result.put("golf", golf);
+        result.put("welfare", welfare);
+        return R.ok().put("data", result);
+    }
+
+    /**
+     * 资讯首页单个直播回放
+     * @return
+     */
+    @GetMapping(value = "/home-live-info")
+    public R homeLivePlaybackInfo() {
+        LivePlaybackEntity entity = livePlaybackService.getOne(Wrappers.lambdaQuery(LivePlaybackEntity.class)
+                .eq(LivePlaybackEntity::getIsShow, 0).last("limit 1"));
+        return R.ok().put("data", entity);
+    }
 }
