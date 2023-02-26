@@ -9,4 +9,5 @@ import io.live_mall.modules.server.entity.MmsSmsLogEntity;
  * @description
  */
 public interface MmsSmsLogService extends IService<MmsSmsLogEntity> {
+    Integer sendCode(String token, String phone, Integer code, Long userId) throws Exception;
 }

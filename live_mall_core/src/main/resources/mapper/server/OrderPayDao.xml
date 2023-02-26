@@ -33,7 +33,7 @@
             order_id,
             `name`,
             pay_date,
-            pay_money
+            pay_money as payMoney
         FROM
             `p_order_pay`
         WHERE

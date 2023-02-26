@@ -670,9 +670,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 		List<JSONObject> list = this.baseMapper.duifuNoticeData(startDate, endDate);
 		list.forEach(record -> {
 			JSONObject order = this.baseMapper.getOrderById(record.getString("order_id"));
-			record.put("phone", order.getString("phone"));
-			SysUserEntity userEntity = sysUserService.getById(order.getLong("saleId"));
+			SysUserEntity userEntity = sysUserService.getById(order.getLong("sale_id"));
 			if (Objects.nonNull(userEntity)) {
+				record.put("user_id", userEntity.getUserId());
 				record.put("realname", userEntity.getRealname());
 				record.put("mobile", userEntity.getMobile());
 			}
@@ -732,12 +732,15 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 				if (Objects.nonNull(userEntity)) {
 					noticeModel.setSaleId(userEntity.getUserId());
 					noticeModel.setRealname(userEntity.getRealname());
+					noticeModel.setMobile(userEntity.getMobile());
 				}
 				if (Objects.nonNull(noticeModel)) {
 					noticeModel.setName(entity.getName());
 					noticeModel.setPayDate(entity.getPayDate());
-					models.add(noticeModel);
+
 				}
+				noticeModel.setPayMoney(entity.getPayMoney());
+				models.add(noticeModel);
 			});
 		}
 		return models;

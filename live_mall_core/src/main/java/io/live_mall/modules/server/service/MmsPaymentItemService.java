@@ -16,7 +16,16 @@ import java.util.Map;
 public interface MmsPaymentItemService extends IService<MmsPaymentItemEntity> {
     PageUtils pages(Map<String, Object> params);
 
-    boolean sendSalePayment(String token, List<DuiFuNoticeModel> list, String logId, Long userId);
+    /**
+     * 选中要下发短信的付息通知数据
+     * @param startDate 开始日期yyyy-MM-dd
+     * @param endDate 结束日期yyyy-MM-dd
+     * @param ids 订单号
+     * @param token 短信token
+     * @param userId 用户id
+     * @return boolean
+     */
+    boolean sendPaymentCompleted(String token, String startDate, String endDate, String ids, Long userId);
 
     public boolean sendPaymentEarlyWarning(String token, List<DuiFuNoticeModel> list);
 }

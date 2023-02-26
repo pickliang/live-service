@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.IService;
 import io.live_mall.common.utils.PageUtils;
 import io.live_mall.modules.server.entity.MmsLogItemEntity;
-import io.live_mall.modules.server.model.DuiFuNoticeModel;
 
 import java.util.List;
 import java.util.Map;
@@ -17,14 +16,14 @@ import java.util.Map;
 public interface MmsLogItemService extends IService<MmsLogItemEntity> {
     PageUtils pages(Map<String, Object> params);
     /**
-     * 对付完成通知
-     * @param token
-     * @param list
-     * @param logId
-     * @param userId
-     * @return
+     * 选中的要下发短信的兑付通知数据
+     * @param startDate 开始日期yyyy-MM-dd
+     * @param endDate 结束日期yyyy-MM-dd
+     * @param ids 订单号
+     * @param token 短信token
+     * @param userId 用户id
      */
-    boolean sendDuifuMms(String token, List<DuiFuNoticeModel> list, String logId, Long userId);
+    boolean sendDuiFuCompleted(String token, String startDate, String endDate, String ids, Long userId);
 
     /**
      * 对付预警通知

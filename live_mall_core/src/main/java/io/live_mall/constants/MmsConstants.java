@@ -32,24 +32,26 @@ public class MmsConstants {
     public static final String MMS_STATUS = BASE_URL + "saveMms/selectStatus";
 
     /**
-     * 内部兑付通知
+     * 短信验证码模板
+     * TYPE 1-理财师小程序更新订单验证手机号
      */
-    public static final String CASHING_COMPLETE_MMS_ID = "1722540";
+    public static final String MMS_SMS_CODE = "1749018";
+
+    /**
+     * 内部兑付完成通知
+     */
+    public static final String CASHING_COMPLETE_MMS_CONTENT = "兑付完成通知：同事您好${Text1}，您名下客户${Text2}认购的${Text3}产品，已完成兑付。兑付金额为：${Text4}元，请您及时做好客户跟进。";
     /**
      * 内部兑付预警通知
      */
-    public static final String CASHING_EARLY_WARING_MMS_ID = "1720102";
+    public static final String CASHING_EARLY_WARING_MMS_CONTENT = "兑付预警：同事您好${Text1}，您名下客户${Text2}认购的${Text3}产品，将于${Text4}到期，认购金额为${Text5}元。兑付金额为：${Text6}元，请您及时做好客户跟进。";
     /**
-     * 内部付息通知
+     * 内部付息完成通知
      */
-    public static final String PAYMENT_COMPLETE_MMS_ID = "1720104";
+    public static final String PAYMENT_COMPLETE_MMS_CONTENT = "付息完成通知：同事您好${Text1}，您名下客户${Text2}认购的${Text3}产品（认购金额为${Text4}元）付息已完成。付息金额为：${Text5}元，请您及时做好客户跟进。";
     /**
      * 内部付息预警通知
      */
-    public static final String PAYMENT_EARLY_WARNING_MMS_ID = "1720106";
-    /**
-     * 短信验证码
-     */
-    public static final String CODE_TEMPLATE_MMS_ID = "1715804";
+    public static final String PAYMENT_EARLY_WARNING_MMS_CONTENT = "付息预警：同事您好${Text1}，您名下客户${Text2}认购的${Text3}产品，${Text4}利息将于${Text5}进行付息，认购金额为${Text6}元。付息金额为：${Text7}元，请您及时做好客户跟进。";
 
 }

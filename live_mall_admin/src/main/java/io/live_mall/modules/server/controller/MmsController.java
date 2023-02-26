@@ -13,11 +13,14 @@ import io.live_mall.sms.mms.MmsClient;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @author yewl
@@ -38,6 +41,7 @@ public class MmsController {
     private final MmsPaymentItemService mmsPaymentItemService;
     private final MemberService memberService;
     private final MmsMemberService mmsMemberService;
+    private final MmsSmsLogService mmsSmsLogService;
 
     /**
      * 保存短信链接模板
@@ -83,7 +87,7 @@ public class MmsController {
 
 
     /**
-     * 发送对付完成通知短信
+     * 发送兑付完成通知短信
      * @param params
      * @return
      */
@@ -99,8 +103,8 @@ public class MmsController {
         String startDate = String.valueOf(params.get("startDate"));
         String endDate = String.valueOf(params.get("endDate"));
         String ids = String.valueOf(params.get("ids"));
-
-        mmsLogService.sendDuiFuMms(startDate, endDate, ids, token, ShiroUtils.getUserId());
+        String finalToken = token;
+        CompletableFuture.supplyAsync(() -> mmsLogItemService.sendDuiFuCompleted(finalToken, startDate, endDate, ids, ShiroUtils.getUserId()));
         return R.ok();
     }
 
@@ -121,7 +125,8 @@ public class MmsController {
         String startDate = String.valueOf(params.get("startDate"));
         String endDate = String.valueOf(params.get("endDate"));
         String ids = String.valueOf(params.get("ids"));
-        mmsLogService.sendPayMendMms(startDate, endDate, ids, token, ShiroUtils.getUserId());
+        String finalToken = token;
+        CompletableFuture.supplyAsync(() -> mmsPaymentItemService.sendPaymentCompleted(finalToken, startDate, endDate, ids, ShiroUtils.getUserId()));
         return R.ok();
     }
 
@@ -188,4 +193,37 @@ public class MmsController {
     public R mmsMembers(@RequestParam Map<String, Object> params) {
         return R.ok().put("data", mmsMemberService.pages(params));
     }
+
+    /**
+     * 发送短信验证码
+     * @param phone 手机号
+     * @param type 防止一个验证码多处使用.后续可增加，1-理财师小程序更新订单验证手机号
+     * @return
+     */
+    @GetMapping(value = "/send-code")
+    @SneakyThrows
+    public R sendCode(@RequestParam String phone, @RequestParam(defaultValue = "1") String type) {
+        String key = RedisKeyConstants.MMS_PHONE_TYPE_EXPIRE.replace("TYPE", type) + phone;
+        if (phone.length() != 11) {
+            return R.error("手机号码错误");
+        }
+        String phoneExpire = redisUtils.get(key);
+        if (Objects.nonNull(phoneExpire)) {
+            return R.error("请勿重复获取验证码");
+        }
+        String token = redisUtils.get(RedisKeyConstants.MMS_TOKEN);
+        if (StringUtils.isBlank(token)) {
+            token = MmsClient.getToken();
+            long expire = 60 * 60 * 10;
+            redisUtils.set(RedisKeyConstants.MMS_TOKEN, token, expire);
+        }
+        Integer code = RandomUtils.nextInt(1000, 9999);
+        Integer sendCode = mmsSmsLogService.sendCode(token, phone, code, ShiroUtils.getUserId());
+        if (0 == sendCode) {
+            redisUtils.set(key, code, 60 * 30);
+            return R.ok();
+        }
+        return R.error();
+    }
+
 }

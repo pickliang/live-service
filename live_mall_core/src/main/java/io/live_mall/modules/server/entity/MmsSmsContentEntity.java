@@ -10,42 +10,38 @@ import java.util.Date;
 
 /**
  * @author yewl
- * @date 2023/2/25 15:53
+ * @date 2023/2/26 14:23
  * @description
  */
 @Data
-@TableName("mms_sms_log")
-public class MmsSmsLogEntity implements Serializable {
+@TableName("mms_sms_content")
+public class MmsSmsContentEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 主键
-     */
     @TableId(type = IdType.ASSIGN_ID)
     private String id;
-
     /**
-     * 电话
+     * 1-手动发送 2-批量发送
+     */
+    private Integer type;
+    /**
+     * 接收人id
+     */
+    private String receiveId;
+    /**
+     * 接收手机号
      */
     private String phone;
     /**
-     * 验证码
+     * 短信内容
      */
-    private Integer verificationCode;
-    /**
-     * 短信发送状态
-     */
-    private Integer code;
-    /**
-     * 短信发送结果
-     */
-    private String result;
+    private String content;
     /**
      * 创建时间
      */
     private Date createTime;
     /**
-     * 创建人
+     * 创建时间
      */
     private Long createUser;
 }

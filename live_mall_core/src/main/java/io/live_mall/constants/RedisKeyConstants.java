@@ -22,4 +22,8 @@ public class RedisKeyConstants {
      * 有赞token
      */
     public static final String YZ_TOKEN = "yz_token";
+    /**
+     * 下发短信验证码
+     */
+    public static final String MMS_PHONE_TYPE_EXPIRE = "mms_phone_type_expire_TYPE_";
 }

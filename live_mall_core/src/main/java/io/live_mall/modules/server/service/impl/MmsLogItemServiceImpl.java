@@ -6,10 +6,11 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.live_mall.common.utils.DateUtils;
 import io.live_mall.common.utils.PageUtils;
 import io.live_mall.common.utils.Query;
-import io.live_mall.modules.server.dao.MmsLogItemDao;
-import io.live_mall.modules.server.dao.MmsTemplateDao;
-import io.live_mall.modules.server.dao.OrderDao;
+import io.live_mall.constants.MmsConstants;
+import io.live_mall.modules.server.dao.*;
+import io.live_mall.modules.server.entity.MmsLogEntity;
 import io.live_mall.modules.server.entity.MmsLogItemEntity;
+import io.live_mall.modules.server.entity.MmsSmsContentEntity;
 import io.live_mall.modules.server.entity.MmsTemplateEntity;
 import io.live_mall.modules.server.model.DuiFuNoticeModel;
 import io.live_mall.modules.server.service.MmsLogItemService;
@@ -19,6 +20,7 @@ import io.live_mall.sms.mms.MmsClient;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -33,13 +35,28 @@ public class MmsLogItemServiceImpl extends ServiceImpl<MmsLogItemDao, MmsLogItem
     private final MmsTemplateDao mmsTemplateDao;
     private final OrderDao orderDao;
     private final SysUserDao sysUserDao;
+    private final MmsSmsContentDao mmsSmsContentDao;
+    private final MmsLogDao mmsLogDao;
     @Override
     public PageUtils pages(Map<String, Object> params) {
         return new PageUtils(this.baseMapper.pages(new Query<MmsLogItemEntity>().getPage(params), params));
     }
 
     @Override
-    public boolean sendDuifuMms(String token, List<DuiFuNoticeModel> list, String logId, Long userId) {
+    @Transactional(rollbackFor = Exception.class)
+    public boolean sendDuiFuCompleted(String token, String startDate, String endDate, String ids, Long userId) {
+        List<String> orderIds = Arrays.asList(ids.split(","));
+        List<DuiFuNoticeModel> list = orderDao.selectDuifuNoticeData(orderIds);
+
+        // 保存mms发送对付日志
+        MmsLogEntity logEntity = new MmsLogEntity();
+        logEntity.setStartDate(DateUtils.stringToDate(startDate, DateUtils.DATE_PATTERN));
+        logEntity.setEndDate(DateUtils.stringToDate(endDate, DateUtils.DATE_PATTERN));
+        logEntity.setRowNum(list.size());
+        logEntity.setType(1);
+        logEntity.setCreateTime(new Date());
+        logEntity.setCreateUser(userId);
+        mmsLogDao.insert(logEntity);
         MmsTemplateEntity mmsTemplateEntity = mmsTemplateDao.selectOne(Wrappers.lambdaQuery(MmsTemplateEntity.class)
                 .eq(MmsTemplateEntity::getType, 1).orderByDesc(MmsTemplateEntity::getCreateTime).last("LIMIT 1"));
         if (Objects.nonNull(mmsTemplateEntity)) {
@@ -48,14 +65,13 @@ public class MmsLogItemServiceImpl extends ServiceImpl<MmsLogItemDao, MmsLogItem
             String text = "Text1|Text2|Text3|Text4";
             list.forEach(record -> {
                 JSONObject order = orderDao.getOrderById(record.getId());
-                SysUserEntity userEntity = sysUserDao.selectById(order.getLong("saleId"));
-
+                SysUserEntity userEntity = sysUserDao.selectById(order.getLong("sale_id"));
                 String mobile = userEntity.getMobile();
                 JSONObject result = null;
                 if (StringUtils.isNotBlank(mobile)) {
                     try {
                         StringBuilder sb = new StringBuilder();
-                        sb.append(record.getRealname()).append("|").append(record.getCustomerName()).append(("|"))
+                        sb.append(userEntity.getRealname()).append("|").append(record.getCustomerName()).append(("|"))
                                 .append(record.getProductName()).append("|").append(record.getSumMoney());
                         result = MmsClient.send(token, text, mobile, sb.toString(), mmsTemplateEntity.getMmsId());
                     } catch (Exception e) {
@@ -64,7 +80,7 @@ public class MmsLogItemServiceImpl extends ServiceImpl<MmsLogItemDao, MmsLogItem
                 }
                 // 保存发送明细
                 MmsLogItemEntity entity = new MmsLogItemEntity();
-                entity.setMmsLogId(logId);
+                entity.setMmsLogId(logEntity.getId());
                 entity.setOrderId(record.getId());
                 entity.setAppointMoney(record.getAppointMoney() / 10000);
                 entity.setCustomerName(record.getCustomerName());
@@ -81,6 +97,18 @@ public class MmsLogItemServiceImpl extends ServiceImpl<MmsLogItemDao, MmsLogItem
                     entity.setResult(result.toJSONString());
                 }
                 entities.add(entity);
+                //保存发送内容
+                MmsSmsContentEntity mmsSmsContentEntity = new MmsSmsContentEntity();
+                mmsSmsContentEntity.setType(1);
+                mmsSmsContentEntity.setReceiveId(String.valueOf(userEntity.getUserId()));
+                mmsSmsContentEntity.setPhone(mobile);
+                String content = MmsConstants.CASHING_COMPLETE_MMS_CONTENT.replace("${Text1}", userEntity.getRealname())
+                        .replace("${Text2}", record.getCustomerName()).replace("${Text3}", record.getProductName())
+                        .replace("${Text4}", String.valueOf(record.getSumMoney()));
+                mmsSmsContentEntity.setContent(content);
+                mmsSmsContentEntity.setCreateTime(new Date());
+                mmsSmsContentEntity.setCreateUser(userId);
+                mmsSmsContentDao.insert(mmsSmsContentEntity);
             });
             if (!entities.isEmpty()) {
                 this.saveBatch(entities);
@@ -133,6 +161,19 @@ public class MmsLogItemServiceImpl extends ServiceImpl<MmsLogItemDao, MmsLogItem
                     entity.setResult(result.toJSONString());
                 }
                 entities.add(entity);
+
+                //保存发送内容
+                MmsSmsContentEntity mmsSmsContentEntity = new MmsSmsContentEntity();
+                mmsSmsContentEntity.setType(2);
+                mmsSmsContentEntity.setReceiveId(String.valueOf(record.getLong("user_id")));
+                mmsSmsContentEntity.setPhone(mobile);
+                String content = MmsConstants.CASHING_EARLY_WARING_MMS_CONTENT.replace("${Text1}", record.getString("realname"))
+                        .replace("${Text2}", record.getString("customer_name")).replace("${Text3}", record.getString("product_name"))
+                        .replace("${Text4}", record.getString("date")).replace("${Text5}", String.valueOf(record.getInteger("appoint_money")))
+                        .replace("${Text6}", String.valueOf(record.getLong("sum_money")));
+                mmsSmsContentEntity.setContent(content);
+                mmsSmsContentEntity.setCreateTime(new Date());
+                mmsSmsContentDao.insert(mmsSmsContentEntity);
             });
             if (!entities.isEmpty()) {
                 this.saveBatch(entities);
