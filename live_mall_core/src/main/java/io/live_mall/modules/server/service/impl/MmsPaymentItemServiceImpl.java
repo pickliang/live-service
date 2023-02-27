@@ -101,6 +101,7 @@ public class MmsPaymentItemServiceImpl extends ServiceImpl<MmsPaymentItemDao, Mm
                 entities.add(entity);
                 //保存发送内容
                 MmsSmsContentEntity mmsSmsContentEntity = new MmsSmsContentEntity();
+                mmsSmsContentEntity.setTitle("付息完成通知");
                 mmsSmsContentEntity.setType(1);
                 mmsSmsContentEntity.setReceiveId(String.valueOf(record.getSaleId()));
                 mmsSmsContentEntity.setPhone(record.getMobile());
@@ -195,6 +196,7 @@ public class MmsPaymentItemServiceImpl extends ServiceImpl<MmsPaymentItemDao, Mm
 
                 //保存发送内容
                 MmsSmsContentEntity mmsSmsContentEntity = new MmsSmsContentEntity();
+                mmsSmsContentEntity.setTitle("付息预警通知");
                 mmsSmsContentEntity.setType(2);
                 mmsSmsContentEntity.setReceiveId(String.valueOf(record.getSaleId()));
                 mmsSmsContentEntity.setPhone(mobile);

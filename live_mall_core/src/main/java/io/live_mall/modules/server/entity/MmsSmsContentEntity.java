@@ -21,6 +21,10 @@ public class MmsSmsContentEntity implements Serializable {
     @TableId(type = IdType.ASSIGN_ID)
     private String id;
     /**
+     * 标题
+     */
+    private String title;
+    /**
      * 1-手动发送 2-批量发送
      */
     private Integer type;

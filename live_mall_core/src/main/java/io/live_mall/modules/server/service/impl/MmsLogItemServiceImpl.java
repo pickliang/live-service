@@ -99,6 +99,7 @@ public class MmsLogItemServiceImpl extends ServiceImpl<MmsLogItemDao, MmsLogItem
                 entities.add(entity);
                 //保存发送内容
                 MmsSmsContentEntity mmsSmsContentEntity = new MmsSmsContentEntity();
+                mmsSmsContentEntity.setTitle("对付完成通知");
                 mmsSmsContentEntity.setType(1);
                 mmsSmsContentEntity.setReceiveId(String.valueOf(userEntity.getUserId()));
                 mmsSmsContentEntity.setPhone(mobile);
@@ -164,6 +165,7 @@ public class MmsLogItemServiceImpl extends ServiceImpl<MmsLogItemDao, MmsLogItem
 
                 //保存发送内容
                 MmsSmsContentEntity mmsSmsContentEntity = new MmsSmsContentEntity();
+                mmsSmsContentEntity.setTitle("对付预警通知");
                 mmsSmsContentEntity.setType(2);
                 mmsSmsContentEntity.setReceiveId(String.valueOf(record.getLong("user_id")));
                 mmsSmsContentEntity.setPhone(mobile);

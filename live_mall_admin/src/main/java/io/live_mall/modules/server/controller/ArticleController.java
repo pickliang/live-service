@@ -11,8 +11,11 @@ import io.live_mall.modules.server.dto.CustomerBannerDto;
 import io.live_mall.modules.server.dto.InformationDto;
 import io.live_mall.modules.server.entity.*;
 import io.live_mall.modules.server.model.CustomerBannerModel;
+import io.live_mall.modules.server.model.InformationModel;
 import io.live_mall.modules.server.service.*;
 import io.live_mall.modules.server.utils.QrCodeUtils;
+import io.live_mall.modules.sys.entity.SysUserEntity;
+import io.live_mall.modules.sys.service.SysUserService;
 import io.live_mall.properties.QrCodeProperties;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -39,6 +42,7 @@ public class ArticleController {
     private final QrCodeProperties qrCodeProperties;
     private final InformationBrowseService informationBrowseService;
     private final CustomerBannerService customerBannerService;
+    private final SysUserService sysUserService;
 
     @GetMapping(value = "/finance/list")
     @RequiresPermissions("server:finance:list")
@@ -172,6 +176,44 @@ public class ArticleController {
     }
 
     /**
+     * 理财师端投资资讯
+     * @return
+     */
+    @GetMapping(value = "/financial-planner-information")
+    public R financialPlannerInformation() {
+        Map<String, Object> result = Maps.newHashMap();
+        // 白话财经
+        List<InformationModel> vernacular = informationService.customerInformation(1);
+        // 固收资讯
+        List<InformationModel> income = informationService.customerInformation(2);
+        // 股权资讯
+        List<InformationModel> stock  = informationService.customerInformation(3);
+        // 二级市场资讯
+        List<InformationModel> market = informationService.customerInformation(4);
+        result.put("vernacular", vernacular);
+        result.put("income", income);
+        result.put("stock", stock);
+        result.put("market", market);
+        return R.ok().put("data", result);
+    }
+
+    /**
+     * 理财师端资讯详情
+     * @param id 主键id
+     * @return
+     */
+    @GetMapping(value = "/financial-planner-information-info/{id}")
+    public R financialPlannerInformationInfo(@PathVariable("id") String id) {
+        InformationEntity information = informationService.getById(id);
+        InformationModel model = new InformationModel();
+        BeanUtils.copyProperties(information, model);
+        SysUserEntity sysUser = sysUserService.getById(information.getCreateUser());
+        String author = Objects.nonNull(sysUser) ?sysUser.getRealname() : "管理员";
+        model.setAuthor(author);
+        return R.ok().put("data", model);
+    }
+
+    /**
      * 资讯保存
      * @param information
      * @return
@@ -202,6 +244,7 @@ public class ArticleController {
         boolean update = informationService.updateById(entity);
         return update ? R.ok() : R.error();
     }
+
 
     /**
      * 资讯详情

@@ -42,6 +42,7 @@ public class MmsController {
     private final MemberService memberService;
     private final MmsMemberService mmsMemberService;
     private final MmsSmsLogService mmsSmsLogService;
+    private final MmsSmsContentService mmsSmsContentService;
 
     /**
      * 保存短信链接模板
@@ -224,6 +225,17 @@ public class MmsController {
             return R.ok();
         }
         return R.error();
+    }
+
+    /**
+     * 理财师短信内容
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "/sms-content")
+    public R smsContent(@RequestParam Map<String, Object> params) {
+        PageUtils pages = mmsSmsContentService.pages(params, ShiroUtils.getUserId());
+        return R.ok().put("data", pages);
     }
 
 }
