@@ -125,48 +125,79 @@ public class DuiFuExcelImporter {
     @ExcelProperty(index = 21)
     private String fourthPayMoney;
     /**
-     * 到期日
+     * 第五次付息日
      */
     @ExcelProperty(index = 22)
+    private String fivePayMoneyDate;
+    /**
+     * 第五次付息金额
+     */
+    @ExcelProperty(index = 23)
+    private String fivePayMoney;
+    /**
+     * 第六次付息日
+     */
+    @ExcelProperty(index = 24)
+    private String sixPayMoneyDate;
+    /**
+     * 第六次付息金额
+     */
+    @ExcelProperty(index = 25)
+    private String sixPayMoney;
+    /**
+     * 第七次付息日
+     */
+    @ExcelProperty(index = 26)
+    private String sevenPayMoneyDate;
+    /**
+     * 第七次付息金额
+     */
+    @ExcelProperty(index = 27)
+    private String sevenPayMoney;
+
+    /**
+     * 到期日
+     */
+    @ExcelProperty(index = 28)
     private String endDate;
     /**
      * 到期还款本息
      */
-    @ExcelProperty(index = 23)
+    @ExcelProperty(index = 29)
     private String principalAndInterest;
     /**
      * 本息合计
      */
-    @ExcelProperty(index = 24)
+    @ExcelProperty(index = 30)
     private String totalPrincipalAndInterest;
     /**
      * 备注
      */
-    @ExcelProperty(index = 25)
+    @ExcelProperty(index = 31)
     private String remarks;
     /**
      * 产品类别
      */
-    @ExcelProperty(index = 26)
+    @ExcelProperty(index = 32)
     private String productCategory;
     /**
      * 贴息金额
      */
-    @ExcelProperty(index = 27)
+    @ExcelProperty(index = 33)
     private String discountAmount;
     /**
      * 转化情况
      */
-    @ExcelProperty(index = 28)
+    @ExcelProperty(index = 34)
     private String conversion;
     /**
      * 到期年份
      */
-    @ExcelProperty(index = 29)
+    @ExcelProperty(index = 35)
     private String expiryYear;
     /**
      * 认购年份
      */
-    @ExcelProperty(index = 30)
+    @ExcelProperty(index = 36)
     private String subscriptionYear;
 }

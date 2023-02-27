@@ -350,8 +350,38 @@ public class ExcelController {
 			payEntity.setHistoryDuifuId(historyDuifuId);
 			payEntity.setPayDate(assembleDate(record.getFourthPayMoneyDate()));
 			payEntity.setPayMoney(stringToBigDecimal(record.getFourthPayMoney()));
-			payEntity.setNum(3);
+			payEntity.setNum(4);
 			payEntity.setName("第四次");
+			payEntity.setRate(record.getYield());
+			payEntities.add(payEntity);
+		}
+		if (StringUtils.isNotBlank(record.getFivePayMoneyDate())) {
+			HistoryDuifuPayEntity payEntity = new HistoryDuifuPayEntity();
+			payEntity.setHistoryDuifuId(historyDuifuId);
+			payEntity.setPayDate(assembleDate(record.getFivePayMoneyDate()));
+			payEntity.setPayMoney(stringToBigDecimal(record.getFivePayMoney()));
+			payEntity.setNum(5);
+			payEntity.setName("第五次");
+			payEntity.setRate(record.getYield());
+			payEntities.add(payEntity);
+		}
+		if (StringUtils.isNotBlank(record.getSixPayMoneyDate())) {
+			HistoryDuifuPayEntity payEntity = new HistoryDuifuPayEntity();
+			payEntity.setHistoryDuifuId(historyDuifuId);
+			payEntity.setPayDate(assembleDate(record.getSixPayMoneyDate()));
+			payEntity.setPayMoney(stringToBigDecimal(record.getSixPayMoney()));
+			payEntity.setNum(6);
+			payEntity.setName("第六次");
+			payEntity.setRate(record.getYield());
+			payEntities.add(payEntity);
+		}
+		if (StringUtils.isNotBlank(record.getSevenPayMoneyDate())) {
+			HistoryDuifuPayEntity payEntity = new HistoryDuifuPayEntity();
+			payEntity.setHistoryDuifuId(historyDuifuId);
+			payEntity.setPayDate(assembleDate(record.getSevenPayMoneyDate()));
+			payEntity.setPayMoney(stringToBigDecimal(record.getSevenPayMoney()));
+			payEntity.setNum(7);
+			payEntity.setName("第七次");
 			payEntity.setRate(record.getYield());
 			payEntities.add(payEntity);
 		}
