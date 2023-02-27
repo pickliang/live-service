@@ -5,10 +5,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import io.live_mall.common.utils.PageUtils;
 import io.live_mall.common.utils.R;
 import io.live_mall.common.utils.ShiroUtils;
-import io.live_mall.modules.server.entity.ActivityEntity;
-import io.live_mall.modules.server.entity.FinanceEntity;
-import io.live_mall.modules.server.entity.InformationBrowseEntity;
-import io.live_mall.modules.server.entity.InformationEntity;
+import io.live_mall.modules.server.entity.*;
 import io.live_mall.modules.server.model.FinanceModel;
 import io.live_mall.modules.server.model.InformationDisclosureModel;
 import io.live_mall.modules.server.model.InformationModel;
@@ -40,6 +37,7 @@ public class InformationController {
     private final InformationBrowseService informationBrowseService;
     private final SysUserService sysUserService;
     private final LivePlaybackService livePlaybackService;
+    private final InformationUserItemService informationUserItemService;
 
 
 
@@ -202,5 +200,36 @@ public class InformationController {
     public R livePlaybackList(@RequestParam Map<String, Object> params) {
         PageUtils pages = livePlaybackService.pages(params);
         return R.ok().put("data", pages);
+    }
+
+    /**
+     * 保存客户浏览理财师转发的资讯记录
+     * @param params
+     * @return
+     */
+    @PostMapping(value = "/save-information-item")
+    public R saveInformationUserItem(@RequestBody JSONObject params) {
+        Long informationId = params.getLong("informationId");
+        InformationEntity information = informationService.getById(informationId);
+        if (Objects.nonNull(information)) {
+            String userId = ShiroUtils.getUserId();
+            InformationUserItemEntity informationUserItem = informationUserItemService.getOne(Wrappers.lambdaQuery(InformationUserItemEntity.class).
+                    eq(InformationUserItemEntity::getCustomerUserId, userId).eq(InformationUserItemEntity::getInformationId, informationId).last("LIMIT 1"));
+            if (Objects.isNull(informationUserItem)) {
+                InformationUserItemEntity entity = new InformationUserItemEntity();
+                entity.setUserId(params.getLong("userId"));
+                entity.setInformationId(informationId);
+                entity.setTitle(information.getTitle());
+                entity.setCustomerUserId(userId);
+                entity.setProgress(params.getInteger("progress"));
+                entity.setFrequency(1L);
+                entity.setCreateTime(new Date());
+                informationUserItemService.save(entity);
+            }else {
+                informationUserItem.setFrequency(informationUserItem.getFrequency() + 1L);
+                informationUserItemService.updateById(informationUserItem);
+            }
+        }
+        return R.ok();
     }
 }

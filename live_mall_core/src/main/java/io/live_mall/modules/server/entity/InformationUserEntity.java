@@ -10,33 +10,26 @@ import java.util.Date;
 
 /**
  * @author yewl
- * @date 2023/1/3 16:14
+ * @date 2023/2/27 11:18
  * @description
  */
 @Data
-@TableName("information_label")
-public class InformationLabelEntity implements Serializable {
+@TableName("information_user")
+public class InformationUserEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @TableId(type = IdType.ASSIGN_ID)
     private String id;
     /**
-     * 分类：1-白话财经 2-固收资讯 3-股权资讯 4-二级市场资讯
+     * 理财师id
      */
-    private Integer classify;
+    private Long userId;
     /**
-     * 标签名称
+     * 资讯id
      */
-    private String label;
-
+    private Long informationId;
     /**
-     * 删除状态 0-未删除 1-已删除
+     * 创建时间
      */
-    private Integer delFlag;
-
-    private Date delTime;
-
-    private Long createUser;
-
     private Date createTime;
 }

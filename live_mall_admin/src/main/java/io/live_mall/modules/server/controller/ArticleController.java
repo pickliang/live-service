@@ -43,6 +43,9 @@ public class ArticleController {
     private final InformationBrowseService informationBrowseService;
     private final CustomerBannerService customerBannerService;
     private final SysUserService sysUserService;
+    private final InformationUserService informationUserService;
+    private final InformationUserItemService informationUserItemService;
+
 
     @GetMapping(value = "/finance/list")
     @RequiresPermissions("server:finance:list")
@@ -491,4 +494,37 @@ public class ArticleController {
         }
         return R.ok().put("data", data);
     }
+
+    /**
+     * 保存理财师转发记录
+     * @param informationId 资讯id
+     * @return
+     */
+    @GetMapping(value = "/save-information-record")
+    public R saveInformationUser(@RequestParam Long informationId) {
+        Long userId = ShiroUtils.getUserId();
+        // 查询避免异常错误
+        InformationUserEntity informationUser = informationUserService.getOne(Wrappers.lambdaQuery(InformationUserEntity.class)
+                .eq(InformationUserEntity::getUserId, userId).eq(InformationUserEntity::getInformationId, informationId));
+        if (Objects.isNull(informationUser)) {
+            InformationUserEntity entity = new InformationUserEntity();
+            entity.setUserId(userId);
+            entity.setInformationId(informationId);
+            entity.setCreateTime(new Date());
+            informationUserService.saveOrUpdate(entity);
+        }
+        return R.ok();
+    }
+
+    /**
+     * 理财师转发的资讯浏览记录-资讯追踪通知
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "/information-item-pages")
+    public R informationItems(@RequestParam Map<String, Object> params) {
+        PageUtils pages = informationUserItemService.pages(params, ShiroUtils.getUserId());
+        return R.ok().put("data", pages);
+    }
+
 }
