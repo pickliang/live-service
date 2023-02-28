@@ -38,6 +38,7 @@ public class InformationController {
     private final SysUserService sysUserService;
     private final LivePlaybackService livePlaybackService;
     private final InformationUserItemService informationUserItemService;
+    private final ActivityUserService activityUserService;
 
 
 
@@ -108,6 +109,10 @@ public class InformationController {
         if (Objects.isNull(activity)) {
             return R.error("活动不存在");
         }
+        ActivityUserEntity activityUser = activityUserService.getOne(Wrappers.lambdaQuery(ActivityUserEntity.class)
+                .eq(ActivityUserEntity::getUserId, ShiroUtils.getUserId()).eq(ActivityUserEntity::getStatus, 1).last("LIMIT 1"));
+        Integer isSubscribe = Objects.nonNull(activityUser) ? 1 : 0;
+        activity.setIsSubscribe(isSubscribe);
         return R.ok().put("data", activity);
     }
 

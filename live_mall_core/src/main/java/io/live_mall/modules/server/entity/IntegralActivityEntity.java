@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -26,19 +27,23 @@ public class IntegralActivityEntity implements Serializable {
      * 活动开始日期
      */
     @JSONField(format = "yyyy-MM-dd")
+    @NotNull(message = "开始日期不可为空")
     private Date beginDate;
     /**
      * 活动结束日期
      */
     @JSONField(format = "yyyy-MM-dd")
+    @NotNull(message = "结束日期不可为空")
     private Date endDate;
     /**
      * 年化额兑换积分
      */
+    @NotNull(message = "年化额兑换积分不可为空")
     private Integer integral;
     /**
      * 邀约人奖励积分比例
      */
+    @NotNull(message = "邀约人奖励积分比例不可为空")
     private Integer integralProportion;
 
     /**
