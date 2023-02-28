@@ -1,5 +1,6 @@
 package io.live_mall.modules.server.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -65,4 +66,7 @@ public class ActivityEntity implements Serializable {
     private Long updateUser;
 
     private Date updateTime;
+
+    @TableField(exist = false)
+    private Integer isSubscribe;
 }
