@@ -1,6 +1,8 @@
 package io.live_mall.modules.controller;
 
+import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.google.common.collect.Maps;
 import io.live_mall.common.utils.R;
 import io.live_mall.common.utils.ShiroUtils;
 import io.live_mall.modules.server.entity.CustomerQuestionnaireEntity;
@@ -19,10 +21,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -46,11 +45,19 @@ public class QuestionnaireController {
      */
     @GetMapping(value = "/score")
     public R score() {
+        Map<String, Object> result = Maps.newHashMap();
         String userId = ShiroUtils.getUserId();
         CustomerUserQuestionnaireEntity userQuestionnaireEntity = customerUserQuestionnaireService.getOne(Wrappers.lambdaQuery(CustomerUserQuestionnaireEntity.class)
                 .eq(CustomerUserQuestionnaireEntity::getCustomerUserId, userId).eq(CustomerUserQuestionnaireEntity::getDelFlag, 0).last("LIMIT 1"));
-        Integer score = Objects.nonNull(userQuestionnaireEntity) ? userQuestionnaireEntity.getScore() : 0;
-        return R.ok().put("data", score);
+        Integer score = 0;
+        String grade = "";
+        if (Objects.nonNull(userQuestionnaireEntity)) {
+            score = userQuestionnaireEntity.getScore();
+            grade = userQuestionnaireEntity.getGrade();
+        }
+        result.put("score", score);
+        result.put("grade", grade);
+        return R.ok().put("data", result);
     }
 
     /**
@@ -106,5 +113,40 @@ public class QuestionnaireController {
     @GetMapping(value = "/answer")
     public R answer(String id,String questionnaireOptionId) {
         return customerQuestionnaireOptionUserService.answer(ShiroUtils.getUserId(), id, questionnaireOptionId);
+    }
+
+    /**
+     * 风险评估是否过期
+     * @return
+     */
+    @GetMapping(value = "/estimate-overdue")
+    public R isOverdue() {
+        CustomerUserQuestionnaireEntity customerUserQuestionnaire = customerUserQuestionnaireService.getOne(Wrappers.lambdaQuery(CustomerUserQuestionnaireEntity.class)
+                .eq(CustomerUserQuestionnaireEntity::getCustomerUserId, ShiroUtils.getUserId()).eq(CustomerUserQuestionnaireEntity::getDelFlag, 0));
+        // 未过期
+        Integer isOverdue = 0;
+        if (Objects.nonNull(customerUserQuestionnaire) && DateUtil.betweenMonth(customerUserQuestionnaire.getCreateTime(), new Date(), false) > 0) {
+            // 已过期
+            isOverdue = 1;
+        }
+        return R.ok().put("data", isOverdue);
+    }
+
+    /**
+     * 评估过期删除已答数据
+     * @return
+     */
+    @GetMapping(value = "/update-user-questionnaire")
+    public R delUserQuestionnaire() {
+        String userId = ShiroUtils.getUserId();
+        Integer delFlag = 1;
+        // 过期将已答数据假删除
+        customerQuestionnaireOptionUserService.update(Wrappers.lambdaUpdate(CustomerQuestionnaireOptionUserEntity.class)
+                .set(CustomerQuestionnaireOptionUserEntity::getDelFlag, delFlag)
+                .eq(CustomerQuestionnaireOptionUserEntity::getCustomerUserId, userId));
+        // 已答结果删除
+        customerUserQuestionnaireService.update(Wrappers.lambdaUpdate(CustomerUserQuestionnaireEntity.class).set(CustomerUserQuestionnaireEntity::getDelFlag, delFlag)
+                .eq(CustomerUserQuestionnaireEntity::getCustomerUserId,userId));
+        return R.ok();
     }
 }
