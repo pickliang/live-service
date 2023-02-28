@@ -53,5 +53,10 @@ public class MmsConstants {
      * 内部付息预警通知
      */
     public static final String PAYMENT_EARLY_WARNING_MMS_CONTENT = "付息预警：同事您好${Text1}，您名下客户${Text2}认购的${Text3}产品，${Text4}利息将于${Text5}进行付息，认购金额为${Text6}元。付息金额为：${Text7}元，请您及时做好客户跟进。";
+    /**
+     * 积分发放通知
+     */
+    public static final String INTEGRAL_MMS_CONTENT = "尊敬的${Text1}先生/女士，${Text2}月是您的生日月，道享汇商城祝您生日快乐！特为您奉上生日礼券，您可在道享汇商城中生日专区查看并免费领取商品。感谢您一直以来对五道集团的支持";
+
 
 }

@@ -9,9 +9,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.live_mall.common.utils.DateUtils;
 import io.live_mall.common.utils.PageUtils;
 import io.live_mall.common.utils.Query;
-import io.live_mall.modules.server.dao.CustomerUserDao;
-import io.live_mall.modules.server.dao.MemberDao;
-import io.live_mall.modules.server.dao.MmsLogDao;
+import io.live_mall.constants.MmsConstants;
+import io.live_mall.modules.server.dao.*;
 import io.live_mall.modules.server.entity.*;
 import io.live_mall.modules.server.service.MemberService;
 import io.live_mall.modules.server.service.MmsMemberService;
@@ -23,12 +22,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service("memberService")
@@ -38,6 +36,8 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
 	private final OrderService orderService;
 	private final SysUserService  userService;
 	private final CustomerUserDao customerUserDao;
+	private final MmsTemplateDao mmsTemplateDao;
+	private final MmsSmsContentDao mmsSmsContentDao;
 	
 	
 
@@ -188,6 +188,13 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
 	public void sendMmsIntegral(String startDate, String endDate, String memberNos, Long userId, String mmsToken) {
 		List<String> ids = Arrays.asList(memberNos.split(","));
 		List<JSONObject> list = this.baseMapper.mmsMemberIntegralData(ids);
+
+		// sendMemberIntegral(mmsToken, list, logEntity.getId(), userId);
+		CompletableFuture.supplyAsync(() -> sendMemberIntegral(mmsToken, list, userId, startDate, endDate));
+	}
+
+	@Transactional(rollbackFor = Exception.class)
+	public boolean sendMemberIntegral(String mmsToken, List<JSONObject> list, Long userId, String startDate, String endDate) {
 		// 保存mms发送对付日志
 		MmsLogEntity logEntity = new MmsLogEntity();
 		logEntity.setStartDate(DateUtils.stringToDate(startDate, DateUtils.DATE_PATTERN));
@@ -197,45 +204,57 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
 		logEntity.setCreateTime(new Date());
 		logEntity.setCreateUser(userId);
 		mmsLogDao.insert(logEntity);
-		sendMemberIntegral(mmsToken, list, logEntity.getId(), userId);
-		// CompletableFuture.supplyAsync(() -> sendMemberIntegral(mmsToken, list, logEntity.getId(), userId));
-	}
-
-	private boolean sendMemberIntegral(String mmsToken, List<JSONObject> list, String mmsLogId, Long userId) {
-		// 客户姓名|月份
-		String text = "Text1|Text2";
-		List<MmsMemberEntity> entities = new ArrayList<>();
-		list.forEach(record -> {
-			String phone = record.getString("phone");
-			String custName = record.getString("cust_name");
-			StringBuilder sb = new StringBuilder();
-			sb.append(custName).append("|").append(LocalDate.now().getMonthValue());
-			try {
-				JSONObject result = MmsClient.send(mmsToken, text, phone, sb.toString(), "1745494");
-				MmsMemberEntity entity = new MmsMemberEntity();
-				entity.setMmsLogId(mmsLogId);
-				entity.setMemberNo(record.getString("member_no"));
-				entity.setCustomerName(custName);
-				entity.setBirthday(record.getString("birthday"));
-				entity.setPhone(phone);
-				entity.setSaleId(record.getLong("sale_id"));
-				entity.setRealname(record.getString("realname"));
-				entity.setCreateTime(new Date());
-				entity.setCreateUser(userId);
-				if (null != result) {
-					JSONObject content = result.getJSONObject("content");
-					entity.setCode(Integer.valueOf(content.getString("code")));
-					entity.setResult(result.toJSONString());
+		MmsTemplateEntity mmsTemplateEntity = mmsTemplateDao.selectOne(Wrappers.lambdaQuery(MmsTemplateEntity.class)
+				.eq(MmsTemplateEntity::getType, 5).orderByDesc(MmsTemplateEntity::getCreateTime).last("LIMIT 1"));
+		if (Objects.nonNull(mmsTemplateEntity)) {
+			// 客户姓名|月份
+			String text = "Text1|Text2";
+			List<MmsMemberEntity> entities = new ArrayList<>();
+			list.forEach(record -> {
+				String phone = record.getString("phone");
+				String custName = record.getString("cust_name");
+				StringBuilder sb = new StringBuilder();
+				sb.append(custName).append("|").append(LocalDate.now().getMonthValue());
+				try {
+					JSONObject result = MmsClient.send(mmsToken, text, phone, sb.toString(), mmsTemplateEntity.getMmsId());
+					MmsMemberEntity entity = new MmsMemberEntity();
+					entity.setMmsLogId(logEntity.getId());
+					entity.setMemberNo(record.getString("member_no"));
+					entity.setCustomerName(custName);
+					entity.setBirthday(record.getString("birthday"));
+					entity.setPhone(phone);
+					entity.setSaleId(record.getLong("sale_id"));
+					entity.setRealname(record.getString("realname"));
+					entity.setCreateTime(new Date());
+					entity.setCreateUser(userId);
+					if (null != result) {
+						JSONObject content = result.getJSONObject("content");
+						entity.setCode(Integer.valueOf(content.getString("code")));
+						entity.setResult(result.toJSONString());
+					}
+					entities.add(entity);
+					//保存发送内容
+					MmsSmsContentEntity mmsSmsContentEntity = new MmsSmsContentEntity();
+					mmsSmsContentEntity.setTitle("积分发放通知");
+					mmsSmsContentEntity.setType(3);
+					mmsSmsContentEntity.setReceiveId(record.getString("member_no"));
+					mmsSmsContentEntity.setPhone(phone);
+					String content = MmsConstants.INTEGRAL_MMS_CONTENT.replace("${Text1}", custName)
+							.replace("${Text2}", String.valueOf(LocalDate.now().getMonthValue()));
+					mmsSmsContentEntity.setContent(content);
+					mmsSmsContentEntity.setCreateTime(new Date());
+					mmsSmsContentEntity.setCreateUser(userId);
+					mmsSmsContentDao.insert(mmsSmsContentEntity);
+				} catch (Exception e) {
+					log.error("e-->{}", e);
 				}
-				entities.add(entity);
-			} catch (Exception e) {
-				log.error("e-->{}", e);
-			}
 
-		});
-		if (!entities.isEmpty()) {
-			mmsMemberService.saveBatch(entities);
+			});
+			if (!entities.isEmpty()) {
+				mmsMemberService.saveBatch(entities);
+			}
 		}
+
 		return true;
 	}
 }
