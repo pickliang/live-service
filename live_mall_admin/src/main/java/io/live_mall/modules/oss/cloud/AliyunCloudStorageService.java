@@ -45,13 +45,14 @@ public class AliyunCloudStorageService extends CloudStorageService {
     @Override
     public String upload(InputStream inputStream, String path) {
         try {
-            new Thread(new Runnable() {
-				@Override
-				public void run() {
-					// TODO Auto-generated method stub
-		        	client.putObject(config.getAliyunBucketName(), path, inputStream);
-				}
-			}).start();;
+            // new Thread(new Runnable() {
+			// 	@Override
+			// 	public void run() {
+			// 		// TODO Auto-generated method stub
+		    //     	client.putObject(config.getAliyunBucketName(), path, inputStream);
+			// 	}
+			// }).start();;
+            client.putObject(config.getAliyunBucketName(), path, inputStream);
         } catch (Exception e){
         	log.error("上传文件失败，请检查配置信息",e);
             throw new RRException("上传文件失败，请检查配置信息", e);
