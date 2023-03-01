@@ -6,10 +6,14 @@ import io.live_mall.common.utils.ShiroUtils;
 import io.live_mall.modules.server.dto.CustomerUserDto;
 import io.live_mall.modules.server.entity.CustomerUserEntity;
 import io.live_mall.modules.server.entity.OrgRegionEntity;
+import io.live_mall.modules.server.entity.SysUserArchivesEntity;
 import io.live_mall.modules.server.model.CustomerUserModel;
 import io.live_mall.modules.server.model.OrgRegionModel;
 import io.live_mall.modules.server.model.SysUserModel;
-import io.live_mall.modules.server.service.*;
+import io.live_mall.modules.server.service.CustomerUserService;
+import io.live_mall.modules.server.service.OrgRegionService;
+import io.live_mall.modules.server.service.SysOrgGroupService;
+import io.live_mall.modules.server.service.SysUserArchivesService;
 import io.live_mall.modules.sys.entity.SysUserEntity;
 import io.live_mall.modules.sys.service.SysUserService;
 import lombok.AllArgsConstructor;
@@ -33,6 +37,7 @@ public class CustomerUserController {
     private final SysUserService sysUserService;
     private final OrgRegionService orgRegionService;
     private final SysOrgGroupService sysOrgGroupService;
+    private final SysUserArchivesService sysUserArchivesService;
 
 
     /**
@@ -107,15 +112,20 @@ public class CustomerUserController {
         CustomerUserModel userEntity = ShiroUtils.getUserEntity();
         CustomerUserEntity customerUser = customerUserService.getById(userEntity.getId());
         SysUserModel userModel = null;
-        if (Objects.nonNull(customerUser)) {
-            if (Objects.nonNull(customerUser.getSaleId())) {
-                userModel = new SysUserModel();
-                SysUserEntity sysUser = sysUserService.getById(customerUser.getSaleId());
-                BeanUtils.copyProperties(sysUser, userModel);
-            }
+        if (Objects.nonNull(customerUser) && Objects.nonNull(customerUser.getSaleId())) {
+            userModel = new SysUserModel();
+            SysUserEntity sysUser = sysUserService.getById(customerUser.getSaleId());
+            userModel.setUserId(sysUser.getUserId());
+            userModel.setRealname(sysUser.getRealname());
+            userModel.setMobile(sysUser.getMobile());
         }
-        if (Objects.nonNull(customerUser) && Objects.isNull(customerUser.getSaleId())) {
+        // 根据身份证获取理财师信息
+        if (Objects.nonNull(customerUser) && Objects.isNull(customerUser.getCardNum())) {
             userModel = sysUserService.sysUserByCardNum(customerUser.getCardNum());
+        }
+        SysUserArchivesEntity sysUserArchives = sysUserArchivesService.getById(customerUser.getSaleId());
+        if (Objects.nonNull(sysUserArchives)) {
+            userModel.setPersonPhotos(sysUserArchives.getHalfLengthPhoto());
         }
         return R.ok().put("data", userModel);
     }

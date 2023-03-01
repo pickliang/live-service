@@ -12,12 +12,13 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-
 import io.live_mall.common.exception.RRException;
 import io.live_mall.common.utils.Constant;
 import io.live_mall.common.utils.PageUtils;
 import io.live_mall.common.utils.Query;
+import io.live_mall.modules.server.dao.SysUserArchivesDao;
 import io.live_mall.modules.server.entity.SysOrgUserEntity;
+import io.live_mall.modules.server.entity.SysUserArchivesEntity;
 import io.live_mall.modules.server.model.SysUserModel;
 import io.live_mall.modules.server.service.SysOrgGroupService;
 import io.live_mall.modules.server.service.SysOrgUserService;
@@ -27,7 +28,6 @@ import io.live_mall.modules.sys.service.SysRoleService;
 import io.live_mall.modules.sys.service.SysUserRoleService;
 import io.live_mall.modules.sys.service.SysUserService;
 import io.live_mall.modules.sys.service.WxService;
-
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.crypto.hash.Sha256Hash;
@@ -36,10 +36,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -61,6 +58,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUserEntity> i
 	
 	@Autowired
 	private WxService wxService;
+	@Autowired
+	private SysUserArchivesDao sysUserArchivesDao;
 
 	@Override
 	public PageUtils queryPage(Map<String, Object> params) {
@@ -223,7 +222,14 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUserEntity> i
 
 	@Override
 	public List<SysUserModel> orgRegionUser(String orgGroupIds) {
-		return this.baseMapper.orgRegionUser(orgGroupIds);
+		List<SysUserModel> sysUserModels = this.baseMapper.orgRegionUser(orgGroupIds);
+		sysUserModels.forEach(model -> {
+			SysUserArchivesEntity userArchives = sysUserArchivesDao.selectById(model.getUserId());
+			if (Objects.nonNull(userArchives)) {
+				model.setPersonPhotos(userArchives.getCertificatePhoto());
+			}
+		});
+		return sysUserModels;
 	}
 
 	@Override

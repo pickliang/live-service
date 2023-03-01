@@ -79,25 +79,18 @@
 		SELECT
 			user_id,
 			realname,
-			person_photos,
 			mobile
 		FROM
 			sys_user
 		WHERE
 		    status = 1
 		    and user_id in (SELECT user_id FROM sys_org_user WHERE orgids REGEXP #{orgGroupIds})
-<!--			and user_id IN ( SELECT user_id FROM sys_org_user WHERE org_id IN-->
-<!--				<foreach collection="orgGroupIds" item="orgGroupId" index="index" open="(" close=")" separator=",">-->
-<!--					#{orgGroupId}-->
-<!--				</foreach>-->
-<!--			)-->
 	</select>
 
 	<select id="sysUserByCardNum" resultType="io.live_mall.modules.server.model.SysUserModel">
 		SELECT
 			u.user_id,
 			u.realname,
-			u.person_photos,
 			u.mobile
 		FROM
 			sys_user AS u
