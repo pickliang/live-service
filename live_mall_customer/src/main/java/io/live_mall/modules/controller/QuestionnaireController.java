@@ -19,6 +19,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.*;
@@ -111,7 +112,7 @@ public class QuestionnaireController {
      * @return
      */
     @GetMapping(value = "/answer")
-    public R answer(String id,String questionnaireOptionId) {
+    public R answer(@RequestParam String id, @RequestParam String questionnaireOptionId) {
         return customerQuestionnaireOptionUserService.answer(ShiroUtils.getUserId(), id, questionnaireOptionId);
     }
 
@@ -139,14 +140,19 @@ public class QuestionnaireController {
     @GetMapping(value = "/update-user-questionnaire")
     public R delUserQuestionnaire() {
         String userId = ShiroUtils.getUserId();
-        Integer delFlag = 1;
-        // 过期将已答数据假删除
-        customerQuestionnaireOptionUserService.update(Wrappers.lambdaUpdate(CustomerQuestionnaireOptionUserEntity.class)
-                .set(CustomerQuestionnaireOptionUserEntity::getDelFlag, delFlag)
-                .eq(CustomerQuestionnaireOptionUserEntity::getCustomerUserId, userId));
-        // 已答结果删除
-        customerUserQuestionnaireService.update(Wrappers.lambdaUpdate(CustomerUserQuestionnaireEntity.class).set(CustomerUserQuestionnaireEntity::getDelFlag, delFlag)
-                .eq(CustomerUserQuestionnaireEntity::getCustomerUserId,userId));
+        CustomerUserQuestionnaireEntity userQuestionnaireEntity = customerUserQuestionnaireService.getOne(Wrappers.lambdaQuery(CustomerUserQuestionnaireEntity.class)
+                .eq(CustomerUserQuestionnaireEntity::getCustomerUserId, userId).eq(CustomerUserQuestionnaireEntity::getDelFlag, 0).last("LIMIT 1"));
+        if (Objects.nonNull(userQuestionnaireEntity) && DateUtil.betweenMonth(userQuestionnaireEntity.getCreateTime(), new Date(), false) > 0) {
+            Integer delFlag = 1;
+            // 过期将已答数据假删除
+            customerQuestionnaireOptionUserService.update(Wrappers.lambdaUpdate(CustomerQuestionnaireOptionUserEntity.class)
+                    .set(CustomerQuestionnaireOptionUserEntity::getDelFlag, delFlag)
+                    .eq(CustomerQuestionnaireOptionUserEntity::getCustomerUserId, userId));
+            // 已答结果删除
+            customerUserQuestionnaireService.update(Wrappers.lambdaUpdate(CustomerUserQuestionnaireEntity.class).set(CustomerUserQuestionnaireEntity::getDelFlag, delFlag)
+                    .eq(CustomerUserQuestionnaireEntity::getCustomerUserId,userId));
+        }
+
         return R.ok();
     }
 }
