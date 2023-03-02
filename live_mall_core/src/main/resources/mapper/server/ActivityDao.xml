@@ -33,7 +33,7 @@
         WHERE
             `status` = 1
           AND del_flag = 0
-        ORDER BY create_time
+        ORDER BY date_time DESC
     </select>
 
     <select id="mySubscribeActivity" resultType="com.alibaba.fastjson.JSONObject">
