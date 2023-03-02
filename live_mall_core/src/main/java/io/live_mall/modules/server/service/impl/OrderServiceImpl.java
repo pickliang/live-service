@@ -496,6 +496,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 		// 累计收益：所有已付利息总和
 		Double expectedIncome = this.baseMapper.expectedIncome(cardNum);
 		Double historyExpectedIncome = this.baseMapper.historyExpectedIncome(cardNum);
+		// 利息= 本息合计减去预购金额
+		Double interest = this.baseMapper.interest(cardNum);
+		Double historyInterest = this.baseMapper.historyInterest(cardNum);
 		// Double totalInterest = this.baseMapper.totalInterest(cardNum);
 		// 类固收(固收)
 		Integer fixedIncome = this.baseMapper.fixedIncome(cardNum, 1);
@@ -512,7 +515,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 		result.put("fixedIncome", fixedIncome + historyFixedIncome);
 		result.put("stock", stock + historyStock);
 		result.put("netWorth", netWorth + historyNetWorth);
-		result.put("totalInterest", expectedIncome + historyExpectedIncome);
+		result.put("totalInterest", expectedIncome + historyExpectedIncome + interest + historyInterest);
 		return result;
 	}
 
@@ -534,6 +537,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 		// 累计收益
 		Double expectedIncome = this.baseMapper.expectedIncome(cardNum);
 		Double historyExpectedIncome = this.baseMapper.historyExpectedIncome(cardNum);
+		// 利息= 本息合计减去预购金额
+		Double interest = this.baseMapper.interest(cardNum);
+		Double historyInterest = this.baseMapper.historyInterest(cardNum);
 
 		// 总资产 = 在投的总金额
 		// 在投订单金额
@@ -546,7 +552,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 		// 总投资额
 		result.put("annualIncome", totalAssets + assets);
 		// 累计收益
-		result.put("expectedIncome", expectedIncome + historyExpectedIncome);
+		result.put("expectedIncome", expectedIncome + historyExpectedIncome + interest + historyInterest);
 		// 在投订单金额
 		result.put("investing", investing + historyInvesting);
 		return result;

@@ -115,6 +115,9 @@ public interface OrderDao extends BaseMapper<OrderEntity> {
 	 * @return Double
 	 */
 	Double expectedIncome(String cardNum);
+
+	Double interest(String cardNum);
+	Double historyInterest(String cardNum);
 	/**
 	 * 历史数据未来预期收益
 	 * @param cardNum 证件号

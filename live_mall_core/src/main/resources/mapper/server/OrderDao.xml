@@ -430,6 +430,26 @@
 		  AND pay_date <![CDATA[ < ]]> CURRENT_DATE ( )
 	</select>
 
+	<select id="interest" resultType="double">
+		SELECT
+			IFNULL( SUM( sumMoney ) - SUM( appoint_money ), 0 ) AS sumMoney
+		FROM
+			tuifu_view
+		WHERE
+			card_num = #{cardNum}
+		  AND DATE_ADD( establish_time, INTERVAL date_num MONTH ) <![CDATA[ < ]]> CURRENT_DATE()
+	</select>
+
+	<select id="historyInterest" resultType="double">
+		SELECT
+			IFNULL( SUM( principal_interest ) - SUM( appoint_money ), 0 ) AS sumMoney
+		FROM
+			history_duifu
+		WHERE
+			card_num =  #{cardNum}
+		  AND due_date <![CDATA[ < ]]> CURRENT_DATE()
+	</select>
+
 	<select id="historyExpectedIncome" resultType="double">
 		SELECT
 			IFNULL( SUM( pay_money ), 0 ) pay_money
