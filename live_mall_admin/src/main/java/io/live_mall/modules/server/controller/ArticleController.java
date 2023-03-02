@@ -183,6 +183,7 @@ public class ArticleController {
      * @return
      */
     @GetMapping(value = "/financial-planner-information")
+    @RequiresPermissions("server:information:list")
     public R financialPlannerInformation() {
         Map<String, Object> result = Maps.newHashMap();
         // 白话财经
@@ -206,6 +207,7 @@ public class ArticleController {
      * @return
      */
     @GetMapping(value = "/financial-planner-information-info/{id}")
+    @RequiresPermissions("server:information:info")
     public R financialPlannerInformationInfo(@PathVariable("id") String id) {
         InformationEntity information = informationService.getById(id);
         InformationModel model = new InformationModel();
@@ -410,6 +412,7 @@ public class ArticleController {
      * @return
      */
     @GetMapping(value = "/banners")
+    @RequiresPermissions("server:banner:list")
     public R bannerList() {
         List<CustomerBannerEntity> list = customerBannerService.list(Wrappers.lambdaQuery(CustomerBannerEntity.class)
                 .orderByAsc(CustomerBannerEntity::getCreateTime).last("LIMIT 3"));
@@ -443,6 +446,7 @@ public class ArticleController {
      * @return
      */
     @PostMapping(value = "/update-banner")
+    @RequiresPermissions("server:banner:update")
     public R updateBanner(@RequestBody CustomerBannerDto dto) {
         CustomerBannerEntity entity = new CustomerBannerEntity();
         entity.setUpdateUser(ShiroUtils.getUserId());
@@ -458,6 +462,7 @@ public class ArticleController {
      * @return
      */
     @GetMapping(value = "/banner-article")
+    @RequiresPermissions("server:banner:list")
     public R bannerArticle(@RequestParam(defaultValue = "1") Integer type) {
         List<Map<String, Object>> data = new ArrayList<>();
         if (1 == type) {

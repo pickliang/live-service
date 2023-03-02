@@ -15,6 +15,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -50,6 +51,7 @@ public class MmsController {
      * @return
      */
     @PostMapping(value = "/save")
+    @RequiresPermissions("server:mms:list")
     @SneakyThrows
     public R save(@RequestBody MmsTemplateEntity entity) {
         String token = redisUtils.get(RedisKeyConstants.MMS_TOKEN);
@@ -80,6 +82,7 @@ public class MmsController {
      * @return
      */
     @GetMapping(value = "/applets-url")
+    @RequiresPermissions("server:mms:list")
     @SneakyThrows
     public R getAppletsUrl(@RequestParam(defaultValue = "develop") String envVersion) {
         String urlLink = appletsService.getUrlLink(envVersion);
@@ -93,6 +96,7 @@ public class MmsController {
      * @return
      */
     @PostMapping(value = "/send-duifu")
+    @RequiresPermissions("server:mms:save")
     @SneakyThrows
     public R mmsSend(@RequestBody Map<String, Object> params) {
         String token = redisUtils.get(RedisKeyConstants.MMS_TOKEN);
@@ -115,6 +119,7 @@ public class MmsController {
      * @return
      */
     @PostMapping(value = "/send-payment")
+    @RequiresPermissions("server:mms:save")
     @SneakyThrows
     public R mmsSenPayment(@RequestBody Map<String, Object> params) {
         String token = redisUtils.get(RedisKeyConstants.MMS_TOKEN);
@@ -137,6 +142,7 @@ public class MmsController {
      * @return
      */
     @GetMapping(value = "/log-list")
+    @RequiresPermissions("server:mms:list")
     public R mmsLogs(@RequestParam Map<String, Object> params) {
         PageUtils pages = mmsLogService.pages(params);
         return R.ok().put("data", pages);
@@ -148,6 +154,7 @@ public class MmsController {
      * @return
      */
     @GetMapping(value = "/log-items")
+    @RequiresPermissions("server:mms:list")
     public R mmsLogItems(@RequestParam Map<String, Object> params) {
         PageUtils pages = mmsLogItemService.pages(params);
         return R.ok().put("data", pages);
@@ -159,6 +166,7 @@ public class MmsController {
      * @return
      */
     @GetMapping(value = "/payment-items")
+    @RequiresPermissions("server:mms:list")
     public R mmsPaymentItem(@RequestParam Map<String, Object> params) {
         PageUtils pages = mmsPaymentItemService.pages(params);
         return R.ok().put("data", pages);
@@ -171,6 +179,7 @@ public class MmsController {
      */
     @PostMapping(value = "/send-integral")
     @SneakyThrows
+    @RequiresPermissions("server:mms:save")
     public R sendIntegral(@RequestBody Map<String, Object> params) {
         String token = redisUtils.get(RedisKeyConstants.MMS_TOKEN);
         if (StringUtils.isBlank(token)) {
@@ -191,6 +200,7 @@ public class MmsController {
      * @return
      */
     @GetMapping(value = "/member-item")
+    @RequiresPermissions("server:mms:list")
     public R mmsMembers(@RequestParam Map<String, Object> params) {
         return R.ok().put("data", mmsMemberService.pages(params));
     }
