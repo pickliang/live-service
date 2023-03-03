@@ -25,5 +25,5 @@ public class RedisKeyConstants {
     /**
      * 下发短信验证码
      */
-    public static final String MMS_PHONE_TYPE_EXPIRE = "mms_phone_type_expire_TYPE_";
+    public static final String MMS_PHONE_TYPE_EXPIRE = "mms_phone_type_expire_";
 }

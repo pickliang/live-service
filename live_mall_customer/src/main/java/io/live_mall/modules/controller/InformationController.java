@@ -110,7 +110,9 @@ public class InformationController {
             return R.error("活动不存在");
         }
         ActivityUserEntity activityUser = activityUserService.getOne(Wrappers.lambdaQuery(ActivityUserEntity.class)
-                .eq(ActivityUserEntity::getUserId, ShiroUtils.getUserId()).eq(ActivityUserEntity::getStatus, 1).last("LIMIT 1"));
+                .eq(ActivityUserEntity::getUserId, ShiroUtils.getUserId())
+                .eq(ActivityUserEntity::getActivityId, id)
+                .eq(ActivityUserEntity::getStatus, 1).last("LIMIT 1"));
         Integer isSubscribe = Objects.nonNull(activityUser) ? 1 : 0;
         activity.setIsSubscribe(isSubscribe);
         return R.ok().put("data", activity);

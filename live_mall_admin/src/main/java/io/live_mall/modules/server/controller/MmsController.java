@@ -208,13 +208,12 @@ public class MmsController {
     /**
      * 发送短信验证码
      * @param phone 手机号
-     * @param type 防止一个验证码多处使用.后续可增加，1-理财师小程序更新订单验证手机号
      * @return
      */
     @GetMapping(value = "/send-code")
     @SneakyThrows
-    public R sendCode(@RequestParam String phone, @RequestParam(defaultValue = "1") String type) {
-        String key = RedisKeyConstants.MMS_PHONE_TYPE_EXPIRE.replace("TYPE", type) + phone;
+    public R sendCode(@RequestParam String phone) {
+        String key = RedisKeyConstants.MMS_PHONE_TYPE_EXPIRE + phone;
         if (phone.length() != 11) {
             return R.error("手机号码错误");
         }

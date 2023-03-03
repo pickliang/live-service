@@ -30,6 +30,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
@@ -49,6 +51,7 @@ public class OrderController {
     private final SysOssService sysOssService;
     private final OrderPayService orderPayService;
     private final RedisUtils redisUtils;
+    private static Lock lock = new ReentrantLock();
 
     /**
      * 列表
@@ -202,25 +205,32 @@ public class OrderController {
     @RequestMapping("/saveApp")
     @RequiresPermissions("server:order:save")
     public R saveApp(@RequestBody OrderEntity order){
-    	RaiseEntity raiseEntity = raiseService.getById(order.getRaiseId());
-    	raiseService.canCreateOrder(order.getRaiseId(),order.getAppointMoney());
-    	order.setProductId(raiseEntity.getProductId());
-    	order.setProductUnitId(raiseEntity.getProductUnitId());
-    	order.setAppointTime(new Date());
-    	order.setStatus(-1);
-    	order.setSaleId(ShiroUtils.getUserId());
-    	if(ShiroUtils.getUserEntity().getOrg().getOrgId() == null ){
-    		throw new RRException("该业务员未绑定组织,请绑定后重新登录在创建订单");
-    	}
-    	order.setOrgId(ShiroUtils.getUserEntity().getOrg().getOrgId());
-    	order.setReasourse("APP");
-    	order.setCreateBy(ShiroUtils.getUserEntity().getRealname());
-    	order.setCreateDate(new Date());
-    	order.setUptBy(ShiroUtils.getUserEntity().getRealname());
-    	order.setUptDate(new Date());
-    	order.setOrderNo("OD"+DateUtils.getOrderNo());
-    	OrderUtils.orderStup(raiseEntity, order, -1,"");
-		orderService.save(order);
+        lock.lock();
+        try {
+            RaiseEntity raiseEntity = raiseService.getById(order.getRaiseId());
+            raiseService.canCreateOrder(order.getRaiseId(),order.getAppointMoney());
+            order.setProductId(raiseEntity.getProductId());
+            order.setProductUnitId(raiseEntity.getProductUnitId());
+            order.setAppointTime(new Date());
+            order.setStatus(-1);
+            order.setSaleId(ShiroUtils.getUserId());
+            if(ShiroUtils.getUserEntity().getOrg().getOrgId() == null ){
+                throw new RRException("该业务员未绑定组织,请绑定后重新登录在创建订单");
+            }
+            order.setOrgId(ShiroUtils.getUserEntity().getOrg().getOrgId());
+            order.setReasourse("APP");
+            order.setCreateBy(ShiroUtils.getUserEntity().getRealname());
+            order.setCreateDate(new Date());
+            order.setUptBy(ShiroUtils.getUserEntity().getRealname());
+            order.setUptDate(new Date());
+            order.setOrderNo("OD"+DateUtils.getOrderNo());
+            OrderUtils.orderStup(raiseEntity, order, -1,"");
+            orderService.save(order);
+        }catch (Exception e) {
+            new RRException("系统异常");
+        }finally {
+            lock.unlock();
+        }
         return R.ok().put("data",order.getId());
     }
 
@@ -232,6 +242,15 @@ public class OrderController {
     @RequiresPermissions("server:order:update")
     @SneakyThrows
     public R update(@RequestBody OrderEntity order){
+        // 理财师小程序验证手机号正确性
+        log.error("code-->{}", order.getSmscode());
+        if (null != order.getSmscode()) {
+            String val = redisUtils.get(RedisKeyConstants.MMS_PHONE_TYPE_EXPIRE + order.getPhone());
+            if (!val.equals(String.valueOf(order.getSmscode()))) {
+                return R.error("验证码错误");
+            }
+        }
+
         // 同步小鹅通用户信息
         String touchToken = redisUtils.get(RedisKeyConstants.TOUCH_ACCESS_TOKEN);
         if (Objects.isNull(touchToken)) {

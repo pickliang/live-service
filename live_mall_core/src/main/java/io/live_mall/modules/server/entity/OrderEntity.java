@@ -307,6 +307,11 @@ public class OrderEntity implements Serializable {
 	 */
 	private String videoUrl;
 
+	/**
+	 * 短信验证码
+	 */
+	@TableField(exist = false)
+	private Integer smscode;
 
 	
 }

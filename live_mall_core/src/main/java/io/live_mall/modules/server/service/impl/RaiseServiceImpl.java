@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.live_mall.common.exception.RRException;
 import io.live_mall.common.utils.PageUtils;
@@ -20,10 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static io.live_mall.modules.server.model.OrderUtils.getRate;
 
@@ -203,8 +201,13 @@ public class RaiseServiceImpl extends ServiceImpl<RaiseDao, RaiseEntity> impleme
 			if(between < 0) {
 				throw new RRException("募集期开始时间为"+DateUtil.formatDateTime(byId.getBeginDate()));
 			}
-			Integer sumMoenyRaise = ordersevice.sumMoenyRaise(raiseId);
-			if(byId.getRaiseMoney().doubleValue() <(sumMoenyRaise.doubleValue()+money.doubleValue())) {
+			// Integer sumMoenyRaise = ordersevice.sumMoenyRaise(raiseId);
+			List<OrderEntity> orderEntities = ordersevice.list(Wrappers.lambdaQuery(OrderEntity.class).in(OrderEntity::getStatus, Arrays.asList(-1, 0, 2)).eq(OrderEntity::getRaiseId, raiseId));
+			Integer totalMoney = 0;
+			for (OrderEntity orderEntity : orderEntities) {
+				totalMoney += orderEntity.getAppointMoney();
+			}
+			if(byId.getRaiseMoney().doubleValue() <(totalMoney.doubleValue()+money.doubleValue())) {
 				throw new RRException("募集金额已超额");
 			}
 		}else {
