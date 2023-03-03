@@ -227,6 +227,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUserEntity> i
 			SysUserArchivesEntity userArchives = sysUserArchivesDao.selectById(model.getUserId());
 			if (Objects.nonNull(userArchives)) {
 				model.setPersonPhotos(userArchives.getCertificatePhoto());
+				model.setJob(userArchives.getJob());
+				model.setPersonalIntroduce(userArchives.getPersonalIntroduce());
+				model.setCertificateIntroduce(userArchives.getCertificateIntroduce());
 			}
 		});
 		return sysUserModels;

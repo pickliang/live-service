@@ -17,4 +17,12 @@ public class SysUserModel {
     private String personPhotos;
 
     private String mobile;
+
+    private String job;
+
+    private String personalIntroduce;
+
+    private String certificateIntroduce;
+
+
 }
