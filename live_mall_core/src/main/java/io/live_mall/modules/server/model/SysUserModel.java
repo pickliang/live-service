@@ -22,6 +22,8 @@ public class SysUserModel {
 
     private String personalIntroduce;
 
+    private String halfLengthPhoto;
+
     private String certificateIntroduce;
 
 

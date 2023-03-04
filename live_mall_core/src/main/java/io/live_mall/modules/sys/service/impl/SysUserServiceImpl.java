@@ -230,6 +230,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUserEntity> i
 				model.setJob(userArchives.getJob());
 				model.setPersonalIntroduce(userArchives.getPersonalIntroduce());
 				model.setCertificateIntroduce(userArchives.getCertificateIntroduce());
+				model.setHalfLengthPhoto(userArchives.getHalfLengthPhoto());
 			}
 		});
 		return sysUserModels;

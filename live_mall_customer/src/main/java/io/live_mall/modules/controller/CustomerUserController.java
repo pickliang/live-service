@@ -112,21 +112,26 @@ public class CustomerUserController {
         CustomerUserModel userEntity = ShiroUtils.getUserEntity();
         CustomerUserEntity customerUser = customerUserService.getById(userEntity.getId());
         SysUserModel userModel = null;
-        if (Objects.nonNull(customerUser) && Objects.nonNull(customerUser.getSaleId())) {
-            userModel = new SysUserModel();
-            SysUserEntity sysUser = sysUserService.getById(customerUser.getSaleId());
-            userModel.setUserId(sysUser.getUserId());
-            userModel.setRealname(sysUser.getRealname());
-            userModel.setMobile(sysUser.getMobile());
+        if (Objects.nonNull(customerUser)) {
+            // 绑定的有理财师
+            if (Objects.nonNull(customerUser.getSaleId())) {
+                userModel = new SysUserModel();
+                SysUserEntity sysUser = sysUserService.getById(customerUser.getSaleId());
+                userModel.setUserId(sysUser.getUserId());
+                userModel.setRealname(sysUser.getRealname());
+                userModel.setMobile(sysUser.getMobile());
+            }else if (Objects.nonNull(customerUser.getCardNum())) {
+                // 没有绑定理财师 根据身份证获取理财师信息
+                userModel = sysUserService.sysUserByCardNum(customerUser.getCardNum());
+            }
+            SysUserArchivesEntity sysUserArchives = sysUserArchivesService.getById(customerUser.getSaleId());
+            if (Objects.nonNull(userModel) && Objects.nonNull(sysUserArchives)) {
+                userModel.setPersonPhotos(sysUserArchives.getHalfLengthPhoto());
+                userModel.setHalfLengthPhoto(sysUserArchives.getHalfLengthPhoto());
+                userModel.setCertificateIntroduce(sysUserArchives.getCertificateIntroduce());
+            }
         }
-        // 根据身份证获取理财师信息
-        if (Objects.nonNull(customerUser) && Objects.isNull(customerUser.getCardNum())) {
-            userModel = sysUserService.sysUserByCardNum(customerUser.getCardNum());
-        }
-        SysUserArchivesEntity sysUserArchives = sysUserArchivesService.getById(customerUser.getSaleId());
-        if (Objects.nonNull(sysUserArchives)) {
-            userModel.setPersonPhotos(sysUserArchives.getHalfLengthPhoto());
-        }
+
         return R.ok().put("data", userModel);
     }
 
