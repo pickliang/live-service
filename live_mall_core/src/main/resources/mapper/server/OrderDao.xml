@@ -249,7 +249,7 @@
 			product_name,
 			"" as product_class,
 			order_id,
-			appoint_money,
+		    appoint_money / 10000 as appoint_money,
 			"" AS appoint_time,
 			establish_time,
 		    date_num,

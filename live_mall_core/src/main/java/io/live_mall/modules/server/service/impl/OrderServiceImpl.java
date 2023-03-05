@@ -79,17 +79,13 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 	@Autowired
 	private CustomerUserIntegralItemDao customerUserIntegralItemDao;
 	@Autowired
-	private MmsLogDao mmsLogDao;
-	@Autowired
-	private MmsLogItemService mmsLogItemService;
-	@Autowired
 	private YouZanUserDao youZanUserDao;
-	@Autowired
-	private MmsTemplateDao mmsTemplateDao;
 	@Autowired
 	private OrderPayDao orderPayDao;
 	@Autowired
 	private TouchUserDao touchUserDao;
+	@Autowired
+	private CustomerUserIntegralItemService customerUserIntegralItemService;
 
 	@Override
 	public PageUtils selectDuifuPage(Map<String, Object> params) {
@@ -713,9 +709,13 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 				integralItem.setDescription("订单赠送");
 				integralItem.setCreateTime(new Date());
 				YouZanUserEntity youZanUserEntity = youZanUserDao.selectOne(Wrappers.lambdaQuery(YouZanUserEntity.class).eq(YouZanUserEntity::getUserId, userEntity.getId()).last("LIMIT 1"));
-				YouzanCrmCustomerPointsIncreaseResult result = YouZanClients.addPoints(token, youZanUserEntity.getYzOpenId(), newIntegral);
-				integralItem.setCode(result.getCode());
-				integralItem.setResult(JSON.toJSONString(result));
+				if (Objects.nonNull(youZanUserEntity)) {
+					YouzanCrmCustomerPointsIncreaseResult result = YouZanClients.addPoints(token, youZanUserEntity.getYzOpenId(), newIntegral);
+					if (Objects.nonNull(result)) {
+						integralItem.setCode(result.getCode());
+						integralItem.setResult(JSON.toJSONString(result));
+					}
+				}
 				customerUserIntegralItemDao.insert(integralItem);
 			}
 		}
