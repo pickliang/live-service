@@ -52,6 +52,14 @@ public class CustomerUserIntegralItemEntity implements Serializable {
      */
     private String description;
     /**
+     * 邀请人id
+     */
+    private String inviterId;
+    /**
+     * 积分类型 1-订单赠送 2-邀请奖励1
+     */
+    private Integer type;
+    /**
      * 有赞返回的状态码
      */
     private Integer code;

@@ -95,7 +95,7 @@ public interface OrderService extends IService<OrderEntity> {
 	 */
 	List<JSONObject> duifuNoticeData(String startDate, String endDate);
 
-	String addYouZanPoints(String token, String orderId, String uptType) throws Exception;
+	void addYouZanPoints(String token, String orderId, String uptType) throws Exception;
 
 	/**
 	 * 发送付息通知列表数据

@@ -85,7 +85,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 	@Autowired
 	private TouchUserDao touchUserDao;
 	@Autowired
-	private CustomerUserIntegralItemService customerUserIntegralItemService;
+	private IntegralActivityDao integralActivityDao;
 
 	@Override
 	public PageUtils selectDuifuPage(Map<String, Object> params) {
@@ -697,39 +697,74 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
 
 	@Override
-	public String addYouZanPoints(String token, String orderId, String uptType) throws SDKException {
+	public void addYouZanPoints(String token, String orderId, String uptType) throws SDKException {
 		OrderEntity orderEntity = this.getById(orderId);
 		if ("pass".equals(uptType)) {
 			// 注册了客户小程序 赠送积分
-			CustomerUserEntity userEntity = customerUserDao.selectOne(Wrappers.lambdaQuery(CustomerUserEntity.class).eq(CustomerUserEntity::getCardNum, orderEntity.getCardNum()));
+			CustomerUserEntity userEntity = customerUserDao.selectOne(Wrappers.lambdaQuery(CustomerUserEntity.class).eq(CustomerUserEntity::getCardNum, orderEntity.getCardNum()).last("LIMIT 1"));
 			if (Objects.nonNull(userEntity)) {
-				// 积分规则
-				IntegralEntity integralEntity = integralDao.selectOne(Wrappers.lambdaQuery(IntegralEntity.class).orderByDesc(IntegralEntity::getCreateTime).last("LIMIT 1"));
-				Integer integral = Objects.isNull(integralEntity) ? 0 : integralEntity.getIntegral();
-				CustomerUserIntegralItemEntity integralItem = new CustomerUserIntegralItemEntity();
-				integralItem.setCustomerUserId(userEntity.getId());
-				integralItem.setOrderId(orderEntity.getId());
-				integralItem.setProductId(orderEntity.getProductId());
-				integralItem.setRaiseId(orderEntity.getRaiseId());
-				integralItem.setAppointMoney(orderEntity.getAppointMoney());
-				// 积分规则
-				// 1、产品期限 <= 12 个月，投资年化额每一万兑换商城积分数10积分（投资年化额=投资额*产品期限/12)
-				// 2、产品期限> 12个月 投资额每一万兑换10积分
-				Integer newIntegral = orderEntity.getDateNum() <= 12 ? (orderEntity.getAppointMoney() * orderEntity.getDateNum() / 12 * integral) : (orderEntity.getAppointMoney() * integral);
-				integralItem.setIntegral(newIntegral);
-				integralItem.setDescription("订单赠送");
-				integralItem.setCreateTime(new Date());
-				YouZanUserEntity youZanUserEntity = youZanUserDao.selectOne(Wrappers.lambdaQuery(YouZanUserEntity.class).eq(YouZanUserEntity::getUserId, userEntity.getId()).last("LIMIT 1"));
-				if (Objects.nonNull(youZanUserEntity)) {
-					YouzanCrmCustomerPointsIncreaseResult result = YouZanClients.addPoints(token, youZanUserEntity.getYzOpenId(), newIntegral);
-					if (Objects.nonNull(result)) {
-						integralItem.setCode(result.getCode());
-						integralItem.setResult(JSON.toJSONString(result));
+				String description = "订单赠送";
+				Integer type = 1;
+				addPoints(token, orderEntity, userEntity, description, type);
+				// 其他客户的邀请码
+				if (Objects.nonNull(userEntity.getAskCode())) {
+					CustomerUserIntegralItemEntity userIntegralItem = customerUserIntegralItemDao.selectOne(Wrappers.lambdaQuery(CustomerUserIntegralItemEntity.class)
+							.eq(CustomerUserIntegralItemEntity::getInviterId, userEntity.getId()).last("LIMIT 1"));
+					// 邀请人没有被赠送过积分
+					if (Objects.isNull(userIntegralItem)) {
+						// 邀请人信息
+						CustomerUserEntity customerUser = customerUserDao.selectOne(Wrappers.lambdaQuery(CustomerUserEntity.class).eq(CustomerUserEntity::getCode, userEntity.getAskCode()).last("LIMIT 1"));
+						description = "邀请积分奖励";
+						type = 2;
+						addPoints(token, orderEntity, customerUser, description, type);
 					}
 				}
-				customerUserIntegralItemDao.insert(integralItem);
+
 			}
 		}
+	}
+
+	public String addPoints(String token, OrderEntity orderEntity, CustomerUserEntity userEntity, String description, Integer type) throws SDKException {
+		// 积分规则
+		IntegralEntity integralEntity = integralDao.selectOne(Wrappers.lambdaQuery(IntegralEntity.class).orderByDesc(IntegralEntity::getCreateTime).last("LIMIT 1"));
+		Integer integral = Objects.isNull(integralEntity) ? 0 : integralEntity.getIntegral();
+		CustomerUserIntegralItemEntity integralItem = new CustomerUserIntegralItemEntity();
+		// 1、产品期限 <= 12 个月，投资年化额每一万兑换商城积分数10积分（投资年化额=投资额*产品期限/12)
+		// 2、产品期限> 12个月 投资额每一万兑换10积分
+		Integer newIntegral = orderEntity.getDateNum() <= 12 ? (orderEntity.getAppointMoney() * orderEntity.getDateNum() / 12 * integral) : (orderEntity.getAppointMoney() * integral);
+		integralItem.setIntegral(newIntegral);
+
+		// 活动赠送积分
+		if (2 == type) {
+			String now = DateUtils.format(new Date(), DateUtils.DATE_PATTERN);
+			IntegralActivityEntity integralActivity = integralActivityDao.selectOne(Wrappers.lambdaQuery(IntegralActivityEntity.class)
+					.le(IntegralActivityEntity::getBeginDate, now).ge(IntegralActivityEntity::getEndDate, now).orderByAsc(IntegralActivityEntity::getEndDate).last("LIMIT 1"));
+			if (Objects.nonNull(integralActivity)) {
+				// 奖励积分
+				int val = newIntegral * integralActivity.getIntegralProportion() / 100;
+				integralItem.setIntegral(val);
+			}else {
+				return null;
+			}
+
+		}
+		integralItem.setType(type);
+		integralItem.setCustomerUserId(userEntity.getId());
+		integralItem.setOrderId(orderEntity.getId());
+		integralItem.setProductId(orderEntity.getProductId());
+		integralItem.setRaiseId(orderEntity.getRaiseId());
+		integralItem.setAppointMoney(orderEntity.getAppointMoney());
+		integralItem.setDescription(description);
+		integralItem.setCreateTime(new Date());
+		YouZanUserEntity youZanUserEntity = youZanUserDao.selectOne(Wrappers.lambdaQuery(YouZanUserEntity.class).eq(YouZanUserEntity::getUserId, userEntity.getId()).last("LIMIT 1"));
+		if (Objects.nonNull(youZanUserEntity)) {
+			YouzanCrmCustomerPointsIncreaseResult result = YouZanClients.addPoints(token, youZanUserEntity.getYzOpenId(), newIntegral);
+			if (Objects.nonNull(result)) {
+				integralItem.setCode(result.getCode());
+				integralItem.setResult(JSON.toJSONString(result));
+			}
+		}
+		customerUserIntegralItemDao.insert(integralItem);
 		return null;
 	}
 
