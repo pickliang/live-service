@@ -172,7 +172,7 @@ public class ArticleController {
      * @return
      */
     @GetMapping(value = "/information-list")
-    @RequiresPermissions("server:information:list")
+    // @RequiresPermissions("server:information:list")
     public R informationList(@RequestParam Map<String, Object> params) {
         PageUtils pages = informationService.informationPages(params);
         return R.ok().put("data", pages);
@@ -183,7 +183,6 @@ public class ArticleController {
      * @return
      */
     @GetMapping(value = "/financial-planner-information")
-    @RequiresPermissions("server:information:list")
     public R financialPlannerInformation() {
         Map<String, Object> result = Maps.newHashMap();
         // 白话财经
@@ -207,7 +206,6 @@ public class ArticleController {
      * @return
      */
     @GetMapping(value = "/financial-planner-information-info/{id}")
-    @RequiresPermissions("server:information:info")
     public R financialPlannerInformationInfo(@PathVariable("id") String id) {
         InformationEntity information = informationService.getById(id);
         InformationModel model = new InformationModel();
