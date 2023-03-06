@@ -232,9 +232,8 @@ public class RaiseServiceImpl extends ServiceImpl<RaiseDao, RaiseEntity> impleme
 	}
 
 	@Override
-	@Transactional
+	@Transactional(rollbackFor = Exception.class)
 	public void duifu(RaiseEntity raise) {
-		// TODO Auto-generated method stub
 		ProductEntity productEntity = productService.getById(raise.getProductId());
 		if(productEntity!=null && StringUtils.isNotBlank(raise.getProductEndDate())) {
 			productEntity.setProductEndDate(DateUtil.parse(raise.getProductEndDate()));

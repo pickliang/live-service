@@ -243,7 +243,6 @@ public class OrderController {
     @SneakyThrows
     public R update(@RequestBody OrderEntity order){
         // 理财师小程序验证手机号正确性
-        log.error("code-->{}", order.getSmscode());
         if (null != order.getSmscode()) {
             String val = redisUtils.get(RedisKeyConstants.MMS_PHONE_TYPE_EXPIRE + order.getPhone());
             if (!val.equals(String.valueOf(order.getSmscode()))) {
@@ -261,9 +260,10 @@ public class OrderController {
                 redisUtils.set(RedisKeyConstants.TOUCH_ACCESS_TOKEN, touchToken, expiresIn);
             }
         }
-    	 orderService.updateOrder(order,ShiroUtils.getUserEntity(), touchToken);
-         // 有赞增加积分
-        CompletableFuture.supplyAsync(() -> {
+        orderService.updateOrder(order,ShiroUtils.getUserEntity(), touchToken);
+
+        // 有赞增加积分
+        CompletableFuture.runAsync(() -> {
             try {
                 String token = redisUtils.get(RedisKeyConstants.YZ_TOKEN);
                 if (Objects.isNull(token)) {
@@ -271,13 +271,12 @@ public class OrderController {
                     redisUtils.set(RedisKeyConstants.YZ_TOKEN, authToken.getAccessToken(), authToken.getExpires());
                     token = authToken.getAccessToken();
                 }
-                return orderService.addYouZanPoints(token, order.getId(), order.getUptType());
+                orderService.addYouZanPoints(token, order.getId(), order.getUptType());
             } catch (Exception e) {
-                log.error("e-->{},", e);
-                return false;
+                log.error("有赞增加积分异常-->{}", e);
             }
-        }
-        );
+        });
+
 
 		return R.ok();
     }

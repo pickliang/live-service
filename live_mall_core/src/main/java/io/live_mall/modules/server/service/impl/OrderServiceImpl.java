@@ -175,6 +175,17 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 			if( one !=null && !String.valueOf(order.getSaleId()).equals( one.getSaleId())) {
 				throw new RRException("该会员,已经是其他业务客户,请联系相关负责人");
 			}
+			ProductEntity productEntity = productDao.selectById(orderEntity.getProductId());
+			Integer ys = 12;
+			String productTerm = productEntity.getProductTerm();
+			Integer productTermType = productEntity.getProductTermType();
+			if (productTermType != 4 || productTermType == 3) {
+				ys = Integer.valueOf(productTerm.split(",")[0]);
+			} else if (productTermType == 3) {
+				ys = Integer.valueOf(productTerm.split(",")[1]);
+			}
+			order.setDateNum(ys);
+			order.setDateUint("月");
 		}
 		if ("tuikuan".equals(order.getUptType())) {
 			smsService.sendMsgToCust(orderEntity);
