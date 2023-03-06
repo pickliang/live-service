@@ -9,11 +9,11 @@
             c.appoint_money AS appoint_money,
             c.integral,
             p.product_name,
-            r.establish_time
+            o.appoint_time
         FROM
             `customer_user_integral_item` AS c
             LEFT JOIN p_product AS p ON c.product_id = p.id
-            LEFT JOIN p_raise AS r ON c.raise_id = r.id
+            LEFT JOIN p_order AS o ON c.order_id = o.id
         WHERE
             c.customer_user_id = #{userId}
             AND c.del_flag = 0
