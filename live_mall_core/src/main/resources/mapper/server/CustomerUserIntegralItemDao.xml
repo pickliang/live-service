@@ -8,6 +8,7 @@
             c.product_id,
             c.appoint_money AS appoint_money,
             c.integral,
+            c.type,
             p.product_name,
             o.appoint_time
         FROM

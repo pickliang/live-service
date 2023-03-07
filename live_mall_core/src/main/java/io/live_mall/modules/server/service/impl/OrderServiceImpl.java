@@ -498,7 +498,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 	}
 
 	@Override
-	public Map<String, Object> totalAssets(String cardNum) {
+	public Map<String, Object> 	totalAssets(String cardNum) {
 		Map<String, Object> result = Maps.newHashMap();
 		// 累计收益：所有已付利息总和
 		Double expectedIncome = this.baseMapper.expectedIncome(cardNum);
@@ -731,17 +731,22 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 		CustomerUserIntegralItemEntity integralItem = new CustomerUserIntegralItemEntity();
 		// 1、产品期限 <= 12 个月，投资年化额每一万兑换商城积分数10积分（投资年化额=投资额*产品期限/12)
 		// 2、产品期限> 12个月 投资额每一万兑换10积分
-		Integer newIntegral = orderEntity.getDateNum() <= 12 ? (orderEntity.getAppointMoney() * orderEntity.getDateNum() / 12 * integral) : (orderEntity.getAppointMoney() * integral);
+
+		Integer newIntegral = orderEntity.getDateNum() <= 12 ? (BigDecimal.valueOf(orderEntity.getAppointMoney())
+				.multiply(BigDecimal.valueOf(orderEntity.getDateNum()))
+				.divide(BigDecimal.valueOf(12))
+				.multiply(BigDecimal.valueOf(integral))).intValue() :
+				(BigDecimal.valueOf(orderEntity.getAppointMoney()).multiply(BigDecimal.valueOf(integral)).intValue());
 		integralItem.setIntegral(newIntegral);
 
 		// 活动赠送积分
 		if (2 == type) {
-			String now = DateUtils.format(new Date(), DateUtils.DATE_PATTERN);
+			Date now = DateUtils.stringToDate(DateUtils.format(new Date(), DateUtils.DATE_PATTERN), DateUtils.DATE_PATTERN);
 			IntegralActivityEntity integralActivity = integralActivityDao.selectOne(Wrappers.lambdaQuery(IntegralActivityEntity.class)
-					.le(IntegralActivityEntity::getBeginDate, now).ge(IntegralActivityEntity::getEndDate, now).orderByAsc(IntegralActivityEntity::getEndDate).last("LIMIT 1"));
-			if (Objects.nonNull(integralActivity)) {
+					.eq(IntegralActivityEntity::getDelFlag, 0).orderByDesc(IntegralActivityEntity::getCreateTime).last("LIMIT 1"));
+			if (Objects.nonNull(integralActivity) && (integralActivity.getBeginDate().compareTo(now) == -1 && integralActivity.getEndDate().compareTo(now) == 1)) {
 				// 奖励积分
-				int val = newIntegral * integralActivity.getIntegralProportion() / 100;
+				int val = BigDecimal.valueOf(newIntegral) .multiply(BigDecimal.valueOf(integralActivity.getIntegralProportion())).divide(BigDecimal.valueOf(100)).intValue();
 				integralItem.setIntegral(val);
 			}else {
 				return null;
