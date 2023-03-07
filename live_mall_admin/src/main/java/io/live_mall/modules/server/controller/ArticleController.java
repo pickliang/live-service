@@ -1,6 +1,7 @@
 package io.live_mall.modules.server.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.common.collect.Maps;
 import io.live_mall.common.utils.PageUtils;
@@ -461,11 +462,15 @@ public class ArticleController {
      */
     @GetMapping(value = "/banner-article")
     @RequiresPermissions("server:banner:list")
-    public R bannerArticle(@RequestParam(defaultValue = "1") Integer type) {
+    public R bannerArticle(@RequestParam(defaultValue = "1") Integer type, String title) {
         List<Map<String, Object>> data = new ArrayList<>();
         if (1 == type) {
-            List<FinanceEntity> list = financeService.list(Wrappers.lambdaQuery(FinanceEntity.class)
-                    .eq(FinanceEntity::getDelFlag, 0).orderByDesc(FinanceEntity::getCreateTime).last("LIMIT 20"));
+            LambdaQueryWrapper<FinanceEntity> wrapper = Wrappers.lambdaQuery(FinanceEntity.class).eq(FinanceEntity::getDelFlag, 0);
+            if (StringUtils.isNotBlank(title)) {
+                wrapper.like(FinanceEntity::getTitle, title);
+            }
+            wrapper.orderByDesc(FinanceEntity::getCreateTime).last("LIMIT 40");
+            List<FinanceEntity> list = financeService.list(wrapper);
             list.forEach(entity -> {
                 Map<String, Object> result = Maps.newHashMap();
                 result.put("id", entity.getId());
@@ -475,8 +480,12 @@ public class ArticleController {
         }
 
         if (2 == type) {
-            List<InformationEntity> list = informationService.list(Wrappers.lambdaQuery(InformationEntity.class)
-                    .eq(InformationEntity::getDelFlag, 0).orderByDesc(InformationEntity::getCreateTime).last("LIMIT 20"));
+            LambdaQueryWrapper<InformationEntity> wrapper = Wrappers.lambdaQuery(InformationEntity.class).eq(InformationEntity::getDelFlag, 0);
+            if (StringUtils.isNotBlank(title)) {
+                wrapper.like(InformationEntity::getTitle, title);
+            }
+            wrapper.orderByDesc(InformationEntity::getCreateTime).last("LIMIT 20");
+            List<InformationEntity> list = informationService.list(wrapper);
             list.forEach(entity -> {
                 Map<String, Object> result = Maps.newHashMap();
                 result.put("id", entity.getId());
@@ -486,8 +495,12 @@ public class ArticleController {
         }
 
         if (3 == type) {
-            List<ActivityEntity> list = activityService.list(Wrappers.lambdaQuery(ActivityEntity.class)
-                    .eq(ActivityEntity::getDelFlag, 0).orderByDesc(ActivityEntity::getCreateTime).last("LIMIT 20"));
+            LambdaQueryWrapper<ActivityEntity> wrapper = Wrappers.lambdaQuery(ActivityEntity.class).eq(ActivityEntity::getDelFlag, 0);
+            if (StringUtils.isNotBlank(title)) {
+                wrapper.like(ActivityEntity::getTitle, title);
+            }
+            wrapper.orderByDesc(ActivityEntity::getCreateTime).last("LIMIT 20");
+            List<ActivityEntity> list = activityService.list(wrapper);
             list.forEach(entity -> {
                 Map<String, Object> result = Maps.newHashMap();
                 result.put("id", entity.getId());

@@ -28,6 +28,6 @@ public interface ProductService extends IService<ProductEntity> {
 
 	String getProductClassByProductName(String productName);
 
-	List<JSONObject> productNameList();
+	List<JSONObject> productNameList(String name);
 }
 

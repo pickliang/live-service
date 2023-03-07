@@ -108,8 +108,8 @@ public class ProductController {
 
 	@GetMapping(value = "/product-name-list")
 	@RequiresPermissions("server:product:list")
-	public R productNameList() {
-		List<JSONObject> list = productService.productNameList();
+	public R productNameList(String name) {
+		List<JSONObject> list = productService.productNameList(name);
 		return R.ok().put("data", list);
 	}
 

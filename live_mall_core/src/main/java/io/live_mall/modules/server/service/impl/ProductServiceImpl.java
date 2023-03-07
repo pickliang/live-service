@@ -196,7 +196,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductDao, ProductEntity> i
 	}
 
 	@Override
-	public List<JSONObject> productNameList() {
-		return this.baseMapper.productNameList();
+	public List<JSONObject> productNameList(String name) {
+		return this.baseMapper.productNameList(name);
 	}
 }

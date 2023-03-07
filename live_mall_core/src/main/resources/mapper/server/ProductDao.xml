@@ -504,5 +504,8 @@
 
 	<select id="productNameList" resultType="com.alibaba.fastjson.JSONObject">
 		SELECT id, product_name FROM `p_product` WHERE del_flag = 0
+		<if test="name !=null and name != ''">
+			AND LOCATE(#{name}, product_name) > 0
+		</if>
 	</select>
 </mapper>
