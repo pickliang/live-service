@@ -23,7 +23,13 @@
 			</select>
 
 	<select id="memberList" resultType="com.alibaba.fastjson.JSONObject">
-		SELECT member_no, cust_name FROM `p_member` ORDER BY create_date DESC
+		SELECT member_no, cust_name FROM `p_member`
+		<where>
+			<if test="name !=null and name != ''">
+				AND LOCATE(#{name},cust_name) > 0
+			</if>
+		</where>
+		ORDER BY create_date DESC
 	</select>
 
 	<select id="members" resultType="com.alibaba.fastjson.JSONObject">

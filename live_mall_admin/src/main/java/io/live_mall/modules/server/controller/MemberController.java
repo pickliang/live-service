@@ -2,18 +2,22 @@ package io.live_mall.modules.server.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import io.live_mall.common.utils.PageUtils;
 import io.live_mall.common.utils.R;
 import io.live_mall.common.utils.RedisUtils;
 import io.live_mall.common.utils.ShiroUtils;
 import io.live_mall.constants.RedisKeyConstants;
+import io.live_mall.modules.server.entity.CustomerUserEntity;
 import io.live_mall.modules.server.entity.MemberEntity;
 import io.live_mall.modules.server.model.YouZanUserModel;
+import io.live_mall.modules.server.service.CustomerUserService;
 import io.live_mall.modules.server.service.MemberService;
 import io.live_mall.modules.server.service.TouchUserService;
 import io.live_mall.modules.server.service.YouZanUserService;
 import io.live_mall.tripartite.TouchClients;
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -41,6 +45,8 @@ public class MemberController {
     private RedisUtils redisUtils;
     @Autowired
     private TouchUserService touchUserService;
+    @Autowired
+    private CustomerUserService customerUserService;
 
     /**
      * 列表
@@ -80,6 +86,17 @@ public class MemberController {
     public R getMemberByCustName(@PathVariable("custName") String memberName){
     	Long userId = ShiroUtils.getUserId();
 		MemberEntity member = memberService.getOne(new QueryWrapper<MemberEntity>().eq("cust_Name", memberName).eq("sale_id", userId));
+        if (StringUtils.isNotBlank(member.getCardNum())) {
+            // 小程序用户信息
+            CustomerUserEntity customerUser = customerUserService.getOne(Wrappers.lambdaQuery(CustomerUserEntity.class)
+                    .eq(CustomerUserEntity::getCardNum, member.getCardNum()).last("LIMIT 1"));
+            if (Objects.nonNull(customerUser)) {
+                member.setCardPhotoR(customerUser.getCardPhotoR());
+                member.setCardPhotoL(customerUser.getCardPhotoL());
+                member.setCardTime(customerUser.getCardTime());
+                member.setPhone(customerUser.getPhone());
+            }
+        }
         return R.ok().put("data", member);
     }
     
@@ -126,8 +143,8 @@ public class MemberController {
      * @return
      */
     @GetMapping(value = "/members")
-    public R memberList() {
-        return R.ok().put("data", memberService.memberList());
+    public R memberList(String name) {
+        return R.ok().put("data", memberService.memberList(name));
     }
 
     /**

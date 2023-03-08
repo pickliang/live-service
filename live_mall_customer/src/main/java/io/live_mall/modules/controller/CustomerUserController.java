@@ -52,8 +52,9 @@ public class CustomerUserController {
             return R.error("身份证已被绑定");
         }
         user.setId(ShiroUtils.getUserEntity().getId());
-        customerUserService.updateUserInfo(user);
-        return R.ok();
+        // 邀请码
+        Integer code = customerUserService.updateUserInfo(user);
+        return R.ok().put("data",code);
     }
 
     /**
@@ -123,6 +124,9 @@ public class CustomerUserController {
             }else if (Objects.nonNull(customerUser.getCardNum())) {
                 // 没有绑定理财师 根据身份证获取理财师信息
                 userModel = sysUserService.sysUserByCardNum(customerUser.getCardNum());
+                if (Objects.nonNull(userModel)) {
+                    customerUserService.update(Wrappers.lambdaUpdate(CustomerUserEntity.class).set(CustomerUserEntity::getSaleId, userModel.getUserId()).eq(CustomerUserEntity::getId, userEntity.getId()));
+                }
             }
             SysUserArchivesEntity sysUserArchives = sysUserArchivesService.getById(customerUser.getSaleId());
             if (Objects.nonNull(userModel) && Objects.nonNull(sysUserArchives)) {

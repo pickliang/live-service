@@ -20,7 +20,7 @@ import java.util.List;
 public interface MemberDao extends BaseMapper<MemberEntity> {
 	JSONObject getTj(@Param("custId")String custId,@Param("salesId")String salesId);
 
-	List<JSONObject> memberList();
+	List<JSONObject> memberList(String name);
 
 	List<JSONObject> members(@Param("startDate") String startDate, @Param("endDate") String endDate);
 

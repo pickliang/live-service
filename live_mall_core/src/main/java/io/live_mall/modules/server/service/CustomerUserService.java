@@ -23,5 +23,5 @@ public interface CustomerUserService extends IService<CustomerUserEntity> {
      * @param userDto
      * @return
      */
-    int updateUserInfo(CustomerUserDto userDto);
+    Integer updateUserInfo(CustomerUserDto userDto);
 }

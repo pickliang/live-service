@@ -36,13 +36,14 @@ public class CustomerUserServiceImpl extends ServiceImpl<CustomerUserDao, Custom
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public int updateUserInfo(CustomerUserDto userDto) {
+    public Integer updateUserInfo(CustomerUserDto userDto) {
         // 是否存在有效的理财订单
         Integer count = orderDao.selectCount(Wrappers.lambdaQuery(OrderEntity.class).eq(OrderEntity::getCardNum, userDto.getCardNum()).eq(OrderEntity::getStatus, 4).last("LIMIT 1"));
         Integer code = count == 0 ? null : code();
         // 增加积分
         CompletableFuture.supplyAsync(() -> customerUserIntegralItemService.saveCustomerUserIntegralItem(userDto.getId(), userDto.getCardNum()));
-        return this.baseMapper.updateUserInfo(userDto, code);
+        this.baseMapper.updateUserInfo(userDto, code);
+        return code;
     }
 
     /**

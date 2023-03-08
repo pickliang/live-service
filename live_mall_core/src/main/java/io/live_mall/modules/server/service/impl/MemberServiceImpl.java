@@ -170,8 +170,8 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
 	}
 
 	@Override
-	public List<JSONObject> memberList() {
-		return this.baseMapper.memberList();
+	public List<JSONObject> memberList(String name) {
+		return this.baseMapper.memberList(name);
 	}
 
 	@Override
