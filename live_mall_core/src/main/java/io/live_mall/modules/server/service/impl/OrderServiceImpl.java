@@ -703,9 +703,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 			// 注册了客户小程序 赠送积分
 			CustomerUserEntity userEntity = customerUserDao.selectOne(Wrappers.lambdaQuery(CustomerUserEntity.class).eq(CustomerUserEntity::getCardNum, orderEntity.getCardNum()).last("LIMIT 1"));
 			if (Objects.nonNull(userEntity)) {
-				String description = "订单赠送";
 				Integer type = 1;
-				addPoints(token, orderEntity, userEntity, description, type);
+				addPoints(token, orderEntity, userEntity, type);
 				// 其他客户的邀请码
 				if (Objects.nonNull(userEntity.getAskCode())) {
 					CustomerUserIntegralItemEntity userIntegralItem = customerUserIntegralItemDao.selectOne(Wrappers.lambdaQuery(CustomerUserIntegralItemEntity.class)
@@ -714,9 +713,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 					if (Objects.isNull(userIntegralItem)) {
 						// 邀请人信息
 						CustomerUserEntity customerUser = customerUserDao.selectOne(Wrappers.lambdaQuery(CustomerUserEntity.class).eq(CustomerUserEntity::getCode, userEntity.getAskCode()).last("LIMIT 1"));
-						description = "邀请积分奖励";
 						type = 2;
-						addPoints(token, orderEntity, customerUser, description, type);
+						addPoints(token, orderEntity, customerUser, type);
 					}
 				}
 
@@ -724,7 +722,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 		}
 	}
 
-	public String addPoints(String token, OrderEntity orderEntity, CustomerUserEntity userEntity, String description, Integer type) throws SDKException {
+	public String addPoints(String token, OrderEntity orderEntity, CustomerUserEntity userEntity, Integer type) throws SDKException {
+		String description = type == 1 ? "订单赠送" : "邀请积分奖励";
 		// 积分规则
 		IntegralEntity integralEntity = integralDao.selectOne(Wrappers.lambdaQuery(IntegralEntity.class).orderByDesc(IntegralEntity::getCreateTime).last("LIMIT 1"));
 		Integer integral = Objects.isNull(integralEntity) ? 0 : integralEntity.getIntegral();

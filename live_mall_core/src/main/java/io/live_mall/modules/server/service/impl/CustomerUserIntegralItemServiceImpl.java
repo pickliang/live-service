@@ -11,6 +11,7 @@ import io.live_mall.modules.server.dao.IntegralDao;
 import io.live_mall.modules.server.dao.OrderDao;
 import io.live_mall.modules.server.entity.CustomerUserIntegralItemEntity;
 import io.live_mall.modules.server.entity.IntegralEntity;
+import io.live_mall.modules.server.entity.OrderEntity;
 import io.live_mall.modules.server.service.CustomerUserIntegralItemService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -63,6 +64,14 @@ public class CustomerUserIntegralItemServiceImpl extends ServiceImpl<CustomerUse
     @Override
     public PageUtils customerUserIntegral(Map<String, Object> params, String userId) {
         IPage<JSONObject> pages = this.baseMapper.customerUserIntegralPages(new Query<JSONObject>().getPage(params), userId);
+        pages.getRecords().forEach(page -> {
+            if (page.getInteger("type") == 2) {
+                OrderEntity order = orderDao.selectById(page.getString("order_id"));
+                if (Objects.nonNull(order)) {
+                    page.put("customer_name", order.getCustomerName());
+                }
+            }
+        });
         return new PageUtils(pages);
     }
 
