@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.live_mall.modules.server.dao.OrderBonusDao">
+    <select id="pages" resultType="io.live_mall.modules.server.model.OrderBonusModel">
+        SELECT
+            id,
+            order_id,
+            type,
+            money,
+            `date`,
+            frequency,
+            remark,
+            appendix
+        FROM
+            p_order_bonus
+        where type = #{type}
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="customerPages" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            o.id,
+            p.product_name,
+            DATE_FORMAT( o.appoint_time, '%Y-%m-%d' ) AS appoint_time,
+            appoint_money,
+            DATE_ADD(r.establish_time,INTERVAL o.date_num MONTH) as establish_time
+        FROM
+            p_order AS o
+                LEFT JOIN p_product AS p ON p.id = o.product_id
+                LEFT JOIN p_raise as r on o.raise_id = r.id
+        WHERE
+            p.product_class = '权益类'
+          AND o.`status` IN ( 2, 4 )
+          AND o.id
+          <if test="type != 1">
+              NOT
+          </if>
+              IN ( SELECT order_id FROM p_order_out WHERE card_num = #{cardNum} )
+          AND o.card_num = #{cardNum}
+    </select>
+</mapper>

@@ -177,5 +177,5 @@ public interface OrderDao extends BaseMapper<OrderEntity> {
 
 	JSONObject getOrderById(String orderId);
 
-
+	IPage<JSONObject> stockRightOrders(@Param("pages") IPage<JSONObject> pages, @Param("params") Map<String, Object> params);
 }

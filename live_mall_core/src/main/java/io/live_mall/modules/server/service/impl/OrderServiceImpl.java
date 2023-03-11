@@ -802,11 +802,14 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 		return models;
 	}
 
-
-
-
-
-
-
-
+	@Override
+	public PageUtils stockRightOrders(Map<String, Object> params) {
+		IPage<JSONObject> orders = this.baseMapper.stockRightOrders(new Query<JSONObject>().getPage(params), params);
+		orders.getRecords().forEach(order -> {
+			String date = order.getString("date");
+			Integer addBonus = Objects.nonNull(date) ? 1 : 0;
+			order.put("addBonus", addBonus);
+		});
+		return new PageUtils(orders);
+	}
 }

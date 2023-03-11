@@ -8,18 +8,16 @@ import io.live_mall.common.utils.R;
 import io.live_mall.common.utils.ShiroUtils;
 import io.live_mall.modules.server.entity.IntegralActivityEntity;
 import io.live_mall.modules.server.entity.IntegralEntity;
+import io.live_mall.modules.server.entity.OrderBonusEntity;
+import io.live_mall.modules.server.entity.OrderOutEntity;
 import io.live_mall.modules.server.model.CustomerUserModel;
-import io.live_mall.modules.server.service.CustomerUserIntegralItemService;
-import io.live_mall.modules.server.service.IntegralActivityService;
-import io.live_mall.modules.server.service.IntegralService;
-import io.live_mall.modules.server.service.OrderService;
+import io.live_mall.modules.server.service.*;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author yewl
@@ -35,8 +33,10 @@ public class OrderController {
     private final IntegralService integralService;
     private final IntegralActivityService integralActivityService;
     private final CustomerUserIntegralItemService customerUserIntegralItemService;
+    private final OrderBonusService orderBonusService;
+    private final OrderOutService orderOutService;
     /**
-     * 订单
+     * 固收订单
      * @param params
      * @return
      */
@@ -147,6 +147,42 @@ public class OrderController {
         return R.ok().put("data", page);
     }
 
+    /**
+     * 股权订单列表
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "/stock-right-list")
+    public R stockRight(@RequestParam Map<String, Object> params) {
+        CustomerUserModel userEntity = ShiroUtils.getUserEntity();
+        PageUtils pageUtils = orderBonusService.customerPages(params, userEntity.getCardNum());
+        return R.ok().put("data", pageUtils);
+    }
+
+    /**
+     * 股权订单详情
+     * @param id 订单id
+     * @return
+     */
+    @GetMapping(value = "/stock-right-info/{id}")
+    public R stockRightInfo(@PathVariable("id") String id) {
+        Map<String, Object> result = Maps.newHashMap();
+        List<Map<String, Object>> bonus = new ArrayList<>();
+        List<String> appendix = new ArrayList<>();
+        List<OrderBonusEntity> list = orderBonusService.list(Wrappers.lambdaQuery(OrderBonusEntity.class).eq(OrderBonusEntity::getOrderId, id));
+        list.forEach(b -> {
+            Map<String, Object> map = Maps.newHashMap();
+            map.put("date", b.getDate());
+            map.put("money", b.getMoney());
+            bonus.add(map);
+            appendix.add(b.getAppendix());
+        });
+        OrderOutEntity orderOut = orderOutService.getOne(Wrappers.lambdaQuery(OrderOutEntity.class).eq(OrderOutEntity::getOrderId, id).last("LIMIT 1"));
+        result.put("bonus", bonus);
+        result.put("out", orderOut);
+        result.put("appendix", appendix);
+        return R.ok().put("data", result);
+    }
 
     /**
      * 产品详情

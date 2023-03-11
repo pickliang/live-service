@@ -11,14 +11,11 @@ import io.live_mall.constants.RedisKeyConstants;
 import io.live_mall.modules.oss.cloud.OSSFactory;
 import io.live_mall.modules.oss.entity.SysOssEntity;
 import io.live_mall.modules.oss.service.SysOssService;
-import io.live_mall.modules.server.entity.OrderEntity;
-import io.live_mall.modules.server.entity.OrderPayEntity;
-import io.live_mall.modules.server.entity.RaiseEntity;
+import io.live_mall.modules.server.entity.*;
+import io.live_mall.modules.server.model.OrderBonusModel;
 import io.live_mall.modules.server.model.OrderModel;
 import io.live_mall.modules.server.model.OrderUtils;
-import io.live_mall.modules.server.service.OrderPayService;
-import io.live_mall.modules.server.service.OrderService;
-import io.live_mall.modules.server.service.RaiseService;
+import io.live_mall.modules.server.service.*;
 import io.live_mall.tripartite.TouchClients;
 import io.live_mall.tripartite.YouZanClients;
 import lombok.AllArgsConstructor;
@@ -26,6 +23,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -51,6 +49,8 @@ public class OrderController {
     private final SysOssService sysOssService;
     private final OrderPayService orderPayService;
     private final RedisUtils redisUtils;
+    private final OrderBonusService orderBonusService;
+    private final OrderOutService orderOutService;
     private static Lock lock = new ReentrantLock();
 
     /**
@@ -348,4 +348,89 @@ public class OrderController {
         return R.ok().put("data", orderService.orderPayNoticeData(startDate, endDate));
     }
 
+    /**
+     * 股权订单
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "/stock-right")
+    public R stockRightOrders(@RequestParam Map<String, Object> params) {
+        return R.ok().put("data", orderService.stockRightOrders(params));
+    }
+
+    /**
+     * 分红列表
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "/bonus")
+    public R orderBonus(@RequestParam Map<String, Object> params) {
+        PageUtils pages = orderBonusService.pages(params);
+        return R.ok().put("data", pages);
+    }
+
+    /**
+     * 保存分红
+     * @param entity
+     * @return
+     */
+    @PostMapping(value = "/save-bonus")
+    public R saveOrderBonus(@RequestBody OrderBonusEntity entity) {
+        OrderEntity order = orderService.getById(entity.getOrderId());
+        if (Objects.nonNull(order)) {
+            entity.setCreateUser(ShiroUtils.getUserId());
+            entity.setCreateTime(new Date());
+            entity.setProductId(order.getProductId());
+            entity.setCardNum(order.getCardNum());
+            boolean save = orderBonusService.save(entity);
+            return save ? R.ok() : R.error();
+        }
+       return R.error();
+    }
+
+    /**
+     * 分红详情
+     * @param id 主键id
+     * @return
+     */
+    @GetMapping(value = "/bonus-info/{id}")
+    public R orderBonusInfo(@PathVariable("id") String id) {
+        OrderBonusEntity orderBonus = orderBonusService.getById(id);
+        OrderBonusModel model = new OrderBonusModel();
+        BeanUtils.copyProperties(orderBonus, model);
+        return R.ok().put("data", model);
+    }
+
+    /**
+     * 更新分红
+     * @param model
+     * @return
+     */
+    @PostMapping(value = "/update-bonus")
+    public R updateOrderBonus(@RequestBody OrderBonusModel model) {
+        OrderBonusEntity entity = new OrderBonusEntity();
+        BeanUtils.copyProperties(model, entity);
+        entity.setUpdateUser(ShiroUtils.getUserId());
+        entity.setUpdateTime(new Date());
+        boolean b = orderBonusService.updateById(entity);
+        return b ? R.ok() : R.error();
+    }
+
+    /**
+     * 保存订单退出
+     * @param entity
+     * @return
+     */
+    @PostMapping(value = "/save-order-out")
+    public R saveOrderOut(@RequestBody OrderOutEntity entity) {
+        OrderEntity order = orderService.getById(entity.getOrderId());
+        if (Objects.nonNull(order)) {
+            entity.setCardNum(order.getCardNum());
+            entity.setCreateUser(ShiroUtils.getUserId());
+            entity.setCreateTime(new Date());
+            boolean save = orderOutService.save(entity);
+            return save ? R.ok() : R.error();
+        }
+        return R.error();
+    }
 }

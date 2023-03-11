@@ -105,6 +105,12 @@ public interface OrderService extends IService<OrderEntity> {
 	 */
 	List<DuiFuNoticeModel> orderPayNoticeData(String startDate, String endDate);
 
+	/**
+	 * 股权订单列表
+	 * @param params
+	 * @return
+	 */
+	PageUtils stockRightOrders(Map<String, Object> params);
 
 }
 
