@@ -1,5 +1,6 @@
 package io.live_mall.modules.server.service.impl;
 
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -86,6 +87,14 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 	private TouchUserDao touchUserDao;
 	@Autowired
 	private IntegralActivityDao integralActivityDao;
+	@Autowired
+	private OrderRedeemDao orderRedeemDao;
+	@Autowired
+	private OrderPurchaseDao orderPurchaseDao;
+	@Autowired
+	private OrderBonusDao orderBonusDao;
+	@Autowired
+	private OrderOutDao orderOutDao;
 
 	@Override
 	public PageUtils selectDuifuPage(Map<String, Object> params) {
@@ -500,9 +509,17 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 	@Override
 	public Map<String, Object> 	totalAssets(String cardNum) {
 		Map<String, Object> result = Maps.newHashMap();
+		// 累计收益=固收总收益（固收付息汇总）+股权总收益（分红，退出收益=退出金额-投资额）+ 证券投资总收益（分红，赎回收益）
 		// 累计收益：所有已付利息总和
 		Double expectedIncome = this.baseMapper.expectedIncome(cardNum);
 		Double historyExpectedIncome = this.baseMapper.historyExpectedIncome(cardNum);
+		// 分红
+		double sumMoney = orderBonusDao.sumMoney(cardNum);
+		// 赎回收益
+		double sumIncome = orderRedeemDao.sumIncome(cardNum);
+		// 退出收益=退出金额-投资额
+		double outSumMoney = orderOutDao.sumMoney(cardNum);
+
 		// 利息= 本息合计减去预购金额
 		Double interest = this.baseMapper.interest(cardNum);
 		Double historyInterest = this.baseMapper.historyInterest(cardNum);
@@ -522,7 +539,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 		result.put("fixedIncome", fixedIncome + historyFixedIncome);
 		result.put("stock", stock + historyStock);
 		result.put("netWorth", netWorth + historyNetWorth);
-		result.put("totalInterest", expectedIncome + historyExpectedIncome + interest + historyInterest);
+		result.put("totalInterest", expectedIncome + historyExpectedIncome + interest + historyInterest + sumMoney + sumIncome + outSumMoney);
 		return result;
 	}
 
@@ -530,6 +547,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
 	@Override
 	public Map<String, Object> customerAssets(String cardNum) {
+		// 累计收益=固收总收益（固收付息汇总）+股权总收益（分红，退出收益=退出金额-投资额）+ 证券投资总收益（分红，赎回收益）
 		Map<String, Object> result = Maps.newHashMap();
 		// 总投资额 = 在投+历史的投资总额
 		Integer totalAssets = this.baseMapper.customerTotalAssets(cardNum);
@@ -548,6 +566,13 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 		Double interest = this.baseMapper.interest(cardNum);
 		Double historyInterest = this.baseMapper.historyInterest(cardNum);
 
+		// 分红
+		double sumMoney = orderBonusDao.sumMoney(cardNum);
+		// 赎回收益
+		double sumIncome = orderRedeemDao.sumIncome(cardNum);
+		// 退出收益=退出金额-投资额
+		double outSumMoney = orderOutDao.sumMoney(cardNum);
+
 		// 总资产 = 在投的总金额
 		// 在投订单金额
 		Integer investing = this.baseMapper.investingOrderMoney(cardNum);
@@ -559,7 +584,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 		// 总投资额
 		result.put("annualIncome", totalAssets + assets);
 		// 累计收益
-		result.put("expectedIncome", expectedIncome + historyExpectedIncome + interest + historyInterest);
+		result.put("expectedIncome", expectedIncome + historyExpectedIncome + interest + historyInterest + sumMoney + sumIncome + outSumMoney);
 		// 在投订单金额
 		result.put("investing", investing + historyInvesting);
 		return result;
@@ -811,5 +836,42 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 			order.put("addBonus", addBonus);
 		});
 		return new PageUtils(orders);
+	}
+
+	@Override
+	public PageUtils bondOrders(Map<String, Object> params) {
+		IPage<JSONObject> orders = this.baseMapper.bondOrders(new Query<JSONObject>().getPage(params), params);
+		orders.getRecords().forEach(order -> {
+			String productId = order.getString("product_id");
+			String cardNum = order.getString("card_num");
+			// 申购次数
+			Integer purchase = orderPurchaseDao.selectCount(Wrappers.lambdaQuery(OrderPurchaseEntity.class).eq(OrderPurchaseEntity::getProductId, productId).eq(OrderPurchaseEntity::getCardNum, cardNum));
+			// 赎回次数
+			Integer redeem = orderRedeemDao.selectCount(Wrappers.lambdaQuery(OrderRedeemEntity.class).eq(OrderRedeemEntity::getProductId, productId).eq(OrderRedeemEntity::getCardNum, cardNum));
+			// 分红次数
+			Integer bonus = orderBonusDao.selectCount(Wrappers.lambdaQuery(OrderBonusEntity.class).eq(OrderBonusEntity::getProductId, productId).eq(OrderBonusEntity::getCardNum, cardNum));
+			// 剩余份额
+			// Integer purchasePortion = orderPurchaseDao.sumPortion(productId, cardNum);
+			// Integer redeemPortion = orderRedeemDao.sumPortion(productId, cardNum);
+			// Integer portion = purchasePortion - redeemPortion;
+			order.put("purchase", purchase);
+			order.put("redeem", redeem);
+			order.put("bonus", bonus);
+			// order.put("portion", portion);
+		});
+		return new PageUtils(orders);
+	}
+
+	@Override
+	public void updateOrderPortion(String id, Integer portion) {
+
+		this.baseMapper.update(new OrderEntity(), Wrappers.lambdaUpdate(OrderEntity.class).set(OrderEntity::getPortion, portion).eq(OrderEntity::getId, id));
+	}
+
+	@Override
+	public PageUtils customerBondPages(Map<String, Object> params, String cardNum) {
+		// 1-在投订单 2-历史订单
+		Integer isHistory = Convert.convert(Integer.class, params.get("isHistory"), 1);
+		return new PageUtils(this.baseMapper.customerBondPages(new Query<JSONObject>().getPage(params), isHistory, cardNum));
 	}
 }

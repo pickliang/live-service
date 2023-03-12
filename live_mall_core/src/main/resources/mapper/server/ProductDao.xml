@@ -507,5 +507,8 @@
 		<if test="name !=null and name != ''">
 			AND LOCATE(#{name}, product_name) > 0
 		</if>
+		<if test="productClass !=null and productClass != ''">
+			AND product_class = #{productClass}
+		</if>
 	</select>
 </mapper>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.live_mall.modules.server.dao.OrderPurchaseDao">
+    <select id="sumPortion" resultType="integer">
+        SELECT IFNULL(SUM(portion),0) as portion FROM p_order_purchase WHERE product_id = #{productId} and card_num = #{cardNum}
+    </select>
+
+    <select id="purchaseList" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            o.id as order_id,
+            DATE_FORMAT( o.appoint_time, '%Y-%m-%d' ) AS appoint_time,
+            o.appoint_money,
+            p.portion,
+            p.worth
+        FROM
+            p_order AS o
+                LEFT JOIN p_order_purchase AS p ON p.order_id = o.id
+        WHERE
+            o.product_id = #{productId}
+          AND o.card_num = #{cardNum}
+    </select>
+
+    <select id="customerBonds" resultType="io.live_mall.modules.server.model.BondOrderModel">
+        SELECT
+            `date`,
+            money,
+            `portion`,
+            worth,
+            appendix
+        FROM
+            p_order_purchase
+        WHERE
+            order_id = #{orderId}
+        ORDER BY create_time DESC
+    </select>
+</mapper>

@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -33,6 +34,11 @@ public class OrderOutEntity implements Serializable {
      * 身份证号
      */
     private String cardNum;
+
+    /**
+     * 认购金额
+     */
+    private BigDecimal appointMoney;
 
     /**
      * 退出金额

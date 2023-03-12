@@ -7,12 +7,14 @@ import io.live_mall.common.utils.PageUtils;
 import io.live_mall.common.utils.Query;
 import io.live_mall.modules.server.dao.OrderBonusDao;
 import io.live_mall.modules.server.entity.OrderBonusEntity;
+import io.live_mall.modules.server.model.BondOrderModel;
 import io.live_mall.modules.server.model.OrderBonusModel;
 import io.live_mall.modules.server.service.OrderBonusService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -35,5 +37,10 @@ public class OrderBonusServiceImpl extends ServiceImpl<OrderBonusDao, OrderBonus
         // 1-在投订单  2-历史订单
         Integer type = Convert.convert(Integer.class, params.get("type"), 1);
         return new PageUtils(this.baseMapper.customerPages(new Query<JSONObject>().getPage(params), type, cardNum));
+    }
+
+    @Override
+    public List<BondOrderModel> customerBonds(String orderId) {
+        return this.baseMapper.customerBonds(orderId);
     }
 }

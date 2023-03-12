@@ -4,6 +4,7 @@ import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.google.common.collect.Maps;
 import com.youzan.cloud.open.sdk.core.oauth.model.OAuthToken;
 import io.live_mall.common.exception.RRException;
 import io.live_mall.common.utils.*;
@@ -26,6 +27,7 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.locks.Lock;
@@ -51,6 +53,8 @@ public class OrderController {
     private final RedisUtils redisUtils;
     private final OrderBonusService orderBonusService;
     private final OrderOutService orderOutService;
+    private final OrderPurchaseService orderPurchaseService;
+    private final OrderRedeemService orderRedeemService;
     private static Lock lock = new ReentrantLock();
 
     /**
@@ -425,11 +429,168 @@ public class OrderController {
     public R saveOrderOut(@RequestBody OrderOutEntity entity) {
         OrderEntity order = orderService.getById(entity.getOrderId());
         if (Objects.nonNull(order)) {
+            entity.setAppointMoney(BigDecimal.valueOf(order.getAppointMoney() * 10000));
             entity.setCardNum(order.getCardNum());
             entity.setCreateUser(ShiroUtils.getUserId());
             entity.setCreateTime(new Date());
             boolean save = orderOutService.save(entity);
             return save ? R.ok() : R.error();
+        }
+        return R.error();
+    }
+
+    /**
+     * 证券(二级市场)订单列表
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "/bond-orders")
+    public R bondOrders(@RequestParam Map<String, Object> params) {
+        PageUtils pages = orderService.bondOrders(params);
+        return R.ok().put("data", pages);
+    }
+
+    /**
+     * 申购设置列表
+     * @param productId 产品id
+     * @param cardNum 身份证
+     * @return
+     */
+    @GetMapping(value = "/purchase-list")
+    public R purchaseList(@RequestParam String productId, @RequestParam String cardNum) {
+        List<JSONObject> list = orderPurchaseService.purchaseList(productId, cardNum);
+        return R.ok().put("data", list);
+    }
+
+    /**
+     * 申购保存
+     * @param entity
+     * @return
+     */
+    @PostMapping(value = "/purchase")
+    public R savePurchase(@RequestBody OrderPurchaseEntity entity) {
+        OrderEntity order = orderService.getById(entity.getOrderId());
+        if (Objects.nonNull(order)) {
+            OrderRedeemEntity orderRedeem = orderRedeemService.getOne(Wrappers.lambdaQuery(OrderRedeemEntity.class).eq(OrderRedeemEntity::getOrderId, entity.getOrderId()));
+            Integer portion = Objects.nonNull(orderRedeem) ? orderRedeem.getPortion() : 0;
+            orderService.updateOrderPortion(entity.getOrderId(), entity.getPortion() - portion);
+            entity.setProductId(order.getProductId());
+            entity.setCardNum(order.getCardNum());
+            entity.setMoney(order.getAppointMoney());
+            entity.setDate(order.getAppointTime());
+            entity.setCreateTime(new Date());
+            entity.setCreateUser(ShiroUtils.getUserId());
+            boolean save = orderPurchaseService.save(entity);
+            return save ? R.ok() : R.error();
+        }
+        return R.error();
+    }
+
+    /**
+     * 申购详情
+     * @param id 订单id
+     * @return
+     */
+    @GetMapping(value = "/purchase-info/{id}")
+    public R purchaseInfo(@PathVariable("id") String id) {
+        Map<String, Object> result = Maps.newHashMap();
+        OrderPurchaseEntity purchase = orderPurchaseService.getById(id);
+        result.put("id", purchase.getId());
+        Integer portion = 0;
+        String worth = "";
+        String appendix = "";
+        if (Objects.nonNull(purchase)) {
+            portion = purchase.getPortion();
+            worth = purchase.getWorth();
+            appendix = purchase.getAppendix();
+        }
+        result.put("portion", portion);
+        result.put("worth", worth);
+        result.put("appendix", appendix);
+        return R.ok().put("data", result);
+    }
+
+    /**
+     * 更新申购
+     * @param entity
+     * @return
+     */
+    @PostMapping(value = "/update-purchase")
+    public R updatePurchase(@RequestBody OrderPurchaseEntity entity) {
+        OrderPurchaseEntity purchase = orderPurchaseService.getById(entity.getId());
+        if (Objects.nonNull(purchase)) {
+            OrderRedeemEntity orderRedeem = orderRedeemService.getOne(Wrappers.lambdaQuery(OrderRedeemEntity.class).eq(OrderRedeemEntity::getOrderId, entity.getOrderId()));
+            Integer portion = Objects.nonNull(orderRedeem) ? orderRedeem.getPortion() : 0;
+            orderService.updateOrderPortion(purchase.getOrderId(), entity.getPortion() - portion);
+            entity.setUpdateTime(new Date());
+            entity.setUpdateUser(ShiroUtils.getUserId());
+            boolean update = orderPurchaseService.updateById(entity);
+            return update ? R.ok() : R.error();
+        }
+       return R.error();
+    }
+
+    /**
+     * 赎回列表
+     * @param productId 产品id
+     * @param cardNum 身份证号
+     * @return
+     */
+    @GetMapping(value = "/redeem-list")
+    public R orderRedeem(@RequestParam String productId, @RequestParam String cardNum) {
+        List<OrderRedeemEntity> list = orderRedeemService.list(Wrappers.lambdaQuery(OrderRedeemEntity.class).eq(OrderRedeemEntity::getProductId, productId).eq(OrderRedeemEntity::getCardNum, cardNum));
+        return R.ok().put("data", list);
+    }
+
+    /**
+     * 赎回保存
+     * @param entity
+     * @return
+     */
+    @PostMapping(value = "/redeem")
+    public R saveRedeem(@RequestBody OrderRedeemEntity entity) {
+        OrderEntity order = orderService.getById(entity.getOrderId());
+        if (Objects.nonNull(order)) {
+            OrderPurchaseEntity orderPurchase = orderPurchaseService.getOne(Wrappers.lambdaQuery(OrderPurchaseEntity.class).eq(OrderPurchaseEntity::getOrderId, entity.getOrderId()));
+            Integer portion = Objects.nonNull(orderPurchase) ? orderPurchase.getPortion() : 0;
+            orderService.updateOrderPortion(entity.getOrderId(), portion - entity.getPortion());
+            entity.setProductId(order.getProductId());
+            entity.setCardNum(order.getCardNum());
+            entity.setCreateTime(new Date());
+            entity.setCreateUser(ShiroUtils.getUserId());
+            boolean save = orderRedeemService.save(entity);
+            return save ? R.ok() : R.error();
+        }
+        return R.error();
+    }
+
+    /**
+     * 赎回详情
+     * @param id 主键id
+     * @return
+     */
+    @GetMapping(value = "/redeem-info/{id}")
+    public R redeemInfo(@PathVariable("id") String id) {
+        OrderRedeemEntity redeem = orderRedeemService.getById(id);
+        return R.ok().put("data", redeem);
+    }
+
+    /**
+     * 赎回更新
+     * @param entity
+     * @return
+     */
+    @PostMapping(value = "/update-redeem")
+    public R updateRedeem(@RequestBody OrderRedeemEntity entity) {
+        OrderRedeemEntity redeem = orderRedeemService.getById(entity.getId());
+        if (Objects.nonNull(redeem)) {
+            OrderPurchaseEntity orderPurchase = orderPurchaseService.getOne(Wrappers.lambdaQuery(OrderPurchaseEntity.class).eq(OrderPurchaseEntity::getOrderId, redeem.getOrderId()));
+            Integer portion = Objects.nonNull(orderPurchase) ? orderPurchase.getPortion() : 0;
+            orderService.updateOrderPortion(redeem.getOrderId(), portion - entity.getPortion());
+            entity.setUpdateTime(new Date());
+            entity.setUpdateUser(ShiroUtils.getUserId());
+            boolean update = orderRedeemService.updateById(entity);
+            return update ? R.ok() : R.error();
         }
         return R.error();
     }

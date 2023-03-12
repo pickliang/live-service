@@ -3,7 +3,9 @@ package io.live_mall.modules.server.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import io.live_mall.common.utils.PageUtils;
 import io.live_mall.modules.server.entity.OrderBonusEntity;
+import io.live_mall.modules.server.model.BondOrderModel;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -16,5 +18,6 @@ public interface OrderBonusService extends IService<OrderBonusEntity> {
 
     PageUtils customerPages(Map<String, Object> params, String cardNum);
 
+    List<BondOrderModel> customerBonds(String orderId);
 
 }

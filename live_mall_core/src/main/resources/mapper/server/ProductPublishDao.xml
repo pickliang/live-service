@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.live_mall.modules.server.dao.ProductPublishDao">
+    <select id="pages" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            pp.id,
+            p.product_name,
+            pp.`date`,
+            pp.worth,
+            s.realname,
+            pp.create_time
+        FROM
+            `p_product_publish` AS pp
+            LEFT JOIN p_product AS p ON pp.product_id = p.id
+            LEFT JOIN sys_user AS s ON pp.create_user = s.user_id
+        ORDER BY create_time DESC
+    </select>
+</mapper>

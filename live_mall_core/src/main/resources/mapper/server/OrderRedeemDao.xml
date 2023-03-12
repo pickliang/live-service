@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.live_mall.modules.server.dao.OrderRedeemDao">
+    <select id="sumPortion" resultType="integer">
+        SELECT IFNULL(SUM(portion),0) as portion FROM p_order_redeem WHERE product_id = #{productId} and card_num = #{cardNum}
+    </select>
+
+    <select id="customerBonds" resultType="io.live_mall.modules.server.model.BondOrderModel">
+        SELECT
+            `date`,
+            money,
+            `portion`,
+            worth,
+            income,
+            appendix
+        FROM
+            p_order_redeem
+        WHERE
+            order_id = #{orderId}
+        ORDER BY
+            create_time DESC
+    </select>
+
+    <select id="sumIncome" resultType="double">
+        SELECT IFNULL(SUM(income) ,0) as money FROM p_order_redeem WHERE card_num = #{cardNum}
+    </select>
+</mapper>

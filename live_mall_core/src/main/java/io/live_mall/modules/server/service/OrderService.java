@@ -112,5 +112,15 @@ public interface OrderService extends IService<OrderEntity> {
 	 */
 	PageUtils stockRightOrders(Map<String, Object> params);
 
+	/**
+	 * 证券订单列表（二级市场）
+	 * @param params
+	 * @return
+	 */
+	PageUtils bondOrders(Map<String, Object> params);
+
+	void updateOrderPortion(String id, Integer portion);
+
+	PageUtils customerBondPages(Map<String, Object> params, String cardNum);
 }
 

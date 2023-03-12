@@ -602,6 +602,56 @@
 
 	</select>
 
+	<select id="bondOrders" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT
+			o.id,
+			o.product_id,
+			p.product_name,
+			o.customer_name,
+			o.card_num,
+			o.portion
+		FROM
+			p_order AS o
+				LEFT JOIN p_product AS p ON p.id = o.product_id
+		WHERE
+			p.product_class = '净值型'
+		  AND o.`status` IN ( 2, 4 )
+		<if test="params.product_name != null and params.product_name != ''">
+			AND LOCATE(#{params.product_name}, p.product_name) > 0
+		</if>
+		<if test="params.customer_name != null and params.customer_name != ''">
+			AND LOCATE(#{params.customer_name}, o.customer_name) > 0
+		</if>
+		GROUP BY p.product_name, o.customer_name
+		ORDER BY o.create_date DESC
+	</select>
+
+	<select id="customerBondPages" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT
+			o.id,
+			p.product_name,
+			DATE_FORMAT( o.appoint_time, '%Y-%m-%d' ) AS appoint_time,
+			o.appoint_money,
+			DATE_ADD( r.establish_time, INTERVAL o.date_num MONTH ) as end_date
+		FROM
+			p_order AS o
+				LEFT JOIN p_product AS p ON p.id = o.product_id
+				LEFT JOIN p_raise AS r ON r.id = o.raise_id
+		WHERE
+			p.product_class = '净值型'
+		  AND o.`status` IN ( 2, 4 )
+		  AND o.card_num = #{cardNum}
+		<choose>
+			<when test="isHistory == 2">
+				AND o.portion != 0
+			</when>
+			<otherwise>
+				AND o.portion = 0
+			</otherwise>
+		</choose>
+		ORDER BY o.create_date DESC
+	</select>
+
 	<!--	20220516 add end-->
     <select id="selectPageVo"  resultType="io.live_mall.modules.server.entity.OrderEntity" parameterType="java.util.HashMap" >
     		select o.* from  p_order o  

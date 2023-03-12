@@ -6,10 +6,8 @@ import io.live_mall.common.utils.DateUtils;
 import io.live_mall.common.utils.PageUtils;
 import io.live_mall.common.utils.R;
 import io.live_mall.common.utils.ShiroUtils;
-import io.live_mall.modules.server.entity.IntegralActivityEntity;
-import io.live_mall.modules.server.entity.IntegralEntity;
-import io.live_mall.modules.server.entity.OrderBonusEntity;
-import io.live_mall.modules.server.entity.OrderOutEntity;
+import io.live_mall.modules.server.entity.*;
+import io.live_mall.modules.server.model.BondOrderModel;
 import io.live_mall.modules.server.model.CustomerUserModel;
 import io.live_mall.modules.server.service.*;
 import lombok.AllArgsConstructor;
@@ -35,6 +33,9 @@ public class OrderController {
     private final CustomerUserIntegralItemService customerUserIntegralItemService;
     private final OrderBonusService orderBonusService;
     private final OrderOutService orderOutService;
+    private final OrderPurchaseService orderPurchaseService;
+    private final OrderRedeemService orderRedeemService;
+    private final FundNoticeService fundNoticeService;
     /**
      * 固收订单
      * @param params
@@ -182,6 +183,51 @@ public class OrderController {
         result.put("out", orderOut);
         result.put("appendix", appendix);
         return R.ok().put("data", result);
+    }
+
+    /**
+     * 二级市场列表
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "/bond-pages")
+    public R bondPages(@RequestParam Map<String, Object> params) {
+        CustomerUserModel userEntity = ShiroUtils.getUserEntity();
+        PageUtils pages = orderService.customerBondPages(params, userEntity.getCardNum());
+        return R.ok().put("data", pages);
+    }
+
+    /**
+     * 二级市场订单详情
+     * @param orderId
+     * @return
+     */
+    @GetMapping(value = "/bond-info")
+    public R bondInfo(@RequestParam String orderId) {
+        OrderEntity order = orderService.getById(orderId);
+        if (Objects.nonNull(order)) {
+            Map<String, Object> result = Maps.newHashMap();
+            List<String> appendix = new ArrayList<>();
+            // 申购
+            List<BondOrderModel> purchase = orderPurchaseService.customerBonds(orderId);
+            purchase.forEach(p -> appendix.add(p.getAppendix()));
+            // 分红
+            List<BondOrderModel> bonus = orderBonusService.customerBonds(orderId);
+            // 赎回
+            List<BondOrderModel> redeem = orderRedeemService.customerBonds(orderId);
+            redeem.forEach(r -> appendix.add(r.getAppendix()));
+            // 基金公告
+            List<FundNoticeEntity> fund = fundNoticeService.list(Wrappers.lambdaQuery(FundNoticeEntity.class)
+                    .eq(FundNoticeEntity::getProductId, order.getProductId()).orderByDesc(FundNoticeEntity::getCreateTime));
+            result.put("purchase", purchase);
+            result.put("bonus", bonus);
+            result.put("redeem", redeem);
+            result.put("appendix", appendix);
+            result.put("fund", fund);
+            return R.ok().put("data", result);
+        }
+        return R.ok().put("data", null);
+
     }
 
     /**

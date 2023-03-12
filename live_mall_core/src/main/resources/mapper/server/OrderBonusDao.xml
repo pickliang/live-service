@@ -39,4 +39,20 @@
               IN ( SELECT order_id FROM p_order_out WHERE card_num = #{cardNum} )
           AND o.card_num = #{cardNum}
     </select>
+
+    <select id="customerBonds" resultType="io.live_mall.modules.server.model.BondOrderModel">
+        SELECT
+            date,
+            money
+        FROM
+            p_order_bonus
+        WHERE
+            order_id = #{orderId}
+          AND type = 2
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="sumMoney" resultType="double">
+        SELECT IFNULL(SUM(money) ,0) as money FROM p_order_bonus WHERE card_num = #{cardNum}
+    </select>
 </mapper>
