@@ -28,8 +28,7 @@ import java.util.Map;
 public class OrderBonusServiceImpl extends ServiceImpl<OrderBonusDao, OrderBonusEntity> implements OrderBonusService {
     @Override
     public PageUtils pages(Map<String, Object> params) {
-        Integer type = Convert.convert(Integer.class, params.get("type"), 1);
-        return new PageUtils(this.baseMapper.pages(new Query<OrderBonusModel>().getPage(params), type));
+        return new PageUtils(this.baseMapper.pages(new Query<OrderBonusModel>().getPage(params), params));
     }
 
     @Override

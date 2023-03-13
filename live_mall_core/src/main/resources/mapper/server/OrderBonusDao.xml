@@ -6,7 +6,7 @@
         SELECT
             id,
             order_id,
-            type,
+            `type`,
             money,
             `date`,
             frequency,
@@ -14,7 +14,14 @@
             appendix
         FROM
             p_order_bonus
-        where type = #{type}
+        where type = #{params.type}
+        <if test="params.type == 1">
+            AND order_id = #{params.orderId}
+        </if>
+        <if test="params.type == 2">
+            AND product_id  = #{params.productId}
+            AND card_num = #{params.cardNum}
+        </if>
         ORDER BY create_time DESC
     </select>
 

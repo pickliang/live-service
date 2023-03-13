@@ -10,6 +10,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author yewl
@@ -18,7 +19,7 @@ import java.util.List;
  */
 @Mapper
 public interface OrderBonusDao extends BaseMapper<OrderBonusEntity> {
-    IPage<OrderBonusModel> pages(@Param("pages") IPage<OrderBonusModel> pages, @Param("type") Integer type);
+    IPage<OrderBonusModel> pages(@Param("pages") IPage<OrderBonusModel> pages, @Param("params") Map<String, Object> params);
 
     IPage<JSONObject> customerPages(@Param("pages") IPage<JSONObject> pages, @Param("type") Integer type, @Param("cardNum") String cardNum);
 
