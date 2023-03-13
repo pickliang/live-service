@@ -7,6 +7,7 @@
             p.id,
             p.title,
             p.url,
+            p.image,
             p.is_show,
             p.create_time,
             s.realname

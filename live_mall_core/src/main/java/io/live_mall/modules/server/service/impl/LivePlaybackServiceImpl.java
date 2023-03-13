@@ -32,7 +32,6 @@ public class LivePlaybackServiceImpl extends ServiceImpl<LivePlaybackDao, LivePl
     public Integer updateIsShow(String id) {
         this.baseMapper.updateIsShow(null, 1);
         Integer integer = this.baseMapper.updateIsShow(id, 0);
-        log.error("integer-->{}", integer);
         return Objects.isNull(integer) ? 0 : integer;
     }
 }

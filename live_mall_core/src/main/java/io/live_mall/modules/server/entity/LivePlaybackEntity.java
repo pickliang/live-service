@@ -29,7 +29,11 @@ public class LivePlaybackEntity implements Serializable {
      */
     private String url;
     /**
-     * 链接
+     * 封面图
+     */
+    private String image;
+    /**
+     * 0-首页展示 1-不展示
      */
     private Integer isShow;
     /**
