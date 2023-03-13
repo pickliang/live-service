@@ -238,6 +238,16 @@ public class OrderController {
         return R.ok().put("data",order.getId());
     }
 
+    /**
+     * 订单转让
+     * @param json
+     * @return
+     */
+    @PostMapping(value = "/transfer")
+    public R transferOrder(@RequestBody JSONObject json) {
+        orderService.transferOrder(json, ShiroUtils.getUserId());
+        return R.ok();
+    }
 
     /**
      * 修改

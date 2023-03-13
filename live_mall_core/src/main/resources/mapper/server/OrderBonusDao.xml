@@ -62,4 +62,14 @@
     <select id="sumMoney" resultType="double">
         SELECT IFNULL(SUM(money) ,0) as money FROM p_order_bonus WHERE card_num = #{cardNum}
     </select>
+
+    <update id="transferStockRight">
+        update p_order_bonus set order_id = #{newOrderId}, card_num = #{cardNum}
+        where order_id = #{orderId} and type = 1
+    </update>
+
+    <update id="transferBond">
+        update p_order_bonus set order_id = #{newOrderId}, card_num = #{cardNum}
+        where product_id = #{productId} and card_num = #{oldCardNum} and type = 2
+    </update>
 </mapper>

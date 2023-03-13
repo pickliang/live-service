@@ -31,4 +31,13 @@ public interface OrderBonusDao extends BaseMapper<OrderBonusEntity> {
      * @return
      */
     double sumMoney(@Param("cardNum") String cardNum);
+
+    /**
+     * 订单转换分红
+     * @param orderId
+     * @param newOrderId
+     * @param cardNum
+     */
+    void transferStockRight(@Param("orderId") String orderId, @Param("newOrderId") String newOrderId, @Param("cardNum") String cardNum);
+    void transferBond(@Param("newOrderId") String newOrderId, @Param("cardNum") String cardNum, @Param("productId") String productId, @Param("oldCardNum") String oldCardNum);
 }

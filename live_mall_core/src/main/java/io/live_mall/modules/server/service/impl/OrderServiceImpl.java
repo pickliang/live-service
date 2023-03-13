@@ -8,6 +8,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Maps;
@@ -873,5 +874,40 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 		// 1-在投订单 2-历史订单
 		Integer isHistory = Convert.convert(Integer.class, params.get("isHistory"), 1);
 		return new PageUtils(this.baseMapper.customerBondPages(new Query<JSONObject>().getPage(params), isHistory, cardNum));
+	}
+
+	@Transactional(rollbackFor = Exception.class)
+	@Override
+	public void transferOrder(JSONObject json, Long userId) {
+		// 订单号
+		String orderId = json.getString("orderId");
+		// 客户姓名
+		String customerName = json.getString("customerName");
+		// 客户身份证号
+		String cardNum = json.getString("cardNum");
+		// 理财师
+		Long saleId = json.getLong("saleId");
+		OrderEntity orderEntity = this.baseMapper.selectById(orderId);
+		if (Objects.nonNull(orderEntity)) {
+			// 原订单改为已结束
+			this.baseMapper.update(new OrderEntity(), Wrappers.lambdaUpdate(OrderEntity.class).set(OrderEntity::getStatus, 5)
+					.set(OrderEntity::getUptDate, new Date()).set(OrderEntity::getUptBy, userId).eq(OrderEntity::getId, orderId));
+
+			String newOrderId = String.valueOf(IdWorker.getId());
+			// 股权分红订单转到新订单
+			orderBonusDao.transferStockRight(orderId, newOrderId, cardNum);
+			// 证券(二级市场)分红订单转到新订单
+			orderBonusDao.transferBond(newOrderId, cardNum, orderEntity.getProductId(), orderEntity.getCardNum());
+			// 保存新订单
+			orderEntity.setId(newOrderId);
+			orderEntity.setStatus(7);
+			orderEntity.setCustomerName(customerName);
+			orderEntity.setCardNum(cardNum);
+			orderEntity.setSaleId(saleId);
+			orderEntity.setCreateDate(new Date());
+			orderEntity.setCreateBy(String.valueOf(userId));
+			this.baseMapper.insert(orderEntity);
+		}
+
 	}
 }

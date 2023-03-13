@@ -122,5 +122,11 @@ public interface OrderService extends IService<OrderEntity> {
 	void updateOrderPortion(String id, Integer portion);
 
 	PageUtils customerBondPages(Map<String, Object> params, String cardNum);
+
+	/**
+	 * 订单转让
+	 * @param json
+	 */
+	void transferOrder(JSONObject json, Long userId);
 }
 
